@@ -118,7 +118,12 @@ if ( is_array( $fanxie_wp_core_tables ) ) {
 	foreach ( $fanxie_wp_core_tables as $fanxie_wp_core_table ) {
 		// Table names cannot be parameterised; the source is an internal SHOW TABLES
 		// result filtered by our own prefix, so this is safe.
-		$wpdb->query( 'DROP TABLE IF EXISTS `' . esc_sql( $fanxie_wp_core_table ) . '`' );
+		$fanxie_wp_core_escaped_table = esc_sql( (string) $fanxie_wp_core_table );
+		if ( ! is_string( $fanxie_wp_core_escaped_table ) || '' === $fanxie_wp_core_escaped_table ) {
+			continue;
+		}
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- table identifier cannot be parameterised; the value is sourced from SHOW TABLES filtered by our own prefix and passed through esc_sql(); DROP TABLE is the intended schema change at uninstall time.
+		$wpdb->query( 'DROP TABLE IF EXISTS `' . $fanxie_wp_core_escaped_table . '`' );
 	}
 }
 

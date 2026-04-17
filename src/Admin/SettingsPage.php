@@ -88,6 +88,8 @@ final class SettingsPage {
 	private static bool $vite_tag_filter_registered = false;
 
 	/**
+	 * Constructor.
+	 *
 	 * @param ModuleRegistry $registry Injected so the bootstrap payload can
 	 *                                 expose module descriptors to the SPA.
 	 */
@@ -272,6 +274,7 @@ final class SettingsPage {
 	 * @param string $hot_url Trimmed dev server base URL, e.g. `http://localhost:5173`.
 	 */
 	private function enqueue_dev_assets( string $hot_url ): void {
+		// phpcs:disable WordPress.WP.EnqueuedResourceParameters.MissingVersion -- dev-mode only; Vite serves source files that MUST NOT be cached.
 		wp_enqueue_script(
 			self::VITE_CLIENT_HANDLE,
 			$hot_url . '/@vite/client',
@@ -287,6 +290,7 @@ final class SettingsPage {
 			null,
 			[ 'in_footer' => true ]
 		);
+		// phpcs:enable WordPress.WP.EnqueuedResourceParameters.MissingVersion
 
 		$this->register_vite_tag_filter();
 	}
@@ -320,11 +324,15 @@ final class SettingsPage {
 					return $tag;
 				}
 
-				return sprintf(
+				// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- rewriting an already-enqueued handle's tag to add `type="module" crossorigin` for Vite HMR; the script was registered via wp_enqueue_script() in enqueue_dev_assets().
+				$module_tag = sprintf(
 					'<script type="module" crossorigin src="%1$s" id="%2$s-js"></script>' . "\n",
 					esc_url( (string) $src ),
 					esc_attr( (string) $handle )
 				);
+				// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+
+				return $module_tag;
 			},
 			10,
 			3
@@ -349,7 +357,7 @@ final class SettingsPage {
 			return null;
 		}
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local filesystem read of a dev-only marker; WP_Filesystem is overkill here.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents,WordPress.PHP.NoSilencedErrors.Discouraged -- local filesystem read of a dev-only marker; WP_Filesystem is overkill here and `@` silences a benign race (file may vanish between is_readable() and read).
 		$contents = @file_get_contents( $path );
 
 		if ( false === $contents ) {

@@ -63,6 +63,9 @@ final class AjaxRouter {
 	 */
 	private array $handlers = [];
 
+	/**
+	 * Constructor — wires the built-in `ping` sub-action.
+	 */
 	public function __construct() {
 		$this->register( 'ping', [ $this, 'handle_ping' ] );
 	}
@@ -70,10 +73,10 @@ final class AjaxRouter {
 	/**
 	 * Register an AJAX handler.
 	 *
-	 * @param string        $sub_action Sub-action slug (sanitised via `sanitize_key`).
-	 * @param callable      $handler    Receives the raw `$_POST` array; returns array|WP_Error.
-	 * @param string|null   $cap        Optional extra capability required in addition
-	 *                                  to `manage_fanxie_wp_core`.
+	 * @param string      $sub_action Sub-action slug (sanitised via `sanitize_key`).
+	 * @param callable    $handler    Receives the raw `$_POST` array; returns array|WP_Error.
+	 * @param string|null $cap        Optional extra capability required in addition
+	 *                                to `manage_fanxie_wp_core`.
 	 */
 	public function register( string $sub_action, callable $handler, ?string $cap = null ): void {
 		$sub_action = sanitize_key( $sub_action );

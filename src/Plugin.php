@@ -116,8 +116,8 @@ final class Plugin {
 	 */
 	public static function deactivate(): void {
 		// Clear any scheduled hook we own (`fanxie_wp_core_*`).
-		$cron       = _get_cron_array();
-		$to_cancel  = [];
+		$cron      = _get_cron_array();
+		$to_cancel = [];
 
 		if ( is_array( $cron ) ) {
 			foreach ( $cron as $events ) {
@@ -143,10 +143,18 @@ final class Plugin {
 	 * Retrieve a registered service.
 	 *
 	 * @template T of object
-	 * @param class-string<T> $id Service id (FQCN).
-	 * @return T|null
+	 *
+	 * @param class-string<T> $id Service id (FQCN). PHP-level type is `string`; the
+	 *                            generic form is a PHPStan hint so callers that pass
+	 *                            a FQCN get a typed return.
+	 *
+	 * @return T|null Instance stored under the given id, or null when unset.
+	 *
+	 * phpcs:disable Squiz.Commenting.FunctionComment.IncorrectTypeHint -- class-string<T> narrows the plain `string` runtime hint for PHPStan generics; the types are compatible.
 	 */
 	public function get( string $id ): ?object {
+		// phpcs:enable Squiz.Commenting.FunctionComment.IncorrectTypeHint
+		// phpcs:ignore Generic.Commenting.DocComment.MissingShort -- inline PHPStan `@var` narrowing tag; a short description would be noise.
 		/** @var T|null $service */
 		$service = $this->services[ $id ] ?? null;
 		return $service;
@@ -179,13 +187,15 @@ final class Plugin {
 		add_action( 'init', [ $this, 'load_textdomain' ] );
 		add_action( 'init', [ $this, 'boot_modules' ], 5 );
 
-		/** @var SettingsPage $settings_page */
 		$settings_page = $this->services[ SettingsPage::class ];
-		$settings_page->register_hooks();
+		if ( $settings_page instanceof SettingsPage ) {
+			$settings_page->register_hooks();
+		}
 
-		/** @var AjaxRouter $ajax_router */
 		$ajax_router = $this->services[ AjaxRouter::class ];
-		$ajax_router->register_hooks();
+		if ( $ajax_router instanceof AjaxRouter ) {
+			$ajax_router->register_hooks();
+		}
 	}
 
 	/**
@@ -205,8 +215,9 @@ final class Plugin {
 	 * Boot every enabled module through the registry.
 	 */
 	public function boot_modules(): void {
-		/** @var ModuleRegistry $registry */
 		$registry = $this->services[ ModuleRegistry::class ];
-		$registry->boot();
+		if ( $registry instanceof ModuleRegistry ) {
+			$registry->boot();
+		}
 	}
 }
