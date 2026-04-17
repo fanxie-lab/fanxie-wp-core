@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import {
+  computed,
+  defineAsyncComponent,
+  nextTick,
+  ref,
+  type Component,
+} from 'vue';
 import { useAppStore } from '@/stores/app';
 import { PlaceholderTab } from '@/components';
 import {
@@ -18,6 +24,33 @@ const activeModuleId = computed<string>(() => store.activeModuleId);
 /** Active module descriptor — guaranteed to exist as long as defaults are in sync. */
 const activeModule = computed(() => {
   return getModule(activeModuleId.value) ?? modules[0];
+});
+
+/**
+ * Dynamic module registry — each module id maps to a lazy-loaded chunk.
+ * Adding a new module is a one-line addition here (plus the module's own
+ * directory under `src/modules/`). Unlisted ids fall through to
+ * PlaceholderTab below.
+ */
+const moduleComponents: Record<string, () => Promise<{ default: Component }>> =
+  {
+    'security-headers': () =>
+      import('@/modules/SecurityHeaders/SecurityHeaders.vue'),
+  };
+
+const ActiveModuleComponent = computed<Component | null>(() => {
+  const id = activeModule.value?.id;
+  if (!id) return null;
+  const loader = moduleComponents[id];
+  if (!loader) return null;
+  return defineAsyncComponent({
+    loader,
+    loadingComponent: {
+      template:
+        '<p role="status" class="fx-main__module-loading">Loading module…</p>',
+    },
+    delay: 120,
+  });
 });
 
 const activeGroup = computed(
@@ -218,8 +251,13 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
       </header>
 
       <section class="fx-main__content">
+        <component
+          :is="ActiveModuleComponent"
+          v-if="ActiveModuleComponent && activeModule"
+          :key="activeModule.id"
+        />
         <PlaceholderTab
-          v-if="activeModule"
+          v-else-if="activeModule"
           :key="activeModule.id"
           :module-id="activeModule.id"
           :module-name="activeModule.label"
@@ -520,6 +558,15 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
   display: flex;
   flex-direction: column;
   gap: var(--fx-space-4);
+}
+
+.fx-main__content :deep(.fx-main__module-loading) {
+  margin: 0;
+  padding: var(--fx-space-5);
+  color: var(--fx-color-text-muted);
+  background: var(--fx-color-surface);
+  border: 1px dashed var(--fx-color-border);
+  border-radius: var(--fx-radius-lg);
 }
 
 /* ---------- Responsive ---------- */

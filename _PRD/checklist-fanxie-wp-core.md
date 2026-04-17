@@ -64,14 +64,14 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 *Goal: zero-risk audit wins first. Each sub-phase is independently shippable.*
 
 ### 1.1 Security Headers (PRD §3)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] `Modules/SecurityHeaders` module class + default config
-- [ ] Header emitter on `send_headers`, idempotent (no duplicates)
-- [ ] HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cache-Control toggles
-- [ ] CSP with **Report-Only** default + learning mode
-- [ ] REST endpoint `/wp-json/fanxie-wp-core/v1/csp-report` with schema validation + rate limiting
-- [ ] CSP preset library (WooCommerce + payment gateways, GA/GTM, Meta Pixel)
+- [x] `Modules/SecurityHeaders` module class + default config
+- [x] Header emitter on `send_headers`, idempotent (no duplicates)
+- [x] HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cache-Control toggles
+- [x] CSP with **Report-Only** default + learning mode
+- [x] REST endpoint `/wp-json/fanxie-wp-core/v1/csp-report` with schema validation + rate limiting
+- [x] CSP preset library (WooCommerce + payment gateways, GA/GTM, Meta Pixel)
 - [ ] Vue tab: per-header toggles, CSP builder, violation log viewer with filters
-- [ ] Tests: header presence, idempotency, CSP merge logic, preset application
+- [x] Tests: header presence, idempotency, CSP merge logic, preset application
 
 ### 1.2 Hardening (PRD §4)  *(→ wordpress-development-expert + frontend-expert)*
 - [ ] User enumeration block (author scan + REST users endpoint)

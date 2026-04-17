@@ -2,7 +2,7 @@
 
 Every custom action and filter exposed by the plugin lives here. Keep this file in sync with the code. Naming convention: `fanxie_wp_core/<area>/<verb>`.
 
-Last updated for Phase 0.1.
+Last updated for Phase 1.1.
 
 ---
 
@@ -20,6 +20,26 @@ Last updated for Phase 0.1.
   ```php
   add_action( 'fanxie_wp_core/module/registered', function ( $module ) {
       error_log( 'Fanxie module registered: ' . $module->id() );
+  } );
+  ```
+
+---
+
+### `fanxie_wp_core/security_headers/violation_recorded`
+
+- **Type:** Action
+- **Since:** 0.1.0-dev
+- **Fires:** Inside `ViolationRepository::record()` after a CSP violation has been inserted or deduped into `{$wpdb->prefix}fanxie_core_csp_violations`.
+- **Params:**
+  - `FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRecord $record` — the violation that was just persisted.
+- **Example:**
+
+  ```php
+  add_action( 'fanxie_wp_core/security_headers/violation_recorded', function ( $record ) {
+      // Forward critical directive violations to an external SIEM.
+      if ( 'script-src' === $record->directive ) {
+          my_siem_send( $record->to_array() );
+      }
   } );
   ```
 
@@ -63,6 +83,88 @@ Last updated for Phase 0.1.
           'cap'      => 'manage_options',
       ];
       return $map;
+  } );
+  ```
+
+---
+
+### `fanxie_wp_core/security_headers/headers`
+
+- **Type:** Filter
+- **Since:** 0.1.0-dev
+- **Fires:** Inside `HeaderEmitter::build_headers()` immediately before the headers are sent — last chance for integrators to inject / remove / rewrite values.
+- **Params:**
+  - `array<string, string> $headers` — name → value map of headers about to be emitted.
+  - `array<string, mixed> $config` — the sanitised module config that produced `$headers`.
+- **Returns:** `array<string, string>` — the (possibly mutated) header map.
+- **Example:**
+
+  ```php
+  add_filter( 'fanxie_wp_core/security_headers/headers', function ( array $headers ): array {
+      $headers['X-Fanxie-Served-By'] = 'edge-eu-1';
+      return $headers;
+  } );
+  ```
+
+---
+
+### `fanxie_wp_core/security_headers/csp_directives`
+
+- **Type:** Filter
+- **Since:** 0.1.0-dev
+- **Fires:** Inside `CspPolicy::serialise()` right before the directive map becomes a header string.
+- **Params:**
+  - `array<string, array<int, string>> $directives` — directive name → list of values.
+  - `string $mode` — active CSP mode (`off`, `report-only`, or `enforce`).
+- **Returns:** `array<string, array<int, string>>` — the (possibly mutated) directive map.
+- **Example:**
+
+  ```php
+  add_filter( 'fanxie_wp_core/security_headers/csp_directives', function ( array $directives ): array {
+      $directives['connect-src'][] = 'https://api.example.com';
+      return $directives;
+  } );
+  ```
+
+---
+
+### `fanxie_wp_core/security_headers/csp_presets`
+
+- **Type:** Filter
+- **Since:** 0.1.0-dev
+- **Fires:** Inside `CspPresetLibrary::all()` — lets integrators add their own presets or replace built-in ones.
+- **Params:**
+  - `array<string, FanxieLab\WPCore\Modules\SecurityHeaders\Csp\Preset> $presets` — preset id → `Preset`.
+- **Returns:** `array<string, Preset>` — entries that are not `Preset` instances are silently dropped.
+- **Example:**
+
+  ```php
+  add_filter( 'fanxie_wp_core/security_headers/csp_presets', function ( array $presets ): array {
+      $presets['hotjar'] = new \FanxieLab\WPCore\Modules\SecurityHeaders\Csp\Preset(
+          'hotjar',
+          'Hotjar',
+          [ 'script-src' => [ 'https://static.hotjar.com' ] ],
+      );
+      return $presets;
+  } );
+  ```
+
+---
+
+### `fanxie_wp_core/security_headers/rate_limit`
+
+- **Type:** Filter
+- **Since:** 0.1.0-dev
+- **Fires:** Inside `CspReportController::handle()` before the per-IP rate-limit bucket is consulted.
+- **Params:**
+  - `array{0:int,1:int} $limits` — `[window_seconds, ceiling_per_window]`. Default `[60, 60]`.
+- **Returns:** `array{0:int,1:int}` — the effective limit tuple.
+- **Example:**
+
+  ```php
+  // Loosen the limit to 200 reports per minute per IP.
+  add_filter( 'fanxie_wp_core/security_headers/rate_limit', function (): array {
+      return [ 60, 200 ];
   } );
   ```
 

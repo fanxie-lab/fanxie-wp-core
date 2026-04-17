@@ -46,7 +46,7 @@ The user has set explicit agent ownership. When the scope is clear, delegate; do
 - **Module contract:** every module extends `FanxieLab\WPCore\Modules\ModuleBase` and implements `id()`, `name()`, `is_enabled()`, `register_hooks()`, `get_settings_fields()`, `get_default_config()`. Disabled modules must cost zero at runtime — no hooks registered, no classes loaded beyond the module descriptor.
 - **No global state.** Use DI through the core `Plugin` container. No singletons except the plugin bootstrap.
 - **Options:** one prefix — `fanxie_wp_core_*`. One namespaced option per module (`fanxie_wp_core_<module_id>_settings`) to keep `wp_options` tidy.
-- **Custom tables:** prefix `{$wpdb->prefix}fanxie_` (e.g., `wp_fanxie_activity_log`). Install via `dbDelta`, version-tracked.
+- **Custom tables:** prefix `{$wpdb->prefix}fanxie_core_` (e.g., `wp_fanxie_core_csp_violations`, `wp_fanxie_core_activity_log`). Install via `dbDelta`, version-tracked.
 - **Hooks API:** prefix custom hooks `fanxie_wp_core/` (e.g., `fanxie_wp_core/module/registered`). Documented in `docs/hooks.md`.
 - **Capabilities:** gate admin actions behind a dedicated cap `manage_fanxie_wp_core` (mapped to `manage_options` by default, overridable via filter).
 

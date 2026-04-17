@@ -158,8 +158,14 @@ export default defineConfig({
           // Rollup 4 deprecated the singular `name` on PreRenderedAsset in
           // favour of a `names: string[]` array. Match the old behaviour:
           // route any asset whose first declared name ends in `.css` into the
-          // single admin.css bundle PHP expects.
-          const firstName = assetInfo.names[0];
+          // single admin.css bundle PHP expects. Dynamic imports can yield
+          // intermediate assets with an empty `names` array — fall through to
+          // the default template in that case rather than throwing.
+          // Dynamic imports can yield intermediate assets where `names` is
+          // absent entirely (undefined), not merely empty. The type says
+          // `string[]` but runtime disagrees — guard defensively.
+          const names = (assetInfo.names as string[] | undefined) ?? [];
+          const firstName = names[0];
           if (typeof firstName === 'string' && firstName.endsWith('.css')) {
             return 'admin.css';
           }

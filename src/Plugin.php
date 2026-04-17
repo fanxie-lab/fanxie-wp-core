@@ -12,6 +12,8 @@ namespace FanxieLab\WPCore;
 use FanxieLab\WPCore\Admin\AjaxRouter;
 use FanxieLab\WPCore\Admin\SettingsPage;
 use FanxieLab\WPCore\Modules\ModuleRegistry;
+use FanxieLab\WPCore\Modules\SecurityHeaders\SecurityHeaders;
+use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -104,6 +106,9 @@ final class Plugin {
 			update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
 		}
 
+		// Ensure module-owned tables exist before any hooks fire.
+		( new ViolationRepository() )->install();
+
 		flush_rewrite_rules( false );
 	}
 
@@ -171,13 +176,18 @@ final class Plugin {
 	 * Instantiate the core services and store them in the container.
 	 */
 	private function register_services(): void {
-		$registry      = new ModuleRegistry();
-		$ajax_router   = new AjaxRouter();
+		$registry    = new ModuleRegistry();
+		$ajax_router = new AjaxRouter();
+
+		$security_headers = new SecurityHeaders( $ajax_router );
+		$registry->register( $security_headers );
+
 		$settings_page = new SettingsPage( $registry );
 
-		$this->services[ ModuleRegistry::class ] = $registry;
-		$this->services[ AjaxRouter::class ]     = $ajax_router;
-		$this->services[ SettingsPage::class ]   = $settings_page;
+		$this->services[ ModuleRegistry::class ]  = $registry;
+		$this->services[ AjaxRouter::class ]      = $ajax_router;
+		$this->services[ SettingsPage::class ]    = $settings_page;
+		$this->services[ SecurityHeaders::class ] = $security_headers;
 	}
 
 	/**

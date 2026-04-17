@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-17T05:52:22+00:00\n"
+"POT-Creation-Date: 2026-04-17T16:05:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: fanxie-wp-core\n"
@@ -95,4 +95,120 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:199
 msgid "Fanxie WP Core requires JavaScript to configure. See the documentation for alternative options."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/AjaxController.php:79
+msgid "Settings payload must be an object."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/AjaxController.php:104
+msgid "Preset id is required."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/AjaxController.php:109
+msgid "The requested preset was not found."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/Csp/CspPresetLibrary.php:80
+msgid "WooCommerce (Stripe, PayPal, Square)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/Csp/CspPresetLibrary.php:119
+msgid "Google Analytics / Tag Manager"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/Csp/CspPresetLibrary.php:145
+msgid "Meta Pixel (Facebook)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:68
+msgid "Security Headers"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:146
+msgid "Enable Strict-Transport-Security"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:150
+msgid "Only emitted on HTTPS connections."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:154
+msgid "HSTS max-age (seconds)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:161
+msgid "Include subdomains"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:170
+msgid "Enable X-Frame-Options"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:177
+msgid "X-Frame-Options value"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:190
+msgid "Enable X-Content-Type-Options: nosniff"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:199
+msgid "Enable Referrer-Policy"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:206
+msgid "Referrer-Policy value"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:225
+msgid "Enable Permissions-Policy"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:232
+msgid "Permissions-Policy value"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:241
+msgid "Enable Cache-Control (non-authenticated pages)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:245
+msgid "Off by default — a wrong value can break dynamic pages."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:249
+msgid "Cache-Control value"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:258
+msgid "Content-Security-Policy mode"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:263
+msgid "Off"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:264
+msgid "Report only"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:265
+msgid "Enforce"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:270
+msgid "CSP learning mode (dual-emit)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:274
+msgid "Keep collecting violation reports while the policy is enforced."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:278
+msgid "CSP directives"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:285
+msgid "CSP report-uri"
 msgstr ""

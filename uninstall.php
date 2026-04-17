@@ -19,7 +19,7 @@
  * When wipe is authorised we:
  *   - Delete every option whose name starts with `fanxie_wp_core_`
  *     (both regular + site transients for consistency).
- *   - Drop every custom table matching `{$wpdb->prefix}fanxie_%`.
+ *   - Drop every custom table matching `{$wpdb->prefix}fanxie_core_%`.
  *   - Remove the `manage_fanxie_wp_core` capability from every role.
  *
  * We intentionally do *not* touch user meta: no core module stores user-keyed
@@ -106,7 +106,7 @@ if ( is_multisite() ) {
  * 2. Custom tables.
  * -----------------------------------------------------------------------------
  */
-$fanxie_wp_core_table_prefix = $wpdb->prefix . 'fanxie_';
+$fanxie_wp_core_table_prefix = $wpdb->prefix . 'fanxie_core_';
 $fanxie_wp_core_tables       = $wpdb->get_col(
 	$wpdb->prepare(
 		'SHOW TABLES LIKE %s',
