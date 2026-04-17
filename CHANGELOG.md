@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - PHPStan 1.12 → 2.x (level 8); stricter defaults applied to `src/`.
+- Vitest 2 → 3 (frontend test harness).
+- PHPUnit 10 → 12 (annotation-free attribute-style test metadata, stricter defaults).
 
 ### Added
 - Plugin foundation: PSR-4 autoloaded PHP under `FanxieLab\WPCore`, module
