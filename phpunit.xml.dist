@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+	bootstrap="tests/bootstrap.php"
+	cacheResultFile=".phpunit.cache/test-results"
+	colors="true"
+	executionOrder="depends,defects"
+	beStrictAboutOutputDuringTests="true"
+	beStrictAboutTestsThatDoNotTestAnything="true"
+	failOnWarning="true"
+	failOnNotice="true"
+	failOnIncomplete="true"
+	failOnRisky="true"
+>
+	<testsuites>
+		<testsuite name="unit">
+			<directory>tests/Unit</directory>
+		</testsuite>
+		<testsuite name="integration">
+			<directory>tests/Integration</directory>
+		</testsuite>
+	</testsuites>
+
+	<!--
+		Coverage is opt-in (it is slow). Drive it from the CLI:
+		  composer run test:coverage         HTML + clover, via the script
+		  vendor/bin/phpunit [coverage flag]
+
+		The `source` block below tells PHPUnit which files to include in reports
+		when coverage IS requested.
+	-->
+	<source>
+		<include>
+			<directory suffix=".php">src</directory>
+		</include>
+		<exclude>
+			<!--
+				Phase 0 has no interfaces or pure value objects to exclude.
+				Extend this list as modules land, e.g. src/Support/Contracts.
+			-->
+		</exclude>
+	</source>
+
+	<coverage
+		includeUncoveredFiles="true"
+		pathCoverage="false"
+		ignoreDeprecatedCodeUnits="true"
+		disableCodeCoverageIgnore="false"
+	/>
+
+	<php>
+		<ini name="error_reporting" value="-1"/>
+		<ini name="display_errors" value="1"/>
+		<ini name="display_startup_errors" value="1"/>
+		<ini name="memory_limit" value="512M"/>
+
+		<!-- WP test suite expectations (ignored in unit-only mode). -->
+		<const name="WP_TESTS_DOMAIN" value="example.org"/>
+		<const name="WP_TESTS_EMAIL" value="admin@example.org"/>
+		<const name="WP_TESTS_TITLE" value="Fanxie WP Core Test Suite"/>
+		<const name="WP_PHP_BINARY" value="php"/>
+	</php>
+</phpunit>

@@ -20,8 +20,8 @@ const activeModule = computed(() => {
   return getModule(activeModuleId.value) ?? modules[0];
 });
 
-const activeGroup = computed(() =>
-  getGroupForModule(activeModuleId.value) ?? groups[0],
+const activeGroup = computed(
+  () => getGroupForModule(activeModuleId.value) ?? groups[0],
 );
 
 const version = computed<string>(() => store.version);
@@ -117,11 +117,7 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
         </span>
       </div>
 
-      <nav
-        class="fx-sidebar__nav"
-        role="navigation"
-        aria-label="Modules"
-      >
+      <nav class="fx-sidebar__nav" role="navigation" aria-label="Modules">
         <section
           v-for="group in groups"
           :key="group.id"
@@ -199,19 +195,21 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
       </div>
     </aside>
 
-    <main class="fx-main" :aria-labelledby="`fx-module-title-${activeModule?.id}`">
+    <main
+      class="fx-main"
+      :aria-labelledby="`fx-module-title-${activeModule?.id}`"
+    >
       <header class="fx-main__header">
         <p class="fx-main__breadcrumb" aria-hidden="true">
-          <span class="fx-main__breadcrumb-group">{{ activeGroup?.label }}</span>
+          <span class="fx-main__breadcrumb-group">{{
+            activeGroup?.label
+          }}</span>
           <span class="fx-main__breadcrumb-sep">/</span>
           <span class="fx-main__breadcrumb-module">
             {{ activeModule?.label }}
           </span>
         </p>
-        <h1
-          :id="`fx-module-title-${activeModule?.id}`"
-          class="fx-main__title"
-        >
+        <h1 :id="`fx-module-title-${activeModule?.id}`" class="fx-main__title">
           {{ activeModule?.label }}
         </h1>
         <p v-if="activeModule?.description" class="fx-main__description">

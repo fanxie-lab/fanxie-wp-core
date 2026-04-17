@@ -83,14 +83,32 @@
 	</rule>
 
 	<!--
-		Test harness: Phase 0.3 will add PHPUnit classes (camelCase methods,
-		PSR-4 filenames). Relax the matching sniffs for `tests/` up-front so
-		Phase 0.3 drops in cleanly.
+		Test harness: Phase 0.3 PHPUnit classes are PSR-4-filed, use camelCase
+		lifecycle hooks (setUp/tearDown) and `test_*` methods, call WP core
+		hook names (admin_menu, wp_ajax_*) directly, and allow multiple
+		class declarations per file for inline fixtures. Relax the matching
+		sniffs for `tests/` so tests stay readable instead of being padded
+		with ceremonial docblocks.
 	-->
 	<rule ref="WordPress.Files.FileName">
 		<exclude-pattern>*/tests/*</exclude-pattern>
 	</rule>
 	<rule ref="WordPress.NamingConventions.ValidFunctionName">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FunctionComment.Missing">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Generic.Files.OneObjectStructurePerFile">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Universal.ControlStructures.DisallowLonelyIf">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Generic.Formatting.MultipleStatementAlignment">
 		<exclude-pattern>*/tests/*</exclude-pattern>
 	</rule>
 

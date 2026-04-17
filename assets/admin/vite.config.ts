@@ -1,7 +1,6 @@
 import { existsSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
-import type { AddressInfo } from 'node:net';
 import { defineConfig, type Plugin, type ViteDevServer } from 'vite';
 import vue from '@vitejs/plugin-vue';
 
@@ -19,7 +18,10 @@ import vue from '@vitejs/plugin-vue';
 // PHP watches for that file: when it exists, SettingsPage enqueues modules from
 // the Vite dev server (HMR inside real WP admin). Cleaned up on shutdown.
 
-const HOT_FILE = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '.vite-hot');
+const HOT_FILE = path.resolve(
+  fileURLToPath(new URL('.', import.meta.url)),
+  '.vite-hot',
+);
 
 /**
  * Silently remove the hot-file marker. ENOENT is ignored — the file may
@@ -58,7 +60,9 @@ function HotFilePlugin(): Plugin {
     if (signalHandlersRegistered) return;
     signalHandlersRegistered = true;
 
-    const cleanup = (): void => removeHotFile();
+    const cleanup = (): void => {
+      removeHotFile();
+    };
     // Named handlers so we don't double-bind across Vite restarts.
     const onSigint = (): void => {
       cleanup();
@@ -84,16 +88,28 @@ function HotFilePlugin(): Plugin {
       if (!httpServer) return;
 
       httpServer.once('listening', () => {
-        const address = httpServer.address() as AddressInfo | string | null;
+        const address = httpServer.address();
         if (!address || typeof address === 'string') return;
 
         const protocol = server.config.server.https ? 'https' : 'http';
-        const host = server.config.server.host === true ? '0.0.0.0' : (server.config.server.host ?? 'localhost');
-        const url = `${protocol}://${host}:${address.port}`;
+        const rawHost = server.config.server.host;
+        // Vite host config: `true` → listen on all interfaces, `false`/undefined
+        // → don't override default. For our URL we just need something dev
+        // consumers can connect to, so collapse both sentinel values to a
+        // loopback/wildcard literal.
+        const host =
+          rawHost === true
+            ? '0.0.0.0'
+            : typeof rawHost === 'string'
+              ? rawHost
+              : 'localhost';
+        const url = `${protocol}://${host}:${String(address.port)}`;
         writeHotFile(url);
       });
 
-      httpServer.once('close', () => removeHotFile());
+      httpServer.once('close', () => {
+        removeHotFile();
+      });
     },
 
     buildStart() {
@@ -139,7 +155,12 @@ export default defineConfig({
         entryFileNames: 'admin.js',
         chunkFileNames: 'admin-[name].js',
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name?.endsWith('.css')) {
+          // Rollup 4 deprecated the singular `name` on PreRenderedAsset in
+          // favour of a `names: string[]` array. Match the old behaviour:
+          // route any asset whose first declared name ends in `.css` into the
+          // single admin.css bundle PHP expects.
+          const firstName = assetInfo.names[0];
+          if (typeof firstName === 'string' && firstName.endsWith('.css')) {
             return 'admin.css';
           }
           return 'assets/[name][extname]';

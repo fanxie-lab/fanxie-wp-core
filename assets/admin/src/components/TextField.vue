@@ -61,10 +61,15 @@ function onInput(event: Event): void {
 </script>
 
 <template>
-  <div class="fx-text-field" :class="{ 'fx-text-field--invalid': Boolean(error) }">
+  <div
+    class="fx-text-field"
+    :class="{ 'fx-text-field--invalid': Boolean(error) }"
+  >
     <label :for="fieldId" class="fx-text-field__label">
       {{ label }}
-      <span v-if="required" class="fx-text-field__required" aria-hidden="true">*</span>
+      <span v-if="required" class="fx-text-field__required" aria-hidden="true"
+        >*</span
+      >
       <span v-if="required" class="fx-visually-hidden">(required)</span>
     </label>
     <input

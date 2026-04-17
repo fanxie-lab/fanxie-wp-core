@@ -13,7 +13,10 @@ export interface FanxieBootstrap {
     id: number;
     caps: Record<string, boolean>;
   };
-  modules: Record<string, { enabled: boolean; config: Record<string, unknown> }>;
+  modules: Record<
+    string,
+    { enabled: boolean; config: Record<string, unknown> }
+  >;
   i18n: {
     locale: string;
   };
@@ -21,7 +24,11 @@ export interface FanxieBootstrap {
 
 declare global {
   interface Window {
-    fanxieWPCore: FanxieBootstrap;
+    // Optional: the PHP bootstrap may fail to inject this script (plugins
+    // stripping inline scripts, cache edge cases, etc.). Callers MUST guard
+    // access at boundaries; the store's `snapshotBootstrap` asserts presence
+    // after `main.ts` has done the runtime check.
+    fanxieWPCore?: FanxieBootstrap;
   }
 }
 

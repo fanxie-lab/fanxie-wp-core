@@ -23,8 +23,12 @@
 		"env:cli:tests": "wp-env run tests-cli wp",
 		"env:install-path": "wp-env install-path",
 		"test:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/fanxie-wp-core ./vendor/bin/phpunit",
+		"test:php:unit": "wp-env run tests-cli --env-cwd=wp-content/plugins/fanxie-wp-core ./vendor/bin/phpunit --testsuite=unit",
+		"test:php:integration": "wp-env run tests-cli --env-cwd=wp-content/plugins/fanxie-wp-core ./vendor/bin/phpunit --testsuite=integration",
 		"test:php:watch": "wp-env run tests-cli --env-cwd=wp-content/plugins/fanxie-wp-core ./vendor/bin/phpunit --watch",
 		"test:php:coverage": "wp-env run tests-cli --env-cwd=wp-content/plugins/fanxie-wp-core ./vendor/bin/phpunit --coverage-text",
+		"test:e2e": "playwright test",
+		"test:e2e:install": "playwright install --with-deps chromium",
 		"lint:php": "composer run lint",
 		"plugin:check": "wp-env run cli wp plugin check fanxie-wp-core --format=table",
 		"plugin:check:json": "wp-env run cli wp plugin check fanxie-wp-core --format=json",
@@ -35,6 +39,7 @@
 		"check": "npm run check:php && npm run check:js"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.49.0",
 		"@wordpress/env": "^10.0.0"
 	}
 }

@@ -23,7 +23,14 @@ interface AppState extends FanxieBootstrap {
 // Deep-ish freeze of the initial bootstrap snapshot at module load time.
 // Pinia needs a plain object we can spread into state — we copy defensively.
 function snapshotBootstrap(): FanxieBootstrap {
+  // `main.ts` verifies presence before the Vue app mounts, so by the time any
+  // component instantiates this store the bootstrap is guaranteed.
   const src = window.fanxieWPCore;
+  if (!src) {
+    throw new Error(
+      '[fanxie-wp-core] useAppStore was called before bootstrap was verified.',
+    );
+  }
   return {
     version: src.version,
     ajaxUrl: src.ajaxUrl,
@@ -94,7 +101,7 @@ export const useAppStore = defineStore('app', {
       this.ping.lastPingError = null;
       try {
         const data = await ajax<PingResponse>('ping');
-        if (data.pong === true && typeof data.time === 'number') {
+        if (data.pong && typeof data.time === 'number') {
           this.ping.lastPongAt = data.time;
         } else {
           this.ping.lastPingError = 'Unexpected ping response shape.';

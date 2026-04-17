@@ -44,50 +44,50 @@
    * darker shade reserved for text-on-white / text-on-soft-mint cases
    * (WCAG AA). Button primaries use the literal brand mint tokens
    * below with black text — #000 on #00e298 measures ~13:1 (AAA).    */
-  --fx-color-primary: #00e298;        /* hero mint, for accents / large surfaces */
+  --fx-color-primary: #00e298; /* hero mint, for accents / large surfaces */
   --fx-color-primary-strong: #00a870; /* text-on-white compliant shade (WCAG AA) */
-  --fx-color-primary-hover: #00c785;  /* 15% darker than brand for hover state */
+  --fx-color-primary-hover: #00c785; /* 15% darker than brand for hover state */
   --fx-color-primary-active: #008a5c; /* pressed state */
-  --fx-color-primary-soft: #e6fbf4;   /* light tint for subtle fills & hovers */
+  --fx-color-primary-soft: #e6fbf4; /* light tint for subtle fills & hovers */
 
   /* Button-specific primary palette — literal brand mint + black text.
    * Separated from the text-on-white `-strong` token so we don't mix
    * semantic contexts: buttons paint large surfaces with black labels,
    * the strong token is still needed as a dark-mint text colour.      */
-  --fx-color-button-primary: #00e298;        /* literal brand mint */
-  --fx-color-button-primary-hover: #00c785;  /* slightly darker mint */
+  --fx-color-button-primary: #00e298; /* literal brand mint */
+  --fx-color-button-primary-hover: #00c785; /* slightly darker mint */
   --fx-color-button-primary-active: #00a870; /* pressed state */
-  --fx-color-button-primary-text: #000000;   /* black label, ~13:1 on mint */
+  --fx-color-button-primary-text: #000000; /* black label, ~13:1 on mint */
 
   /* Brand accent — mint-light (used sparingly for secondary emphasis). */
   --fx-color-accent: #66f5c4;
   --fx-color-accent-soft: #d6fbed;
 
   /* Neutral scale — straight from fanxielab.com's light palette. */
-  --fx-color-canvas: #f7f7f5;       /* page background */
-  --fx-color-surface: #ffffff;      /* card / panel base */
-  --fx-color-elevated: #eeeeed;     /* subtle fills (ghost buttons, code bg) */
-  --fx-color-border: #d4d4d8;       /* default border */
-  --fx-color-border-strong: #a1a1aa;/* form controls, emphasised dividers */
-  --fx-color-text: #1c1c1f;         /* body copy, headings */
-  --fx-color-text-muted: #52525b;   /* secondary copy, metadata */
-  --fx-color-text-dim: #a1a1aa;     /* captions, disabled */
+  --fx-color-canvas: #f7f7f5; /* page background */
+  --fx-color-surface: #ffffff; /* card / panel base */
+  --fx-color-elevated: #eeeeed; /* subtle fills (ghost buttons, code bg) */
+  --fx-color-border: #d4d4d8; /* default border */
+  --fx-color-border-strong: #a1a1aa; /* form controls, emphasised dividers */
+  --fx-color-text: #1c1c1f; /* body copy, headings */
+  --fx-color-text-muted: #52525b; /* secondary copy, metadata */
+  --fx-color-text-dim: #a1a1aa; /* captions, disabled */
   --fx-color-text-inverse: #ffffff; /* text on dark/brand backgrounds */
 
   /* Status — harmonised with the brand rather than WP / OS defaults.
    * OK reuses primary-strong so green semantics and brand align.      */
   --fx-color-ok: #00a870;
   --fx-color-ok-bg: #e6fbf4;
-  --fx-color-warn: #b45309;         /* brand #fa0 darkened for AA on white */
+  --fx-color-warn: #b45309; /* brand #fa0 darkened for AA on white */
   --fx-color-warn-bg: #fff7ed;
-  --fx-color-critical: #d92d2d;     /* brand #ff4d4d darkened for AA on white */
+  --fx-color-critical: #d92d2d; /* brand #ff4d4d darkened for AA on white */
   --fx-color-critical-bg: #fff1f1;
-  --fx-color-info: #0f766e;         /* muted teal — info distinct from primary */
+  --fx-color-info: #0f766e; /* muted teal — info distinct from primary */
   --fx-color-info-bg: #ecfdf5;
   --fx-color-neutral: #52525b;
   --fx-color-neutral-bg: #eeeeed;
 
-  --fx-color-focus-ring: #00a870;   /* mint-strong, visible on light bg */
+  --fx-color-focus-ring: #00a870; /* mint-strong, visible on light bg */
 
   /* Back-compat aliases for any existing scoped styles that still reference
    * the old token names. Remove once all components are reskinned. */
@@ -99,12 +99,12 @@
    * Spacing scale (4px grid). Matches fanxielab.com's --spacing:0.25rem.
    * ---------------------------------------------------------------- */
   --fx-space-1: 0.25rem; /* 4px  */
-  --fx-space-2: 0.5rem;  /* 8px  */
+  --fx-space-2: 0.5rem; /* 8px  */
   --fx-space-3: 0.75rem; /* 12px */
-  --fx-space-4: 1rem;    /* 16px */
-  --fx-space-5: 1.5rem;  /* 24px */
-  --fx-space-6: 2rem;    /* 32px */
-  --fx-space-7: 3rem;    /* 48px */
+  --fx-space-4: 1rem; /* 16px */
+  --fx-space-5: 1.5rem; /* 24px */
+  --fx-space-6: 2rem; /* 32px */
+  --fx-space-7: 3rem; /* 48px */
 
   /* ------------------------------------------------------------------
    * Radius — matches brand site (md 6px, lg 8px, xl 12px).
@@ -120,7 +120,7 @@
    * ---------------------------------------------------------------- */
   --fx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --fx-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.06);
-  --fx-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.10);
+  --fx-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1);
   --fx-shadow-glow: 0 0 20px rgba(0, 226, 152, 0.25); /* brand mint glow */
 
   /* ------------------------------------------------------------------
@@ -142,13 +142,13 @@
   --fx-font-weight-semibold: 600;
 
   /* Type scale — six steps, no arbitrary px values in components. */
-  --fx-font-size-xs: 0.75rem;   /* 12px — captions, version pill */
+  --fx-font-size-xs: 0.75rem; /* 12px — captions, version pill */
   --fx-font-size-sm: 0.8125rem; /* 13px — secondary UI */
-  --fx-font-size-md: 0.875rem;  /* 14px — body / controls */
-  --fx-font-size-lg: 1rem;      /* 16px — emphasised body */
-  --fx-font-size-xl: 1.125rem;  /* 18px — h3 / section title */
+  --fx-font-size-md: 0.875rem; /* 14px — body / controls */
+  --fx-font-size-lg: 1rem; /* 16px — emphasised body */
+  --fx-font-size-xl: 1.125rem; /* 18px — h3 / section title */
   --fx-font-size-2xl: 1.375rem; /* 22px — h2 / group header */
-  --fx-font-size-3xl: 1.75rem;  /* 28px — h1 / page title */
+  --fx-font-size-3xl: 1.75rem; /* 28px — h1 / page title */
 
   --fx-line-height-tight: 1.2;
   --fx-line-height-snug: 1.375;
@@ -163,7 +163,7 @@
   /* ------------------------------------------------------------------
    * Layout
    * ---------------------------------------------------------------- */
-  --fx-sidebar-width: 16rem;          /* 256px on desktop */
+  --fx-sidebar-width: 16rem; /* 256px on desktop */
   --fx-sidebar-width-collapsed: 3.5rem;
   --fx-max-content-width: 64rem;
 

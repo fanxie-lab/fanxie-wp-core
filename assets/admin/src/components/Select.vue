@@ -57,9 +57,7 @@ function isGrouped(
 ): opts is SelectOptionGroup[] {
   if (opts.length === 0) return false;
   const first = opts[0];
-  return (
-    first !== undefined && typeof first === 'object' && 'options' in first
-  );
+  return first !== undefined && typeof first === 'object' && 'options' in first;
 }
 
 const grouped = computed(() => isGrouped(props.options));
@@ -80,7 +78,9 @@ function onChange(event: Event): void {
   <div class="fx-select" :class="{ 'fx-select--invalid': Boolean(error) }">
     <label :for="fieldId" class="fx-select__label">
       {{ label }}
-      <span v-if="required" class="fx-select__required" aria-hidden="true">*</span>
+      <span v-if="required" class="fx-select__required" aria-hidden="true"
+        >*</span
+      >
       <span v-if="required" class="fx-visually-hidden">(required)</span>
     </label>
     <select

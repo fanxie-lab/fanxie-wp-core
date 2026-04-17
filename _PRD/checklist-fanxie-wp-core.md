@@ -38,10 +38,10 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 - [x] Enqueue wired in `SettingsPage.php` — loads **only** on plugin screens
 
 ### 0.3 Testing harness  *(→ both agents in parallel)*
-- [ ] `phpunit.xml.dist` + `tests/bootstrap.php` with `@wordpress/env` integration
-- [ ] Example `Unit/` + `Integration/` test proving the harness runs
-- [ ] Vitest + Vue Test Utils + MSW configured; sample component + store tests
-- [ ] Playwright config + one smoke test (plugin activates, settings page renders)
+- [x] `phpunit.xml.dist` + `tests/bootstrap.php` with `@wordpress/env` integration
+- [x] Example `Unit/` + `Integration/` test proving the harness runs
+- [x] Vitest + Vue Test Utils + MSW configured; sample component + store tests
+- [x] Playwright config + one smoke test (plugin activates, settings page renders)
 
 ### 0.4 Quality & CI  *(→ wordpress-development-expert)*
 - [x] `phpcs.xml.dist` (WordPress-Extra + WordPress-Docs + PHPCompatibilityWP @ PHP 8.1+, text domain + prefix rules configured)

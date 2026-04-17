@@ -47,6 +47,9 @@
         "phpcbf": "phpcbf",
         "phpstan": "phpstan analyse --memory-limit=1G",
         "test": "phpunit",
+        "test:unit": "phpunit --testsuite=unit",
+        "test:integration": "phpunit --testsuite=integration",
+        "test:coverage": "phpunit --coverage-html=coverage/html --coverage-clover=coverage/clover.xml",
         "check": [
             "@phpcs",
             "@phpstan"
@@ -56,7 +59,10 @@
         "phpcs": "Run WordPress Coding Standards checks (phpcs.xml.dist).",
         "phpcbf": "Auto-fix fixable WordPress Coding Standards violations.",
         "phpstan": "Run PHPStan static analysis (level 8, phpstan.neon.dist).",
-        "test": "Run the PHPUnit test suite (wired in Phase 0.3).",
+        "test": "Run the full PHPUnit test suite (unit + integration).",
+        "test:unit": "Run the fast Brain Monkey unit suite only (no WordPress runtime).",
+        "test:integration": "Run the WordPress integration suite (requires wp-env tests-cli).",
+        "test:coverage": "Run PHPUnit with HTML (coverage/html) + Clover (coverage/clover.xml) coverage reports.",
         "check": "Run the quality gate: PHPCS + PHPStan. Tests run via `composer test`."
     }
 }

@@ -124,9 +124,24 @@ Editor integration: a `.editorconfig` ships alongside `prettier.config.js` so ed
 
 > **Note on `@wordpress/eslint-plugin`.** The current release ships an eslintrc-shaped config that does not integrate cleanly with ESLint 9 flat config + Vue 3. We have deferred layering it in to avoid legacy-compat shims; the rule intent (no-console warn, prefer-const, no-floating-promises, etc.) is replicated explicitly in `eslint.config.js`. Revisit when `@wordpress/eslint-plugin` ships a flat-config entry.
 
+## Testing
+
+The admin SPA uses **Vitest + Vue Test Utils + MSW** on top of **happy-dom**. Tests live co-located under `__tests__/` folders next to the unit under test (e.g. `src/stores/__tests__/app.spec.ts`). The shared setup at `tests/setup.ts` wires MSW, exposes `mockAjaxResponse(subAction, response, opts)`, and resets `window.fanxieWPCore` to a known bootstrap before every test.
+
+```bash
+cd assets/admin
+npm test              # run the full Vitest suite once (CI path)
+npm run test:watch    # iterative dev
+npm run test:coverage # HTML + lcov in coverage/
+npm run test:ui       # optional Vitest UI
+```
+
+No real WordPress instance is required — `admin-ajax.php` calls are intercepted by MSW handlers, not by real network. The MSW handler matches on the WP sub-action (`_action` form field) so you can stage multiple sub-actions per test.
+
+`npm run check` runs `format:check → lint → type-check → test` in sequence; CI fails on the first red stage.
+
 ## Not yet set up (tracked on the Phase 0 checklist)
 
-- **Phase 0.3** — Vitest, Vue Test Utils, MSW.
 - **Phase 0.4** — Stylelint (ESLint + Prettier are live).
 
 ## Conventions

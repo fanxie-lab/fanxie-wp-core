@@ -43,7 +43,12 @@ export default tseslint.config(
 
   // Language options for all TS + Vue sources.
   {
-    files: ['src/**/*.{ts,vue}', '*.ts', '*.config.ts'],
+    files: [
+      'src/**/*.{ts,tsx,vue}',
+      'tests/**/*.{ts,tsx}',
+      '*.ts',
+      '*.config.ts',
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -58,8 +63,9 @@ export default tseslint.config(
         ecmaVersion: 2022,
         sourceType: 'module',
         extraFileExtensions: ['.vue'],
-        // Project-aware parsing — required for type-checked rules.
-        project: './tsconfig.json',
+        // Project-aware parsing — required for type-checked rules. The
+        // vitest tsconfig extends the base one and also includes tests/.
+        project: './tsconfig.vitest.json',
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -67,7 +73,7 @@ export default tseslint.config(
 
   // Node-context config files use the node tsconfig.
   {
-    files: ['*.config.ts', 'vite.config.ts'],
+    files: ['*.config.ts', 'vite.config.ts', 'vitest.config.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -81,7 +87,7 @@ export default tseslint.config(
 
   // Project-specific rule overrides.
   {
-    files: ['src/**/*.{ts,vue}', '*.ts', '*.config.ts'],
+    files: ['src/**/*.{ts,tsx,vue}', '*.ts', '*.config.ts'],
     rules: {
       // Strict: never silently accept `any`.
       '@typescript-eslint/no-explicit-any': 'error',
@@ -106,6 +112,31 @@ export default tseslint.config(
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+
+  // Test files — relax rules that trip up mocks + assertions without
+  // providing any real safety benefit in a test-only context.
+  {
+    files: [
+      'src/**/*.{test,spec}.{ts,tsx}',
+      'src/**/__tests__/**/*.{ts,tsx}',
+      'tests/**/*.{ts,tsx}',
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      // Tests sometimes need to read unsafe-any shapes from fixtures / envelopes
+      // that the strict preset refuses without an explicit type cast.
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      'no-console': 'off',
     },
   },
 

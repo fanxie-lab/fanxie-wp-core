@@ -73,14 +73,10 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # PHPUnit inside wp-env (Docker), against WordPress latest + trunk.
-  #
-  # TODO(Phase 0.3): remove continue-on-error once PHPUnit config lands.
   # ---------------------------------------------------------------------------
   php-tests:
     name: PHP Tests (WP ${{ matrix.wp-version }})
     runs-on: ubuntu-latest
-    # TODO(Phase 0.3): remove continue-on-error once PHPUnit config lands.
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:

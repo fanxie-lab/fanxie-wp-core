@@ -176,4 +176,5 @@ export const flatModuleIds: readonly string[] = groups.flatMap(
 );
 
 /** Default active module — first module in the first group. */
-export const defaultActiveModuleId: string = flatModuleIds[0] ?? 'security-headers';
+export const defaultActiveModuleId: string =
+  flatModuleIds[0] ?? 'security-headers';

@@ -14,8 +14,12 @@ parameters:
         - tests/phpstan-bootstrap.php
 
     # Paths analysed. Composer bootstrap file + uninstall handler + everything
-    # under `src/`. Tests will join the list in Phase 0.3 once the test harness
-    # lands.
+    # under `src/`. Tests are deliberately NOT in scope: unit tests depend on
+    # Brain Monkey's dynamic function redefinition, integration tests depend on
+    # WP_UnitTestCase + WP test-suite symbols that are not shipped as stubs,
+    # and PHPUnit fixtures routinely violate level-8 strictness (mutable state,
+    # untyped factory returns). Tests are their own quality gate (they either
+    # pass or fail) — static analysis adds friction without catching real bugs.
     paths:
         - src
         - fanxie-wp-core.php
@@ -30,6 +34,7 @@ parameters:
         - build
         - dist
         - languages
+        - tests
         - .phpunit.cache
 
     # Disallow weak typing shortcuts we explicitly do not want in this codebase.

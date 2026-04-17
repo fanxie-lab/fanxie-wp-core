@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import { createApp, type Component } from 'vue';
 import { createPinia } from 'pinia';
 import App from '@/App.vue';
 import '@/styles/main.css';
@@ -52,7 +52,9 @@ function bootstrap(): void {
     return;
   }
 
-  const app = createApp(App);
+  // `.vue` SFC imports are untyped without a full IDE plugin; narrow to
+  // `Component` so `createApp` stops seeing an implicit error-typed arg.
+  const app = createApp(App as Component);
   app.use(createPinia());
   app.mount(mountEl);
 }

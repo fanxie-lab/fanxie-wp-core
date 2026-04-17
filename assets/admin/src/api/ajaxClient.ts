@@ -50,17 +50,20 @@ function isWpAjaxEnvelope(value: unknown): value is WpAjaxEnvelope {
 function extractErrorFields(data: unknown): { code: string; message: string } {
   if (typeof data === 'object' && data !== null) {
     const rec = data as Record<string, unknown>;
-    const code = typeof rec['code'] === 'string' ? rec['code'] : 'unknown_error';
+    const code = typeof rec.code === 'string' ? rec.code : 'unknown_error';
     const message =
-      typeof rec['message'] === 'string'
-        ? rec['message']
+      typeof rec.message === 'string'
+        ? rec.message
         : 'The request failed without a message.';
     return { code, message };
   }
   if (typeof data === 'string' && data.length > 0) {
     return { code: 'unknown_error', message: data };
   }
-  return { code: 'unknown_error', message: 'The request failed without a message.' };
+  return {
+    code: 'unknown_error',
+    message: 'The request failed without a message.',
+  };
 }
 
 // In-flight dedupe cache. Keyed by `${subAction}|${stableJson(payload)}`.
@@ -82,9 +85,9 @@ function stableStringify(value: unknown): string {
   return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(rec[k])}`).join(',')}}`;
 }
 
-function buildBody<TPayload extends Record<string, unknown>>(
+function buildBody(
   subAction: string,
-  payload: TPayload | undefined,
+  payload: Record<string, unknown> | undefined,
   nonce: string,
 ): URLSearchParams {
   const body = new URLSearchParams();
@@ -119,14 +122,10 @@ function buildBody<TPayload extends Record<string, unknown>>(
  * Typed AJAX call to the Fanxie WP Core admin endpoint.
  *
  * @typeParam TResponse - Shape of the unwrapped `data` field on success.
- * @typeParam TPayload  - Shape of the request payload.
  */
-export async function ajax<
-  TResponse,
-  TPayload extends Record<string, unknown> = Record<string, never>,
->(
+export async function ajax<TResponse>(
   subAction: string,
-  payload?: TPayload,
+  payload?: Record<string, unknown>,
   options: AjaxOptions = {},
 ): Promise<TResponse> {
   const bootstrap = window.fanxieWPCore;
@@ -175,7 +174,7 @@ export async function ajax<
     if (!response.ok) {
       throw new AjaxError(
         'network_error',
-        `Request failed with HTTP ${response.status}.`,
+        `Request failed with HTTP ${String(response.status)}.`,
         response.status,
       );
     }
@@ -209,7 +208,9 @@ export async function ajax<
 
   if (dedupeKey !== null) {
     inFlight.set(dedupeKey, promise);
-    promise.finally(() => {
+    // Fire-and-forget cache cleanup: we must return `promise` below so callers
+    // get the original result; awaiting here would defeat the dedupe cache.
+    void promise.finally(() => {
       // Only clear if it's still our entry — a later call may have replaced it
       // after ours settled.
       if (inFlight.get(dedupeKey) === promise) {

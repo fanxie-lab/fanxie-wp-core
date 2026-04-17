@@ -34,9 +34,7 @@ const emit = defineEmits<{
 const saveDisabled = computed(
   () => props.disabled || !props.dirty || props.status === 'saving',
 );
-const resetDisabled = computed(
-  () => !props.dirty || props.status === 'saving',
-);
+const resetDisabled = computed(() => !props.dirty || props.status === 'saving');
 
 const statusText = computed<string>(() => {
   if (props.message) return props.message;

@@ -51,7 +51,11 @@ async function onPing(): Promise<void> {
       >
         {{ store.ping.inFlight ? 'Pinging…' : 'Ping backend' }}
       </button>
-      <p class="fx-placeholder__ping-status" aria-live="polite" aria-atomic="true">
+      <p
+        class="fx-placeholder__ping-status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <template v-if="store.ping.lastPingError">
           <span class="fx-placeholder__ping-error">
             {{ store.ping.lastPingError }}
