@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- PHPStan 1.12 → 2.x (level 8); stricter defaults applied to `src/`.
+
 ### Added
 - Plugin foundation: PSR-4 autoloaded PHP under `FanxieLab\WPCore`, module
   registry + base class, admin settings page under **Settings → Fanxie WP

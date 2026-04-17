@@ -1,3 +1,7 @@
+# PHPStan 2.x configuration. Extension, config keys, and defaults all assume
+# phpstan/phpstan ^2.0 and szepeviktor/phpstan-wordpress ^2.0. When bumping
+# PHPStan, re-read the upgrade guide — some defaults (e.g.
+# `treatPhpDocTypesAsCertain`) have flipped between majors.
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
 
@@ -27,12 +31,15 @@ parameters:
 
     # Paths PHPStan should ignore even if one of the paths above would otherwise
     # recurse into them.
+    # `(?)` marks an optional path — PHPStan 2.x hard-errors on missing
+    # excludePaths entries; `build/` and `dist/` only exist after a release
+    # bundle has been generated locally.
     excludePaths:
         - vendor
         - node_modules
         - assets
-        - build
-        - dist
+        - build (?)
+        - dist (?)
         - languages
         - tests
         - .phpunit.cache
