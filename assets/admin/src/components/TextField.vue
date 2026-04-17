@@ -130,7 +130,8 @@ function onInput(event: Event): void {
   border-color: var(--fx-color-border-strong);
 }
 
-.fx-text-field__input:focus {
+.fx-text-field__input:focus,
+.fx-text-field__input:focus-visible {
   outline: none;
   border-color: var(--fx-color-primary-strong);
   box-shadow: 0 0 0 3px var(--fx-color-primary-soft);

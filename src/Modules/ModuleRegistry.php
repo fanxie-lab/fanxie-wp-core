@@ -12,7 +12,7 @@ namespace FanxieLab\WPCore\Modules;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Tracks registered modules and boots the enabled subset.
+ * Tracks registered modules and boots every one of them.
  *
  * At Phase 0.1 the registry is empty — concrete modules plug in from Phase 1
  * onward, each calling `ModuleRegistry::register()` with its own descriptor.
@@ -48,24 +48,12 @@ final class ModuleRegistry {
 	}
 
 	/**
-	 * All registered modules, regardless of enabled state.
+	 * All registered modules.
 	 *
 	 * @return array<string, ModuleBase>
 	 */
 	public function all(): array {
 		return $this->modules;
-	}
-
-	/**
-	 * The subset of registered modules whose `is_enabled()` returns true.
-	 *
-	 * @return array<string, ModuleBase>
-	 */
-	public function enabled(): array {
-		return array_filter(
-			$this->modules,
-			static fn ( ModuleBase $module ): bool => $module->is_enabled()
-		);
 	}
 
 	/**
@@ -78,10 +66,14 @@ final class ModuleRegistry {
 	}
 
 	/**
-	 * Boot every enabled module by calling its `register_hooks()`.
+	 * Boot registered modules.
+	 *
+	 * Calls `register_hooks()` once on every registered module. Modules are
+	 * responsible for consulting their own settings to decide what, if
+	 * anything, to emit at runtime — there is no module-level enabled gate.
 	 */
 	public function boot(): void {
-		foreach ( $this->enabled() as $module ) {
+		foreach ( $this->modules as $module ) {
 			$module->register_hooks();
 		}
 	}

@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace FanxieLab\WPCore\Modules\SecurityHeaders;
 
 use FanxieLab\WPCore\Admin\AjaxRouter;
+use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPolicy;
 use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPresetLibrary;
 use WP_Error;
 
@@ -61,7 +62,6 @@ final class AjaxController {
 	public function handle_get_config( array $payload = [] ): array {
 		unset( $payload );
 		return [
-			'enabled'  => $this->module->is_enabled(),
 			'settings' => $this->module->get_config(),
 			'status'   => $this->derive_status(),
 			'presets'  => $this->preset_descriptors(),
@@ -71,22 +71,17 @@ final class AjaxController {
 	/**
 	 * Handler: `security-headers/save-config`.
 	 *
-	 * @param array<string, mixed> $payload Expects `{ enabled: bool, settings: array }`.
+	 * @param array<string, mixed> $payload Expects `{ settings: array }`.
 	 * @return array<string, mixed>|WP_Error
 	 */
 	public function handle_save_config( array $payload ): array|WP_Error {
-		if ( isset( $payload['settings'] ) && ! is_array( $payload['settings'] ) ) {
+		if ( ! isset( $payload['settings'] ) || ! is_array( $payload['settings'] ) ) {
 			return new WP_Error( 'invalid_settings', __( 'Settings payload must be an object.', 'fanxie-wp-core' ) );
 		}
 
-		$enabled  = ! empty( $payload['enabled'] );
-		$settings = isset( $payload['settings'] ) && is_array( $payload['settings'] ) ? $payload['settings'] : [];
-
-		$this->module->set_enabled( $enabled );
-		$this->module->update_config( $settings );
+		$this->module->update_config( $payload['settings'] );
 
 		return [
-			'enabled'  => $this->module->is_enabled(),
 			'settings' => $this->module->get_config(),
 			'status'   => $this->derive_status(),
 		];
@@ -110,8 +105,9 @@ final class AjaxController {
 		}
 
 		$current    = $this->module->get_config();
-		$directives = isset( $current['csp_directives'] ) && is_array( $current['csp_directives'] )
-			? $current['csp_directives']
+		$csp        = isset( $current['csp'] ) && is_array( $current['csp'] ) ? $current['csp'] : [];
+		$directives = isset( $csp['directives'] ) && is_array( $csp['directives'] )
+			? $csp['directives']
 			: [];
 
 		foreach ( $preset->directives as $name => $values ) {
@@ -127,12 +123,13 @@ final class AjaxController {
 			$directives[ $name ] = $existing;
 		}
 
-		$current['csp_directives'] = $directives;
+		$csp['directives'] = $directives;
+		$current['csp']    = $csp;
 		$this->module->update_config( $current );
 
 		return [
-			'enabled'  => $this->module->is_enabled(),
 			'settings' => $this->module->get_config(),
+			'status'   => $this->derive_status(),
 			'preset'   => $preset->to_array(),
 		];
 	}
@@ -189,19 +186,97 @@ final class AjaxController {
 	/**
 	 * Derived status information surfaced in the admin UI.
 	 *
+	 * Shape mirrors the `SecurityHeadersStatus` TS contract consumed by the
+	 * Vue store — keep the keys in sync with
+	 * `assets/admin/src/modules/SecurityHeaders/types.ts`.
+	 *
 	 * @return array<string, mixed>
 	 */
 	private function derive_status(): array {
-		$is_ssl = function_exists( 'is_ssl' ) ? (bool) is_ssl() : false;
-		$config = $this->module->get_config();
+		$is_ssl  = function_exists( 'is_ssl' ) ? (bool) is_ssl() : false;
+		$config  = $this->module->get_config();
+		$headers = isset( $config['headers'] ) && is_array( $config['headers'] ) ? $config['headers'] : [];
+		$csp     = isset( $config['csp'] ) && is_array( $config['csp'] ) ? $config['csp'] : [];
+		$hsts    = isset( $headers['hsts'] ) && is_array( $headers['hsts'] ) ? $headers['hsts'] : [];
+
+		$report_endpoint = isset( $csp['report_uri'] ) && is_string( $csp['report_uri'] )
+			? $csp['report_uri']
+			: '';
+
+		// Count enabled non-CSP headers. Keys mirror `get_default_config()`.
+		$active_header_count = 0;
+		foreach ( [ 'hsts', 'xfo', 'xcto', 'referrer', 'permissions', 'cache_control' ] as $key ) {
+			if ( isset( $headers[ $key ]['enabled'] ) && true === (bool) $headers[ $key ]['enabled'] ) {
+				++$active_header_count;
+			}
+		}
+
+		$csp_mode   = isset( $csp['mode'] ) && is_string( $csp['mode'] ) ? $csp['mode'] : CspPolicy::MODE_OFF;
+		$csp_active = CspPolicy::MODE_OFF !== $csp_mode;
+		$active     = $active_header_count > 0 || $csp_active;
 
 		return [
-			'https'             => $is_ssl,
-			'hsts_ready'        => $is_ssl && ! empty( $config['headers_hsts_enabled'] ),
-			'csp_mode'          => $config['csp_mode'] ?? 'off',
-			'csp_learning_mode' => ! empty( $config['csp_learning_mode'] ),
-			'violations_table'  => $this->repository->table_name(),
+			'is_https'            => $is_ssl,
+			'hsts_detected'       => $is_ssl && ! empty( $hsts['enabled'] ),
+			'csp_detected'        => $csp_active,
+			'report_endpoint'     => $report_endpoint,
+			'active'              => $active,
+			'active_header_count' => $active_header_count,
+			'csp_active'          => $csp_active,
+			'summary'             => $this->build_summary( $active_header_count, $csp_mode ),
 		];
+	}
+
+	/**
+	 * Human-friendly summary for the status badge.
+	 *
+	 * @param int    $count    Number of enabled non-CSP headers.
+	 * @param string $csp_mode One of the `CspPolicy::MODE_*` constants.
+	 */
+	private function build_summary( int $count, string $csp_mode ): string {
+		$csp_active = CspPolicy::MODE_OFF !== $csp_mode;
+
+		if ( 0 === $count && ! $csp_active ) {
+			return __( 'Inactive', 'fanxie-wp-core' );
+		}
+
+		$mode_label = $this->csp_mode_label( $csp_mode );
+
+		if ( $count > 0 && $csp_active ) {
+			return sprintf(
+				/* translators: 1: header count, 2: CSP mode label. */
+				_n( '%1$d header · CSP %2$s', '%1$d headers · CSP %2$s', $count, 'fanxie-wp-core' ),
+				$count,
+				$mode_label
+			);
+		}
+
+		if ( $count > 0 ) {
+			return sprintf(
+				/* translators: %d: header count. */
+				_n( '%d header active', '%d headers active', $count, 'fanxie-wp-core' ),
+				$count
+			);
+		}
+
+		return sprintf(
+			/* translators: %s: CSP mode label. */
+			__( 'CSP %s only', 'fanxie-wp-core' ),
+			$mode_label
+		);
+	}
+
+	/**
+	 * Translate a CSP mode constant into a human-friendly label.
+	 *
+	 * @param string $mode One of the `CspPolicy::MODE_*` constants.
+	 */
+	private function csp_mode_label( string $mode ): string {
+		return match ( $mode ) {
+			CspPolicy::MODE_REPORT_ONLY => __( 'Report-Only', 'fanxie-wp-core' ),
+			CspPolicy::MODE_ENFORCE     => __( 'Enforce', 'fanxie-wp-core' ),
+			default                     => __( 'Off', 'fanxie-wp-core' ),
+		};
 	}
 
 	/**

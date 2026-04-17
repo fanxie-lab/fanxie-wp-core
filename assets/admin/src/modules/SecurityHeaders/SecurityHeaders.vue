@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { ShieldCheck } from 'lucide-vue-next';
 import { StatusPill, Toast } from '@/components';
 import type { StatusPillVariant, ToastVariant } from '@/components';
 import { useSecurityHeadersStore } from './stores/securityHeaders';
-import HeadersView from './views/HeadersView.vue';
-import CspView from './views/CspView.vue';
-import ViolationsView from './views/ViolationsView.vue';
 
 /**
  * SecurityHeaders module root.
  *
  * - Mounts the per-module store and calls `load()` on mount.
- * - Renders three sub-tabs (Headers / CSP / Violations) with ARIA tablist
- *   semantics so keyboard users can cycle with arrow keys.
- * - Shows a StatusPill summarising "Enabled / Disabled" and HTTPS posture.
+ * - Renders three sub-tabs (Headers / CSP / Violations) as named router
+ *   links so each tab is deep-linkable. RouterLink is used in `custom`
+ *   slot mode so we can render it as a `<button role="tab">` and preserve
+ *   full ARIA tablist semantics (keyboard arrow nav, aria-selected, roving
+ *   tabindex).
+ * - Shows a StatusPill rendering the server-formatted status summary.
  */
 
 type TabId = 'headers' | 'csp' | 'violations';
@@ -22,16 +23,32 @@ type TabId = 'headers' | 'csp' | 'violations';
 interface Tab {
   id: TabId;
   label: string;
+  routeName: string;
 }
 
 const TABS: readonly Tab[] = [
-  { id: 'headers', label: 'Headers' },
-  { id: 'csp', label: 'Content Security Policy' },
-  { id: 'violations', label: 'Violations' },
+  { id: 'headers', label: 'Headers', routeName: 'security-headers.headers' },
+  {
+    id: 'csp',
+    label: 'Content Security Policy',
+    routeName: 'security-headers.csp',
+  },
+  {
+    id: 'violations',
+    label: 'Violations',
+    routeName: 'security-headers.violations',
+  },
 ] as const;
 
 const store = useSecurityHeadersStore();
-const activeTab = ref<TabId>('headers');
+const route = useRoute();
+const router = useRouter();
+
+/** The active tab is derived from the current route name. */
+const activeTab = computed<TabId>(() => {
+  const match = TABS.find((t) => route.name === t.routeName);
+  return match?.id ?? 'headers';
+});
 
 const tabButtons = ref<Record<TabId, HTMLButtonElement | null>>({
   headers: null,
@@ -43,12 +60,9 @@ function setTabRef(id: TabId, el: Element | null): void {
   tabButtons.value[id] = el instanceof HTMLButtonElement ? el : null;
 }
 
-async function selectTab(id: TabId, focus = false): Promise<void> {
-  activeTab.value = id;
-  if (focus) {
-    await nextTick();
-    tabButtons.value[id]?.focus();
-  }
+async function focusTab(id: TabId): Promise<void> {
+  await nextTick();
+  tabButtons.value[id]?.focus();
 }
 
 function onTabKeydown(event: KeyboardEvent, id: TabId): void {
@@ -76,7 +90,9 @@ function onTabKeydown(event: KeyboardEvent, id: TabId): void {
   event.preventDefault();
   const nextTab = TABS[nextIdx];
   if (nextTab) {
-    void selectTab(nextTab.id, true);
+    void router
+      .push({ name: nextTab.routeName })
+      .then(() => focusTab(nextTab.id));
   }
 }
 
@@ -85,13 +101,10 @@ const statusPill = computed<{ variant: StatusPillVariant; label: string }>(
     if (!store.status) {
       return { variant: 'neutral', label: 'Loading…' };
     }
-    if (!store.enabled) {
-      return { variant: 'neutral', label: 'Disabled' };
+    if (!store.status.active) {
+      return { variant: 'neutral', label: store.status.summary };
     }
-    if (!store.status.is_https) {
-      return { variant: 'warn', label: 'Enabled (HTTP)' };
-    }
-    return { variant: 'ok', label: 'Enabled (HTTPS)' };
+    return { variant: 'ok', label: store.status.summary };
   },
 );
 
@@ -163,23 +176,30 @@ watch(
         aria-label="Security Headers sections"
         class="fx-sh__tablist"
       >
-        <button
+        <RouterLink
           v-for="tab in TABS"
-          :id="tabId(tab.id)"
           :key="tab.id"
-          :ref="(el) => setTabRef(tab.id, el as Element | null)"
-          type="button"
-          role="tab"
-          class="fx-sh__tab"
-          :class="{ 'fx-sh__tab--active': activeTab === tab.id }"
-          :aria-selected="activeTab === tab.id"
-          :aria-controls="panelId(tab.id)"
-          :tabindex="activeTab === tab.id ? 0 : -1"
-          @click="selectTab(tab.id)"
-          @keydown="onTabKeydown($event, tab.id)"
+          :to="{ name: tab.routeName }"
+          custom
         >
-          {{ tab.label }}
-        </button>
+          <template #default="{ href, navigate }">
+            <a
+              :id="tabId(tab.id)"
+              :ref="(el) => setTabRef(tab.id, el as Element | null)"
+              :href="href"
+              role="tab"
+              class="fx-sh__tab"
+              :class="{ 'fx-sh__tab--active': activeTab === tab.id }"
+              :aria-selected="activeTab === tab.id"
+              :aria-controls="panelId(tab.id)"
+              :tabindex="activeTab === tab.id ? 0 : -1"
+              @click="navigate"
+              @keydown="onTabKeydown($event, tab.id)"
+            >
+              {{ tab.label }}
+            </a>
+          </template>
+        </RouterLink>
       </div>
 
       <div
@@ -190,40 +210,16 @@ watch(
         Loading Security Headers configuration…
       </div>
 
-      <template v-else>
-        <section
-          v-show="activeTab === 'headers'"
-          :id="panelId('headers')"
-          role="tabpanel"
-          :aria-labelledby="tabId('headers')"
-          class="fx-sh__panel"
-          :tabindex="0"
-        >
-          <HeadersView />
-        </section>
-
-        <section
-          v-show="activeTab === 'csp'"
-          :id="panelId('csp')"
-          role="tabpanel"
-          :aria-labelledby="tabId('csp')"
-          class="fx-sh__panel"
-          :tabindex="0"
-        >
-          <CspView />
-        </section>
-
-        <section
-          v-show="activeTab === 'violations'"
-          :id="panelId('violations')"
-          role="tabpanel"
-          :aria-labelledby="tabId('violations')"
-          class="fx-sh__panel"
-          :tabindex="0"
-        >
-          <ViolationsView />
-        </section>
-      </template>
+      <section
+        v-else
+        :id="panelId(activeTab)"
+        role="tabpanel"
+        :aria-labelledby="tabId(activeTab)"
+        class="fx-sh__panel"
+        :tabindex="0"
+      >
+        <RouterView />
+      </section>
     </div>
 
     <Teleport to="body">

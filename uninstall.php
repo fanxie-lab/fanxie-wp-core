@@ -72,6 +72,9 @@ global $wpdb;
  * 1. Options.
  * -----------------------------------------------------------------------------
  */
+// The `LIKE 'fanxie_wp_core_%'` sweep catches every plugin option, including
+// legacy `_enabled` flags that no longer drive behaviour after the module
+// enabled-gate was removed — no targeted migration needed.
 $fanxie_wp_core_option_names = $wpdb->get_col(
 	$wpdb->prepare(
 		"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",

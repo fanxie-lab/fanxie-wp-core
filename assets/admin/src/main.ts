@@ -1,6 +1,7 @@
 import { createApp, type Component } from 'vue';
 import { createPinia } from 'pinia';
 import App from '@/App.vue';
+import { router } from '@/router';
 import '@/styles/main.css';
 
 const MOUNT_ID = 'fanxie-wp-core-admin';
@@ -56,6 +57,7 @@ function bootstrap(): void {
   // `Component` so `createApp` stops seeing an implicit error-typed arg.
   const app = createApp(App as Component);
   app.use(createPinia());
+  app.use(router);
   app.mount(mountEl);
 }
 

@@ -410,7 +410,8 @@ function onModeChange(value: string): void {
   font-size: var(--fx-font-size-sm);
 }
 
-.fx-csp-view__source-input:focus {
+.fx-csp-view__source-input:focus,
+.fx-csp-view__source-input:focus-visible {
   outline: none;
   border-color: var(--fx-color-primary-strong);
   box-shadow: 0 0 0 3px var(--fx-color-primary-soft);

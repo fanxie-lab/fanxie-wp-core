@@ -57,6 +57,14 @@ export interface SecurityHeadersStatus {
   hsts_detected: boolean;
   csp_detected: boolean;
   report_endpoint: string;
+  /** True when at least one header is enabled or CSP is not `off`. */
+  active: boolean;
+  /** Count of `headers.*.enabled === true`. */
+  active_header_count: number;
+  /** True when `csp.mode !== 'off'`. */
+  csp_active: boolean;
+  /** Server-translated summary, e.g. "5 headers · CSP Report-Only" or "Inactive". */
+  summary: string;
 }
 
 /** One row from the CSP violation log. */
@@ -84,7 +92,6 @@ export interface Preset {
 
 /** Response envelope for `get-config`, `save-config`, `apply-preset`. */
 export interface ConfigResponse {
-  enabled: boolean;
   settings: SecurityHeadersConfig;
   status: SecurityHeadersStatus;
 }

@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  nextTick,
-  ref,
-  type Component,
-} from 'vue';
+import { computed, nextTick, ref } from 'vue';
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
 import { useAppStore } from '@/stores/app';
-import { PlaceholderTab } from '@/components';
 import {
   flatModuleIds,
   getGroupForModule,
@@ -17,41 +11,24 @@ import {
 } from '@/config/modules';
 
 const store = useAppStore();
-
-/** Live model of which module the sidebar has selected. */
-const activeModuleId = computed<string>(() => store.activeModuleId);
-
-/** Active module descriptor — guaranteed to exist as long as defaults are in sync. */
-const activeModule = computed(() => {
-  return getModule(activeModuleId.value) ?? modules[0];
-});
+const route = useRoute();
+const router = useRouter();
 
 /**
- * Dynamic module registry — each module id maps to a lazy-loaded chunk.
- * Adding a new module is a one-line addition here (plus the module's own
- * directory under `src/modules/`). Unlisted ids fall through to
- * PlaceholderTab below.
+ * The active module id is derived from the top-level route name. Every
+ * module has a named top-level route (either a real component or a
+ * PlaceholderTab fallback), so `route.matched[0].name` is the source of
+ * truth for the sidebar's selected state.
  */
-const moduleComponents: Record<string, () => Promise<{ default: Component }>> =
-  {
-    'security-headers': () =>
-      import('@/modules/SecurityHeaders/SecurityHeaders.vue'),
-  };
-
-const ActiveModuleComponent = computed<Component | null>(() => {
-  const id = activeModule.value?.id;
-  if (!id) return null;
-  const loader = moduleComponents[id];
-  if (!loader) return null;
-  return defineAsyncComponent({
-    loader,
-    loadingComponent: {
-      template:
-        '<p role="status" class="fx-main__module-loading">Loading module…</p>',
-    },
-    delay: 120,
-  });
+const activeModuleId = computed<string>(() => {
+  const topName = route.matched[0]?.name;
+  if (typeof topName === 'string' && getModule(topName)) return topName;
+  return modules[0]?.id ?? 'security-headers';
 });
+
+const activeModule = computed(
+  () => getModule(activeModuleId.value) ?? modules[0],
+);
 
 const activeGroup = computed(
   () => getGroupForModule(activeModuleId.value) ?? groups[0],
@@ -66,22 +43,28 @@ function toggleSidebar(): void {
   sidebarOpen.value = !sidebarOpen.value;
 }
 
-/** Refs to module buttons so arrow-key navigation can move focus. */
-const moduleRefs = ref<Record<string, HTMLButtonElement | null>>({});
+/** Refs to module links so arrow-key navigation can move focus. */
+const moduleRefs = ref<Record<string, HTMLAnchorElement | null>>({});
 
-function setModuleRef(id: string, el: Element | null): void {
-  moduleRefs.value[id] = el instanceof HTMLButtonElement ? el : null;
-}
-
-async function selectModule(id: string, focus = false): Promise<void> {
-  store.setActiveModule(id);
-  if (focus) {
-    await nextTick();
-    moduleRefs.value[id]?.focus();
-  }
+/**
+ * RouterLink's template ref returns either the component instance (whose
+ * `$el` is the rendered DOM node) or — when vnode refs fire — the Element
+ * directly. Normalise both shapes to the underlying anchor element.
+ */
+function setModuleRef(id: string, el: unknown): void {
+  const node =
+    el && typeof el === 'object' && '$el' in el
+      ? (el as { $el: unknown }).$el
+      : el;
+  moduleRefs.value[id] = node instanceof HTMLAnchorElement ? node : null;
 }
 
 /** Walk the flat module list on Arrow Up/Down inside the nav. */
+async function focusModule(id: string): Promise<void> {
+  await nextTick();
+  moduleRefs.value[id]?.focus();
+}
+
 function onModuleKeydown(event: KeyboardEvent, id: string): void {
   const idx = flatModuleIds.indexOf(id);
   if (idx === -1) return;
@@ -106,7 +89,7 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
   event.preventDefault();
   const nextId = flatModuleIds[nextIdx];
   if (nextId !== undefined) {
-    void selectModule(nextId, true);
+    void router.push({ name: nextId }).then(() => focusModule(nextId));
   }
 }
 </script>
@@ -163,15 +146,11 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
               :key="id"
               class="fx-sidebar__item"
             >
-              <button
-                :ref="(el) => setModuleRef(id, el as Element | null)"
-                type="button"
+              <RouterLink
+                :ref="(el) => setModuleRef(id, el)"
+                :to="{ name: id }"
                 class="fx-sidebar__link"
-                :class="{
-                  'fx-sidebar__link--active': activeModuleId === id,
-                }"
-                :aria-current="activeModuleId === id ? 'page' : undefined"
-                @click="selectModule(id)"
+                active-class="fx-sidebar__link--active"
                 @keydown="onModuleKeydown($event, id)"
               >
                 <span class="fx-sidebar__icon" aria-hidden="true">
@@ -194,7 +173,7 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
                   aria-hidden="true"
                   title="Module enabled"
                 ></span>
-              </button>
+              </RouterLink>
             </li>
           </ul>
         </section>
@@ -242,28 +221,22 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
             {{ activeModule?.label }}
           </span>
         </p>
-        <h1 :id="`fx-module-title-${activeModule?.id}`" class="fx-main__title">
+        <!--
+          The accessible label for the <main> region. Each module renders
+          its own <h2> + description in its root component (with the icon
+          chip), so we hide the duplicate visually here while still
+          giving assistive tech a labelled landmark.
+        -->
+        <h1
+          :id="`fx-module-title-${activeModule?.id}`"
+          class="fx-visually-hidden"
+        >
           {{ activeModule?.label }}
         </h1>
-        <p v-if="activeModule?.description" class="fx-main__description">
-          {{ activeModule.description }}
-        </p>
       </header>
 
       <section class="fx-main__content">
-        <component
-          :is="ActiveModuleComponent"
-          v-if="ActiveModuleComponent && activeModule"
-          :key="activeModule.id"
-        />
-        <PlaceholderTab
-          v-else-if="activeModule"
-          :key="activeModule.id"
-          :module-id="activeModule.id"
-          :module-name="activeModule.label"
-          :phase-label="activeModule.phaseLabel"
-          :description="activeModule.description"
-        />
+        <RouterView />
       </section>
     </main>
   </div>
@@ -507,8 +480,6 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
   display: flex;
   flex-direction: column;
   gap: var(--fx-space-2);
-  padding-bottom: var(--fx-space-4);
-  border-bottom: 1px solid var(--fx-color-border);
 }
 
 .fx-main__breadcrumb {
@@ -534,24 +505,6 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
 
 .fx-main__breadcrumb-module {
   color: var(--fx-color-text-muted);
-}
-
-.fx-main__title {
-  margin: 0;
-  font-family: var(--fx-font-heading);
-  font-size: var(--fx-font-size-3xl);
-  font-weight: var(--fx-font-weight-semibold);
-  color: var(--fx-color-text);
-  line-height: var(--fx-line-height-tight);
-  letter-spacing: -0.015em;
-}
-
-.fx-main__description {
-  margin: 0;
-  max-width: 62ch;
-  color: var(--fx-color-text-muted);
-  font-size: var(--fx-font-size-lg);
-  line-height: var(--fx-line-height-snug);
 }
 
 .fx-main__content {

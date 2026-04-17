@@ -14,6 +14,7 @@ use Brain\Monkey\Functions;
 use FanxieLab\WPCore\Admin\AjaxRouter;
 use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPolicy;
 use FanxieLab\WPCore\Modules\SecurityHeaders\SecurityHeaders;
+use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -34,7 +35,15 @@ final class SecurityHeadersTest extends TestCase {
 
 		Functions\when( '__' )->returnArg( 1 );
 		Functions\when( 'sanitize_text_field' )->alias( static fn ( $v ) => is_string( $v ) ? trim( $v ) : '' );
-		Functions\when( 'sanitize_key' )->alias( static fn ( $v ) => is_string( $v ) ? strtolower( preg_replace( '/[^a-z0-9_\-]/', '', $v ) ?? '' ) : '' );
+		Functions\when( 'sanitize_key' )->alias(
+			static function ( $v ) {
+				if ( ! is_string( $v ) ) {
+					return '';
+				}
+				// Mirror WordPress core: lowercase first, then strip non-[a-z0-9_-].
+				return (string) ( preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $v ) ) ?? '' );
+			}
+		);
 		Functions\when( 'sanitize_textarea_field' )->returnArg( 1 );
 		Functions\when( 'esc_url_raw' )->returnArg( 1 );
 		Functions\when( 'absint' )->alias( static fn ( $v ) => (int) abs( (int) $v ) );
@@ -73,86 +82,110 @@ final class SecurityHeadersTest extends TestCase {
 		$this->assertSame( 'Security Headers', $this->make_module()->name() );
 	}
 
-	public function test_default_config_exposes_every_documented_key(): void {
+	public function test_default_config_is_nested_per_vue_contract(): void {
 		$defaults = $this->make_module()->get_default_config();
 
-		$expected_keys = [
-			'headers_hsts_enabled',
-			'headers_hsts_max_age',
-			'headers_hsts_include_subdomains',
-			'headers_xfo_enabled',
-			'headers_xfo_value',
-			'headers_xcto_enabled',
-			'headers_referrer_enabled',
-			'headers_referrer_value',
-			'headers_permissions_enabled',
-			'headers_permissions_value',
-			'headers_cache_control_enabled',
-			'headers_cache_control_value',
-			'csp_mode',
-			'csp_learning_mode',
-			'csp_directives',
-			'csp_report_uri',
-		];
+		// Top-level: `headers` + `csp` — mirrors SecurityHeadersConfig in types.ts.
+		$this->assertArrayHasKey( 'headers', $defaults );
+		$this->assertArrayHasKey( 'csp', $defaults );
+		$this->assertIsArray( $defaults['headers'] );
+		$this->assertIsArray( $defaults['csp'] );
 
-		foreach ( $expected_keys as $key ) {
-			$this->assertArrayHasKey( $key, $defaults, "default config missing `{$key}`" );
+		// Non-CSP headers branch.
+		foreach ( [ 'hsts', 'xfo', 'xcto', 'referrer', 'permissions', 'cache_control' ] as $section ) {
+			$this->assertArrayHasKey( $section, $defaults['headers'], "headers.{$section} missing" );
+			$this->assertIsArray( $defaults['headers'][ $section ] );
+			$this->assertArrayHasKey( 'enabled', $defaults['headers'][ $section ] );
 		}
 
-		$this->assertTrue( $defaults['headers_hsts_enabled'] );
-		$this->assertSame( 31536000, $defaults['headers_hsts_max_age'] );
-		$this->assertSame( 'SAMEORIGIN', $defaults['headers_xfo_value'] );
-		$this->assertSame( CspPolicy::MODE_REPORT_ONLY, $defaults['csp_mode'] );
-		$this->assertTrue( $defaults['csp_learning_mode'] );
-		$this->assertFalse( $defaults['headers_cache_control_enabled'] );
-		$this->assertIsArray( $defaults['csp_directives'] );
+		// HSTS specifics. HSTS is OFF by default — once cached, a browser
+		// will refuse plain HTTP for `max_age` seconds, so operators must
+		// opt in explicitly. `includeSubDomains` is likewise off by default.
+		$this->assertFalse( $defaults['headers']['hsts']['enabled'] );
+		$this->assertSame( 31536000, $defaults['headers']['hsts']['max_age'] );
+		$this->assertFalse( $defaults['headers']['hsts']['include_subdomains'] );
+
+		// XFO value.
+		$this->assertSame( 'SAMEORIGIN', $defaults['headers']['xfo']['value'] );
+
+		// Cache-Control off by default.
+		$this->assertFalse( $defaults['headers']['cache_control']['enabled'] );
+
+		// CSP branch.
+		foreach ( [ 'mode', 'learning_mode', 'directives', 'report_uri' ] as $key ) {
+			$this->assertArrayHasKey( $key, $defaults['csp'], "csp.{$key} missing" );
+		}
+		$this->assertSame( CspPolicy::MODE_REPORT_ONLY, $defaults['csp']['mode'] );
+		$this->assertTrue( $defaults['csp']['learning_mode'] );
+		$this->assertIsArray( $defaults['csp']['directives'] );
 	}
 
-	public function test_settings_fields_cover_every_default_key(): void {
-		$module   = $this->make_module();
-		$defaults = $module->get_default_config();
-		$fields   = $module->get_settings_fields();
+	public function test_settings_fields_use_dot_path_ids(): void {
+		$module = $this->make_module();
+		$fields = $module->get_settings_fields();
 
-		$field_ids = array_column( $fields, 'id' );
+		$ids = array_column( $fields, 'id' );
 
-		foreach ( array_keys( $defaults ) as $key ) {
-			$this->assertContains( $key, $field_ids, "settings schema missing `{$key}`" );
+		$expected = [
+			'headers.hsts.enabled',
+			'headers.hsts.max_age',
+			'headers.hsts.include_subdomains',
+			'headers.xfo.enabled',
+			'headers.xfo.value',
+			'headers.xcto.enabled',
+			'headers.referrer.enabled',
+			'headers.referrer.value',
+			'headers.permissions.enabled',
+			'headers.permissions.value',
+			'headers.cache_control.enabled',
+			'headers.cache_control.value',
+			'csp.mode',
+			'csp.learning_mode',
+			'csp.directives',
+			'csp.report_uri',
+		];
+
+		foreach ( $expected as $id ) {
+			$this->assertContains( $id, $ids, "settings schema missing dot-path id `{$id}`" );
 		}
 
 		foreach ( $fields as $field ) {
 			$this->assertArrayHasKey( 'id', $field );
 			$this->assertArrayHasKey( 'label', $field );
 			$this->assertArrayHasKey( 'type', $field );
-			$this->assertArrayHasKey( 'sanitizer', $field );
 			$this->assertArrayHasKey( 'default', $field );
+			// Exactly one of `sanitizer` / `sanitizer_callback` must be present.
+			$has_scalar   = isset( $field['sanitizer'] );
+			$has_callback = isset( $field['sanitizer_callback'] );
+			$this->assertTrue(
+				$has_scalar xor $has_callback,
+				"field `{$field['id']}` must declare either `sanitizer` or `sanitizer_callback`"
+			);
+			if ( $has_callback ) {
+				$this->assertIsCallable( $field['sanitizer_callback'] );
+			}
 		}
 	}
 
-	public function test_is_enabled_round_trips_through_set_enabled(): void {
-		$module = $this->make_module();
-
-		$this->assertFalse( $module->is_enabled() );
-
-		$module->set_enabled( true );
-		$this->assertTrue( $module->is_enabled() );
-
-		$module->set_enabled( false );
-		$this->assertFalse( $module->is_enabled() );
-	}
-
-	public function test_update_config_persists_and_sanitises(): void {
+	public function test_update_config_persists_and_sanitises_nested_payload(): void {
 		$module = $this->make_module();
 
 		$updated = $module->update_config(
 			[
-				'headers_hsts_enabled' => 1,   // truthy — should round-trip to bool.
-				'headers_hsts_max_age' => '90',
-				'csp_mode'             => 'enforce',
-				'csp_directives'       => [
-					'Script-Src' => [ "'self'", '' ],
-					42           => [ 'ignored' ],
+				'headers'       => [
+					'hsts' => [
+						'enabled' => 1,     // truthy — should round-trip to bool.
+						'max_age' => '90',  // string — should coerce via absint.
+					],
 				],
-				'not_in_schema'        => 'dropped',
+				'csp'           => [
+					'mode'       => 'enforce',
+					'directives' => [
+						'Script-Src' => [ "'self'", '' ],
+						42           => [ 'ignored' ],
+					],
+				],
+				'not_in_schema' => 'dropped',
 			]
 		);
 
@@ -160,10 +193,83 @@ final class SecurityHeadersTest extends TestCase {
 
 		$stored = $module->get_config();
 
-		$this->assertTrue( $stored['headers_hsts_enabled'] );
-		$this->assertSame( 90, $stored['headers_hsts_max_age'] );
-		$this->assertSame( 'enforce', $stored['csp_mode'] );
-		$this->assertSame( [ 'script-src' => [ "'self'" ] ], $stored['csp_directives'] );
+		$this->assertTrue( $stored['headers']['hsts']['enabled'] );
+		$this->assertSame( 90, $stored['headers']['hsts']['max_age'] );
+		$this->assertSame( 'enforce', $stored['csp']['mode'] );
+		$this->assertSame( [ 'script-src' => [ "'self'" ] ], $stored['csp']['directives'] );
 		$this->assertArrayNotHasKey( 'not_in_schema', $stored );
+	}
+
+	public function test_get_config_fills_missing_nested_branches_from_defaults(): void {
+		$module = $this->make_module();
+
+		// Persist only a partial payload — everything else must come from defaults.
+		$module->update_config(
+			[
+				'headers' => [
+					'hsts' => [ 'enabled' => false ],
+				],
+			]
+		);
+
+		$stored = $module->get_config();
+
+		// Overridden value is honoured.
+		$this->assertFalse( $stored['headers']['hsts']['enabled'] );
+		// Sibling defaults still fill in.
+		$this->assertSame( 31536000, $stored['headers']['hsts']['max_age'] );
+		$this->assertFalse( $stored['headers']['hsts']['include_subdomains'] );
+		// Other branches untouched.
+		$this->assertSame( 'SAMEORIGIN', $stored['headers']['xfo']['value'] );
+		$this->assertSame( CspPolicy::MODE_REPORT_ONLY, $stored['csp']['mode'] );
+	}
+
+	/**
+	 * Regression: ModuleRegistry runs `register_hooks()` on `init:5`, so any
+	 * attempt to hook install() onto an earlier `init` priority silently
+	 * no-ops — WordPress never re-enters earlier priorities of an already-
+	 * firing action. The module must detect that `init` has already fired and
+	 * invoke install() directly instead of queuing a stillborn callback.
+	 *
+	 * Before the fix, the violations table was never created and CSP reports
+	 * were accepted (204) but never persisted.
+	 */
+	public function test_register_hooks_installs_table_directly_when_init_already_fired(): void {
+		// Mark install as already done so the no-op early return in
+		// ViolationRepository::install() kicks in and we don't touch $wpdb.
+		$this->options_store[ ViolationRepository::SCHEMA_VERSION_OPTION ] = ViolationRepository::SCHEMA_VERSION;
+
+		// Simulate being called after `init` has fired (the real bug surface).
+		Functions\when( 'did_action' )->justReturn( 1 );
+		Functions\when( 'wp_next_scheduled' )->justReturn( time() + 3600 );
+		Functions\when( 'add_filter' )->justReturn( true );
+
+		// Assert: the install closure is NOT queued on init when init has
+		// already fired (it would never run if it were).
+		$this->make_module()->register_hooks();
+
+		// Before the fix this callback was queued at priority -1 and silently
+		// dropped (init was already past -1), so the table was never created.
+		$this->assertFalse(
+			Monkey\Actions\has( 'init', null, -1 ),
+			'install() must not be queued on init:-1 when init has already fired'
+		);
+	}
+
+	public function test_register_hooks_queues_install_on_init_when_init_has_not_fired(): void {
+		$this->options_store[ ViolationRepository::SCHEMA_VERSION_OPTION ] = ViolationRepository::SCHEMA_VERSION;
+
+		Functions\when( 'did_action' )->justReturn( 0 );
+		Functions\when( 'wp_next_scheduled' )->justReturn( time() + 3600 );
+		Functions\when( 'add_filter' )->justReturn( true );
+
+		$this->make_module()->register_hooks();
+
+		// Before `init` fires, install() must be scheduled for init:-1 so the
+		// table is created before the first request touches the repository.
+		$this->assertNotFalse(
+			Monkey\Actions\has( 'init', null, -1 ),
+			'install() must be queued on init:-1 when init has not yet fired'
+		);
 	}
 }

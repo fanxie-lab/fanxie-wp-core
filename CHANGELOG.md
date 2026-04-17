@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- Security Headers: HSTS and its `includeSubDomains` flag are now **off**
+  by default with an inline warning explaining the lock-in risk. The
+  prior defaults could brick a site that wasn't fully on HTTPS.
+
 ### Changed
+- Security Headers admin polish: smooth scroll between sub-tabs, refresh
+  button on the CSP violations log, HSTS controls re-laid out so
+  `includeSubDomains` sits below `max-age`, and the duplicate page
+  title/description above each module is removed in favour of the
+  module's own icon header.
 - PHPStan 1.12 → 2.x (level 8); stricter defaults applied to `src/`.
 - Vitest 2 → 3 (frontend test harness).
 - PHPUnit 10 → 12 (annotation-free attribute-style test metadata, stricter defaults).

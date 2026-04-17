@@ -151,6 +151,29 @@ Last updated for Phase 1.1.
 
 ---
 
+### `fanxie_wp_core/security_headers/csp_emit_context`
+
+- **Type:** Filter
+- **Since:** 0.1.0-dev
+- **Fires:** Inside `HeaderEmitter::emit()` before CSP headers are written out. Lets integrators override the default context guard that skips CSP on admin, AJAX, cron, and REST requests.
+- **Params:**
+  - `bool $should_emit` — current decision (`true` = CSP will be emitted). Defaults to `false` on admin / AJAX / cron / REST, `true` otherwise.
+- **Returns:** `bool` — final decision.
+- **Rationale:** The default public-site CSP does not allow `blob:` workers or `'unsafe-inline'` scripts. The WordPress admin (block editor workers, core inline scripts) would trip that policy and flood the violations table with non-actionable noise from trusted internals. AJAX, cron, and REST responses don't render an HTML document, so CSP is meaningless there.
+- **Example:**
+
+  ```php
+  // Site has a tailored admin CSP — opt back into emission on admin.
+  add_filter( 'fanxie_wp_core/security_headers/csp_emit_context', function ( bool $should_emit ): bool {
+      if ( is_admin() ) {
+          return true;
+      }
+      return $should_emit;
+  } );
+  ```
+
+---
+
 ### `fanxie_wp_core/security_headers/rate_limit`
 
 - **Type:** Filter

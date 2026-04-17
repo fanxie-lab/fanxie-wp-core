@@ -70,7 +70,7 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 - [x] CSP with **Report-Only** default + learning mode
 - [x] REST endpoint `/wp-json/fanxie-wp-core/v1/csp-report` with schema validation + rate limiting
 - [x] CSP preset library (WooCommerce + payment gateways, GA/GTM, Meta Pixel)
-- [ ] Vue tab: per-header toggles, CSP builder, violation log viewer with filters
+- [x] Vue tab: per-header toggles, CSP builder, violation log viewer with filters
 - [x] Tests: header presence, idempotency, CSP merge logic, preset application
 
 ### 1.2 Hardening (PRD §4)  *(→ wordpress-development-expert + frontend-expert)*

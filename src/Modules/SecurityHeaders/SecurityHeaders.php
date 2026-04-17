@@ -26,9 +26,10 @@ defined( 'ABSPATH' ) || exit;
  * `CspReportController`, and admin AJAX in `AjaxController` — this class
  * wires them together.
  *
- * Note on config shape: the admin schema uses flat, underscore-joined keys
- * (e.g. `headers_hsts_enabled`) rather than nested dotted keys. This matches
- * `ModuleBase`'s flat sanitiser contract and keeps option reads simple.
+ * Config shape: nested per the PRD + Vue `types.ts` contract
+ * (`config.headers.hsts.enabled`, `config.csp.mode`, …). `ModuleBase`'s
+ * schema sanitiser walks dot-path field ids to keep the storage shape in
+ * lock-step with the TypeScript types.
  */
 final class SecurityHeaders extends ModuleBase {
 
@@ -83,58 +84,62 @@ final class SecurityHeaders extends ModuleBase {
 	}
 
 	/**
-	 * Toggle the module's enabled state.
-	 *
-	 * Kept on the module (rather than buried in the AJAX controller) so CLI
-	 * commands and programmatic callers have a single, typed entry point.
-	 *
-	 * @param bool $enabled New enabled state.
-	 */
-	public function set_enabled( bool $enabled ): void {
-		update_option( $this->enabled_option_key(), $enabled ? 'yes' : 'no' );
-	}
-
-	/**
-	 * Default configuration.
+	 * Default configuration — nested to match the Vue `SecurityHeadersConfig`
+	 * TypeScript contract (see `assets/admin/src/modules/SecurityHeaders/types.ts`).
 	 *
 	 * @return array<string, mixed>
 	 */
 	public function get_default_config(): array {
 		return [
-			// Strict-Transport-Security.
-			'headers_hsts_enabled'            => true,
-			'headers_hsts_max_age'            => 31536000,
-			'headers_hsts_include_subdomains' => true,
-
-			// X-Frame-Options.
-			'headers_xfo_enabled'             => true,
-			'headers_xfo_value'               => 'SAMEORIGIN',
-
-			// X-Content-Type-Options.
-			'headers_xcto_enabled'            => true,
-
-			// Referrer-Policy.
-			'headers_referrer_enabled'        => true,
-			'headers_referrer_value'          => 'strict-origin-when-cross-origin',
-
-			// Permissions-Policy.
-			'headers_permissions_enabled'     => true,
-			'headers_permissions_value'       => 'camera=(), microphone=(), geolocation=()',
-
-			// Cache-Control — off by default (breaks dynamic pages easily).
-			'headers_cache_control_enabled'   => false,
-			'headers_cache_control_value'     => 'public, max-age=3600',
-
-			// CSP.
-			'csp_mode'                        => CspPolicy::MODE_REPORT_ONLY,
-			'csp_learning_mode'               => true,
-			'csp_directives'                  => $this->default_csp_directives(),
-			'csp_report_uri'                  => $this->default_report_uri(),
+			'headers' => [
+				'hsts'          => [
+					// HSTS is OFF by default. Once a browser caches an HSTS
+					// header it will refuse plain HTTP for `max_age` seconds,
+					// which is a one-way ticket to outage on any domain that
+					// is not fully and permanently HTTPS. Operators must opt
+					// in deliberately. `includeSubDomains` is likewise off
+					// because it can lock out subdomains that haven't yet
+					// migrated to TLS.
+					'enabled'            => false,
+					'max_age'            => 31536000,
+					'include_subdomains' => false,
+				],
+				'xfo'           => [
+					'enabled' => true,
+					'value'   => 'SAMEORIGIN',
+				],
+				'xcto'          => [
+					'enabled' => true,
+				],
+				'referrer'      => [
+					'enabled' => true,
+					'value'   => 'strict-origin-when-cross-origin',
+				],
+				'permissions'   => [
+					'enabled' => true,
+					'value'   => 'camera=(), microphone=(), geolocation=()',
+				],
+				'cache_control' => [
+					'enabled' => false,
+					'value'   => 'public, max-age=3600',
+				],
+			],
+			'csp'     => [
+				'mode'          => CspPolicy::MODE_REPORT_ONLY,
+				'learning_mode' => true,
+				'directives'    => $this->default_csp_directives(),
+				'report_uri'    => $this->default_report_uri(),
+			],
 		];
 	}
 
 	/**
 	 * Schema consumed by the admin UI and the ModuleBase sanitiser.
+	 *
+	 * Field ids are dot-paths into the nested config declared in
+	 * `get_default_config()`. The `csp.directives` field carries a structured
+	 * `array<string, string[]>` payload, so it uses `sanitizer_callback`
+	 * instead of a scalar sanitiser identifier.
 	 *
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -142,38 +147,38 @@ final class SecurityHeaders extends ModuleBase {
 		return [
 			// HSTS.
 			[
-				'id'        => 'headers_hsts_enabled',
+				'id'        => 'headers.hsts.enabled',
 				'label'     => __( 'Enable Strict-Transport-Security', 'fanxie-wp-core' ),
 				'type'      => 'toggle',
-				'default'   => true,
+				'default'   => false,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Only emitted on HTTPS connections.', 'fanxie-wp-core' ),
+				'help'      => __( 'Off by default. Only enable on a site that is fully and permanently HTTPS — once cached, browsers will refuse plain HTTP for the configured max-age.', 'fanxie-wp-core' ),
 			],
 			[
-				'id'        => 'headers_hsts_max_age',
+				'id'        => 'headers.hsts.max_age',
 				'label'     => __( 'HSTS max-age (seconds)', 'fanxie-wp-core' ),
 				'type'      => 'int',
 				'default'   => 31536000,
 				'sanitizer' => 'absint',
 			],
 			[
-				'id'        => 'headers_hsts_include_subdomains',
+				'id'        => 'headers.hsts.include_subdomains',
 				'label'     => __( 'Include subdomains', 'fanxie-wp-core' ),
 				'type'      => 'toggle',
-				'default'   => true,
+				'default'   => false,
 				'sanitizer' => 'bool',
 			],
 
 			// X-Frame-Options.
 			[
-				'id'        => 'headers_xfo_enabled',
+				'id'        => 'headers.xfo.enabled',
 				'label'     => __( 'Enable X-Frame-Options', 'fanxie-wp-core' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
-				'id'        => 'headers_xfo_value',
+				'id'        => 'headers.xfo.value',
 				'label'     => __( 'X-Frame-Options value', 'fanxie-wp-core' ),
 				'type'      => 'select',
 				'default'   => 'SAMEORIGIN',
@@ -186,7 +191,7 @@ final class SecurityHeaders extends ModuleBase {
 
 			// X-Content-Type-Options.
 			[
-				'id'        => 'headers_xcto_enabled',
+				'id'        => 'headers.xcto.enabled',
 				'label'     => __( 'Enable X-Content-Type-Options: nosniff', 'fanxie-wp-core' ),
 				'type'      => 'toggle',
 				'default'   => true,
@@ -195,14 +200,14 @@ final class SecurityHeaders extends ModuleBase {
 
 			// Referrer-Policy.
 			[
-				'id'        => 'headers_referrer_enabled',
+				'id'        => 'headers.referrer.enabled',
 				'label'     => __( 'Enable Referrer-Policy', 'fanxie-wp-core' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
-				'id'        => 'headers_referrer_value',
+				'id'        => 'headers.referrer.value',
 				'label'     => __( 'Referrer-Policy value', 'fanxie-wp-core' ),
 				'type'      => 'select',
 				'default'   => 'strict-origin-when-cross-origin',
@@ -221,14 +226,14 @@ final class SecurityHeaders extends ModuleBase {
 
 			// Permissions-Policy.
 			[
-				'id'        => 'headers_permissions_enabled',
+				'id'        => 'headers.permissions.enabled',
 				'label'     => __( 'Enable Permissions-Policy', 'fanxie-wp-core' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
-				'id'        => 'headers_permissions_value',
+				'id'        => 'headers.permissions.value',
 				'label'     => __( 'Permissions-Policy value', 'fanxie-wp-core' ),
 				'type'      => 'text',
 				'default'   => 'camera=(), microphone=(), geolocation=()',
@@ -237,7 +242,7 @@ final class SecurityHeaders extends ModuleBase {
 
 			// Cache-Control.
 			[
-				'id'        => 'headers_cache_control_enabled',
+				'id'        => 'headers.cache_control.enabled',
 				'label'     => __( 'Enable Cache-Control (non-authenticated pages)', 'fanxie-wp-core' ),
 				'type'      => 'toggle',
 				'default'   => false,
@@ -245,7 +250,7 @@ final class SecurityHeaders extends ModuleBase {
 				'help'      => __( 'Off by default — a wrong value can break dynamic pages.', 'fanxie-wp-core' ),
 			],
 			[
-				'id'        => 'headers_cache_control_value',
+				'id'        => 'headers.cache_control.value',
 				'label'     => __( 'Cache-Control value', 'fanxie-wp-core' ),
 				'type'      => 'text',
 				'default'   => 'public, max-age=3600',
@@ -254,7 +259,7 @@ final class SecurityHeaders extends ModuleBase {
 
 			// CSP.
 			[
-				'id'        => 'csp_mode',
+				'id'        => 'csp.mode',
 				'label'     => __( 'Content-Security-Policy mode', 'fanxie-wp-core' ),
 				'type'      => 'select',
 				'default'   => CspPolicy::MODE_REPORT_ONLY,
@@ -266,7 +271,7 @@ final class SecurityHeaders extends ModuleBase {
 				],
 			],
 			[
-				'id'        => 'csp_learning_mode',
+				'id'        => 'csp.learning_mode',
 				'label'     => __( 'CSP learning mode (dual-emit)', 'fanxie-wp-core' ),
 				'type'      => 'toggle',
 				'default'   => true,
@@ -274,14 +279,14 @@ final class SecurityHeaders extends ModuleBase {
 				'help'      => __( 'Keep collecting violation reports while the policy is enforced.', 'fanxie-wp-core' ),
 			],
 			[
-				'id'        => 'csp_directives',
-				'label'     => __( 'CSP directives', 'fanxie-wp-core' ),
-				'type'      => 'textarea',
-				'default'   => $this->default_csp_directives(),
-				'sanitizer' => 'csp_directives',
+				'id'                 => 'csp.directives',
+				'label'              => __( 'CSP directives', 'fanxie-wp-core' ),
+				'type'               => 'textarea',
+				'default'            => $this->default_csp_directives(),
+				'sanitizer_callback' => [ $this, 'sanitize_directives' ],
 			],
 			[
-				'id'        => 'csp_report_uri',
+				'id'        => 'csp.report_uri',
 				'label'     => __( 'CSP report-uri', 'fanxie-wp-core' ),
 				'type'      => 'text',
 				'default'   => $this->default_report_uri(),
@@ -291,33 +296,55 @@ final class SecurityHeaders extends ModuleBase {
 	}
 
 	/**
-	 * Register hooks when the module is enabled.
+	 * Register every hook the module needs.
+	 *
+	 * With no module-level enabled gate, admin AJAX/REST plumbing and runtime
+	 * emitters register together. Runtime consumers (HeaderEmitter,
+	 * CspReportController) consult settings on each request to decide whether
+	 * to do any work.
 	 */
 	public function register_hooks(): void {
-		// Header emission.
-		$emitter = new HeaderEmitter( $this );
-		add_action( 'send_headers', [ $emitter, 'emit' ] );
-
-		// Admin AJAX.
+		// Admin AJAX surface (Vue SPA config read/write, presets, violations).
 		$ajax = new AjaxController( $this, $this->repository, $this->presets );
 		$ajax->register( $this->ajax_router );
 
-		// REST endpoint for CSP reports.
+		// Custom table install runs regardless of CSP state so historical
+		// violations remain queryable even after CSP is turned off.
+		//
+		// `register_hooks()` is invoked by the ModuleRegistry on `init:5`, so
+		// hooking install() onto an earlier `init` priority would silently
+		// no-op — WordPress never re-enters earlier priorities of an action
+		// that is already firing. We invoke install() directly when we are
+		// already inside `init`; otherwise we schedule it for the next
+		// available `init` priority so pre-init bootstraps (e.g. tests) still
+		// get the table created on time.
+		if ( function_exists( 'did_action' ) && did_action( 'init' ) > 0 ) {
+			$this->repository->install();
+		} else {
+			add_action(
+				'init',
+				function (): void {
+					$this->repository->install();
+				},
+				-1
+			);
+		}
+
+		// Header emission — HeaderEmitter short-circuits per-header based on
+		// `headers.<name>.enabled` and skips HSTS on non-HTTPS requests.
+		$emitter = new HeaderEmitter( $this );
+		add_action( 'send_headers', [ $emitter, 'emit' ] );
+
+		// REST endpoint for CSP reports. The route is always registered so
+		// cached browsers posting to a stale URL still get a clean 204; the
+		// controller itself checks `csp.mode` and drops reports when CSP is
+		// switched off (see CspReportController::handle()).
 		add_action(
 			'rest_api_init',
 			function (): void {
-				$controller = new CspReportController( $this->repository );
+				$controller = new CspReportController( $this->repository, $this );
 				$controller->register();
 			}
-		);
-
-		// Ensure the custom table exists early on every request (idempotent).
-		add_action(
-			'init',
-			function (): void {
-				$this->repository->install();
-			},
-			-1
 		);
 
 		// Daily prune via WP-Cron / Action Scheduler. Action Scheduler is
@@ -335,32 +362,17 @@ final class SecurityHeaders extends ModuleBase {
 	}
 
 	/**
-	 * Override ModuleBase's sanitiser map to handle our nested directives array.
-	 *
-	 * Every other field uses the base `apply_sanitizer()`; the `csp_directives`
-	 * field carries a nested `array<string, string[]>` shape that ModuleBase's
-	 * scalar-only sanitisers can't meaningfully handle, so we wire it here.
-	 *
-	 * @param string $sanitizer Sanitizer identifier.
-	 * @param mixed  $value     Raw value.
-	 * @return mixed
-	 */
-	protected function apply_sanitizer( string $sanitizer, mixed $value ): mixed {
-		if ( 'csp_directives' === $sanitizer ) {
-			return $this->sanitize_directives( $value );
-		}
-
-		return parent::apply_sanitizer( $sanitizer, $value );
-	}
-
-	/**
 	 * Normalise a CSP directive map — keys are directive names (lower-case,
 	 * no whitespace), values are lists of strings.
+	 *
+	 * Public so it can be wired as a `sanitizer_callback` in the schema; that
+	 * also makes it convenient to re-use from callers that hold arbitrary
+	 * directive payloads (e.g. preset application).
 	 *
 	 * @param mixed $value Raw value from the payload.
 	 * @return array<string, array<int, string>>
 	 */
-	private function sanitize_directives( mixed $value ): array {
+	public function sanitize_directives( mixed $value ): array {
 		if ( ! is_array( $value ) ) {
 			return [];
 		}

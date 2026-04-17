@@ -100,10 +100,29 @@ final class AjaxRouter {
 	/**
 	 * Dispatch an incoming AJAX request.
 	 *
+	 * Accepts either form-encoded `$_POST` bodies (for simple flat payloads)
+	 * or `application/json` bodies read from `php://input` (required for
+	 * nested payloads, which URL-encoded forms flatten into JSON strings).
+	 * JSON wins when both are present — the client uses JSON by default.
+	 *
 	 * Terminates via `wp_send_json_success` / `wp_send_json_error`.
 	 */
 	public function dispatch(): void {
-		check_ajax_referer( self::NONCE_ACTION );
+		$payload = $this->read_payload();
+
+		// `check_ajax_referer` reads `$_REQUEST['_ajax_nonce']` by default — that
+		// field is absent for JSON bodies, so verify the nonce directly from
+		// the decoded payload.
+		$nonce = isset( $payload['_ajax_nonce'] ) ? (string) $payload['_ajax_nonce'] : '';
+		if ( ! wp_verify_nonce( $nonce, self::NONCE_ACTION ) ) {
+			wp_send_json_error(
+				[
+					'code'    => 'invalid_nonce',
+					'message' => __( 'Nonce verification failed.', 'fanxie-wp-core' ),
+				],
+				403
+			);
+		}
 
 		if ( ! current_user_can( Plugin::CAPABILITY ) ) {
 			wp_send_json_error(
@@ -115,7 +134,7 @@ final class AjaxRouter {
 			);
 		}
 
-		$raw_sub_action = isset( $_POST['_action'] ) ? wp_unslash( $_POST['_action'] ) : '';
+		$raw_sub_action = $payload['_action'] ?? '';
 		$sub_action     = is_string( $raw_sub_action ) ? sanitize_key( $raw_sub_action ) : '';
 
 		if ( '' === $sub_action ) {
@@ -161,8 +180,6 @@ final class AjaxRouter {
 			);
 		}
 
-		$payload = wp_unslash( $_POST );
-
 		try {
 			$result = call_user_func( $entry['callback'], $payload );
 		} catch ( \Throwable $e ) {
@@ -203,5 +220,34 @@ final class AjaxRouter {
 			'pong' => true,
 			'time' => time(),
 		];
+	}
+
+	/**
+	 * Read the request payload, preferring a JSON body over form-encoded POST.
+	 *
+	 * When the request content type is `application/json`, the raw body is
+	 * decoded and returned as the payload. Otherwise the unslashed `$_POST`
+	 * is used — preserving the legacy form-encoded path for third-party
+	 * integrations that haven't migrated.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private function read_payload(): array {
+		$content_type = isset( $_SERVER['CONTENT_TYPE'] ) ? (string) $_SERVER['CONTENT_TYPE'] : '';
+		$is_json      = false !== stripos( $content_type, 'application/json' );
+
+		if ( $is_json ) {
+			$raw = file_get_contents( 'php://input' );
+			if ( is_string( $raw ) && '' !== $raw ) {
+				$decoded = json_decode( $raw, true );
+				if ( is_array( $decoded ) ) {
+					return $decoded;
+				}
+			}
+			return [];
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce is verified downstream in dispatch().
+		return wp_unslash( $_POST );
 	}
 }

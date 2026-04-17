@@ -33,7 +33,6 @@ function makeConfigResponse(
   overrides: Partial<ConfigResponse> = {},
 ): ConfigResponse {
   return {
-    enabled: true,
     settings: makeConfig(),
     status: {
       is_https: true,
@@ -41,6 +40,10 @@ function makeConfigResponse(
       csp_detected: false,
       report_endpoint:
         'https://example.test/wp-json/fanxie-wp-core/v1/csp-report',
+      active: true,
+      active_header_count: 5,
+      csp_active: true,
+      summary: '5 headers · CSP Report-Only',
     },
     ...overrides,
   };
@@ -64,7 +67,7 @@ describe('useSecurityHeadersStore', () => {
   });
 
   describe('load()', () => {
-    it('populates config, status, enabled and pristine snapshot on success', async () => {
+    it('populates config, status and pristine snapshot on success', async () => {
       const configResponse = makeConfigResponse();
       mockAjaxResponse('security-headers/get-config', configResponse);
       mockAjaxResponse(
@@ -77,7 +80,6 @@ describe('useSecurityHeadersStore', () => {
 
       expect(store.config).toEqual(configResponse.settings);
       expect(store.status).toEqual(configResponse.status);
-      expect(store.enabled).toBe(true);
       expect(store.loading.config).toBe(false);
       expect(store.isDirty).toBe(false);
       expect(store.error).toBeNull();

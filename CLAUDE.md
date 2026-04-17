@@ -43,7 +43,7 @@ The user has set explicit agent ownership. When the scope is clear, delegate; do
   - `src/Modules/SecurityHeaders/` → `FanxieLab\WPCore\Modules\SecurityHeaders\`
   - `tests/` → `FanxieLab\WPCore\Tests\`
 - Composer dependencies are committed to `vendor/` on tagged releases (wp.org requirement); runtime deps must be GPL-compatible.
-- **Module contract:** every module extends `FanxieLab\WPCore\Modules\ModuleBase` and implements `id()`, `name()`, `is_enabled()`, `register_hooks()`, `get_settings_fields()`, `get_default_config()`. Disabled modules must cost zero at runtime — no hooks registered, no classes loaded beyond the module descriptor.
+- **Module contract:** every module extends `FanxieLab\WPCore\Modules\ModuleBase` and implements `id()`, `name()`, `register_hooks()`, `get_settings_fields()`, `get_default_config()`. There is no module-level `is_enabled()` flag — each module exposes fine-grained toggles through its own settings, and runtime emitters consult those settings to decide whether to do any work.
 - **No global state.** Use DI through the core `Plugin` container. No singletons except the plugin bootstrap.
 - **Options:** one prefix — `fanxie_wp_core_*`. One namespaced option per module (`fanxie_wp_core_<module_id>_settings`) to keep `wp_options` tidy.
 - **Custom tables:** prefix `{$wpdb->prefix}fanxie_core_` (e.g., `wp_fanxie_core_csp_violations`, `wp_fanxie_core_activity_log`). Install via `dbDelta`, version-tracked.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, RefreshCw, Trash2 } from 'lucide-vue-next';
 import { Select, TextField } from '@/components';
 import type { SelectOption } from '@/components';
 import { useSecurityHeadersStore } from '../stores/securityHeaders';
@@ -91,6 +91,11 @@ async function purgeAll(): Promise<void> {
   confirmPurge.value = false;
   await store.purgeViolations({ all: true });
 }
+
+/** Reload the current page of violations with the active filters intact. */
+async function refresh(): Promise<void> {
+  await store.loadViolations(currentPage.value);
+}
 </script>
 
 <template>
@@ -109,6 +114,21 @@ async function purgeAll(): Promise<void> {
         </p>
       </div>
       <div v-if="!confirmPurge" class="fx-violations__header-actions">
+        <button
+          type="button"
+          class="fx-violations__button"
+          :disabled="store.loading.violations"
+          :aria-busy="store.loading.violations"
+          @click="refresh"
+        >
+          <RefreshCw
+            :size="14"
+            aria-hidden="true"
+            focusable="false"
+            :class="{ 'fx-violations__icon--spin': store.loading.violations }"
+          />
+          Refresh
+        </button>
         <button
           type="button"
           class="fx-violations__button fx-violations__button--danger"
@@ -464,6 +484,22 @@ async function purgeAll(): Promise<void> {
 .fx-violations__pagination-status {
   color: var(--fx-color-text-muted);
   font-size: var(--fx-font-size-sm);
+}
+
+.fx-violations__icon--spin {
+  animation: fx-violations-spin 0.9s linear infinite;
+}
+
+@keyframes fx-violations-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-violations__icon--spin {
+    animation: none;
+  }
 }
 
 @media (max-width: 900px) {

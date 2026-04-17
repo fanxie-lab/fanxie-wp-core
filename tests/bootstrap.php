@@ -85,6 +85,12 @@ if ( '' !== $fanxie_tests_dir && file_exists( $fanxie_tests_dir . '/includes/fun
 	if ( class_exists( \Brain\Monkey::class ) ) {
 		\Brain\Monkey\setUp();
 	}
+
+	// Minimal `WP_Error` shim — several handlers return `WP_Error` on failure;
+	// the real class ships with WordPress and is not loaded in unit mode.
+	if ( ! class_exists( \WP_Error::class, false ) ) {
+		require_once __DIR__ . '/stubs/wp-error.php';
+	}
 }
 
 unset( $fanxie_tests_dir );

@@ -162,7 +162,8 @@ function onChange(event: Event): void {
   border-color: var(--fx-color-border-strong);
 }
 
-.fx-select__control:focus {
+.fx-select__control:focus,
+.fx-select__control:focus-visible {
   outline: none;
   border-color: var(--fx-color-primary-strong);
   box-shadow: 0 0 0 3px var(--fx-color-primary-soft);

@@ -56,26 +56,33 @@ const hstsMaxAge = computed<string>({
           Instructs browsers to use HTTPS only for this domain.
         </p>
       </header>
+      <div class="fx-headers-view__callout fx-headers-view__callout--warning">
+        <strong>Heads up — HSTS can break a site.</strong>
+        Once a browser has cached this header, it will refuse plain HTTP for
+        the entire <code>max-age</code> window (up to a year), even if HTTPS
+        later breaks. Only enable on a domain that is fully and permanently
+        on HTTPS with a valid certificate. The header is also only emitted
+        over HTTPS — it will not appear on
+        <code>http://localhost</code> or any plain-HTTP request.
+      </div>
       <Toggle
         v-model="config.headers.hsts.enabled"
         label="Enable HSTS"
         description="Sends Strict-Transport-Security on every HTTPS response."
       />
-      <div class="fx-headers-view__row">
-        <TextField
-          v-model="hstsMaxAge"
-          type="number"
-          label="max-age (seconds)"
-          help="Recommended minimum: 31536000 (1 year)."
-          :disabled="!config.headers.hsts.enabled"
-        />
-        <Toggle
-          v-model="config.headers.hsts.include_subdomains"
-          label="includeSubDomains"
-          description="Apply HSTS to all sub-domains."
-          :disabled="!config.headers.hsts.enabled"
-        />
-      </div>
+      <TextField
+        v-model="hstsMaxAge"
+        type="number"
+        label="max-age (seconds)"
+        help="Recommended minimum: 31536000 (1 year)."
+        :disabled="!config.headers.hsts.enabled"
+      />
+      <Toggle
+        v-model="config.headers.hsts.include_subdomains"
+        label="includeSubDomains"
+        description="Apply HSTS to all sub-domains. Off by default — turning this on can lock out subdomains that are not yet on HTTPS."
+        :disabled="!config.headers.hsts.enabled"
+      />
     </section>
 
     <section class="fx-headers-view__section" aria-labelledby="fx-headers-xfo">
@@ -245,6 +252,34 @@ const hstsMaxAge = computed<string>({
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--fx-space-4);
   align-items: end;
+}
+
+.fx-headers-view__callout {
+  margin: 0;
+  padding: var(--fx-space-3) var(--fx-space-4);
+  border-radius: var(--fx-radius-md);
+  font-size: var(--fx-font-size-sm);
+  line-height: var(--fx-line-height-snug);
+}
+
+.fx-headers-view__callout strong {
+  display: block;
+  margin-bottom: var(--fx-space-1);
+  font-weight: var(--fx-font-weight-semibold);
+}
+
+.fx-headers-view__callout code {
+  font-family: var(--fx-font-mono);
+  font-size: 0.9em;
+  padding: 0 var(--fx-space-1);
+  border-radius: var(--fx-radius-sm);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.fx-headers-view__callout--warning {
+  background: var(--fx-color-warn-bg);
+  border: 1px solid var(--fx-color-warn);
+  color: var(--fx-color-warn);
 }
 
 .fx-headers-view__loading {

@@ -41,21 +41,12 @@ final class FanxieTestModule extends ModuleBase {
 	private string $module_id;
 
 	/**
-	 * Whether is_enabled() should return true.
-	 *
-	 * @var bool
-	 */
-	private bool $enabled;
-
-	/**
 	 * Constructor.
 	 *
-	 * @param string $id      Module id.
-	 * @param bool   $enabled Whether the module reports as enabled.
+	 * @param string $id Module id.
 	 */
-	public function __construct( string $id, bool $enabled = false ) {
+	public function __construct( string $id ) {
 		$this->module_id = $id;
-		$this->enabled   = $enabled;
 	}
 
 	public function id(): string {
@@ -64,10 +55,6 @@ final class FanxieTestModule extends ModuleBase {
 
 	public function name(): string {
 		return 'Test Module (' . $this->module_id . ')';
-	}
-
-	public function is_enabled(): bool {
-		return $this->enabled;
 	}
 
 	public function register_hooks(): void {
@@ -134,44 +121,29 @@ final class ModuleRegistryTest extends TestCase {
 		$this->assertSame( $beta, $all['beta'] );
 	}
 
-	public function test_enabled_filters_to_only_enabled_modules(): void {
+	public function test_boot_calls_register_hooks_on_every_registered_module(): void {
 		$registry = new ModuleRegistry();
-		$on       = new FanxieTestModule( 'on', true );
-		$off      = new FanxieTestModule( 'off', false );
+		$alpha    = new FanxieTestModule( 'alpha' );
+		$beta     = new FanxieTestModule( 'beta' );
 
-		$registry->register( $on );
-		$registry->register( $off );
-
-		$enabled = $registry->enabled();
-
-		$this->assertCount( 1, $enabled );
-		$this->assertArrayHasKey( 'on', $enabled );
-		$this->assertArrayNotHasKey( 'off', $enabled );
-	}
-
-	public function test_boot_calls_register_hooks_only_on_enabled_modules(): void {
-		$registry = new ModuleRegistry();
-		$on       = new FanxieTestModule( 'on', true );
-		$off      = new FanxieTestModule( 'off', false );
-
-		$registry->register( $on );
-		$registry->register( $off );
+		$registry->register( $alpha );
+		$registry->register( $beta );
 
 		$registry->boot();
 
-		$this->assertSame( 1, $on->register_hooks_calls, 'Enabled module should have register_hooks() called once.' );
-		$this->assertSame( 0, $off->register_hooks_calls, 'Disabled module must not have register_hooks() called.' );
+		$this->assertSame( 1, $alpha->register_hooks_calls, 'Every registered module should have register_hooks() called once.' );
+		$this->assertSame( 1, $beta->register_hooks_calls, 'Every registered module should have register_hooks() called once.' );
 	}
 
-	public function test_boot_is_idempotent_per_call_for_enabled_modules(): void {
+	public function test_boot_reinvokes_register_hooks_on_subsequent_calls(): void {
 		$registry = new ModuleRegistry();
-		$module   = new FanxieTestModule( 'alpha', true );
+		$module   = new FanxieTestModule( 'alpha' );
 
 		$registry->register( $module );
 		$registry->boot();
 		$registry->boot();
 
-		$this->assertSame( 2, $module->register_hooks_calls, 'Each boot() call should re-invoke register_hooks() on enabled modules.' );
+		$this->assertSame( 2, $module->register_hooks_calls, 'Each boot() call should re-invoke register_hooks() on every module.' );
 	}
 
 	public function test_register_overwrites_existing_module_with_same_id(): void {

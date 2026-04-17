@@ -74,14 +74,13 @@ export function mockAjaxResponse(
 
   server.use(
     http.post(TEST_AJAX_URL, async ({ request }) => {
-      // Clone to keep the original body consumable by other handlers if they
-      // were to run — `formData()` is a one-shot read on the original.
+      // Client sends JSON bodies containing { _action, _ajax_nonce, ...payload }.
       const cloned = request.clone();
       let requestedSubAction: string | null = null;
       try {
-        const form = await cloned.formData();
-        const raw = form.get('_action');
-        requestedSubAction = typeof raw === 'string' ? raw : null;
+        const body = (await cloned.json()) as { _action?: unknown };
+        requestedSubAction =
+          typeof body._action === 'string' ? body._action : null;
       } catch {
         requestedSubAction = null;
       }

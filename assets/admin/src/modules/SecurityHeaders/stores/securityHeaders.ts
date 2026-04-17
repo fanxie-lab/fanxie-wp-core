@@ -37,7 +37,6 @@ interface ViolationsState {
 interface SecurityHeadersState {
   config: SecurityHeadersConfig | null;
   status: SecurityHeadersStatus | null;
-  enabled: boolean;
   violations: ViolationsState;
   loading: LoadingFlags;
   /** Human-readable error message from the last failed call. */
@@ -73,7 +72,6 @@ export const useSecurityHeadersStore = defineStore('security-headers', {
   state: (): SecurityHeadersState => ({
     config: null,
     status: null,
-    enabled: false,
     violations: {
       rows: [],
       total: 0,
@@ -109,7 +107,6 @@ export const useSecurityHeadersStore = defineStore('security-headers', {
         this.config = data.settings;
         this.pristine = cloneConfig(data.settings);
         this.status = data.status;
-        this.enabled = data.enabled;
       } catch (err) {
         this.error = extractErrorMessage(err);
         this.pushToast('error', this.error);
@@ -130,7 +127,6 @@ export const useSecurityHeadersStore = defineStore('security-headers', {
       this.error = null;
       try {
         const payload = {
-          enabled: this.enabled,
           settings: this.config,
         };
         const data = await ajax<ConfigResponse>(
@@ -140,7 +136,6 @@ export const useSecurityHeadersStore = defineStore('security-headers', {
         this.config = data.settings;
         this.pristine = cloneConfig(data.settings);
         this.status = data.status;
-        this.enabled = data.enabled;
         this.pushToast('success', 'Security headers saved.');
       } catch (err) {
         this.error = extractErrorMessage(err);
@@ -169,7 +164,6 @@ export const useSecurityHeadersStore = defineStore('security-headers', {
         this.config = data.settings;
         this.pristine = cloneConfig(data.settings);
         this.status = data.status;
-        this.enabled = data.enabled;
         this.pushToast('success', 'Preset applied.');
       } catch (err) {
         this.error = extractErrorMessage(err);

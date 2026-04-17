@@ -422,9 +422,8 @@ final class SettingsPage {
 
 		foreach ( $this->registry->all() as $module ) {
 			$descriptors[] = [
-				'id'      => $module->id(),
-				'name'    => $module->name(),
-				'enabled' => $module->is_enabled(),
+				'id'   => $module->id(),
+				'name' => $module->name(),
 			];
 		}
 

@@ -1,38 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useAppStore } from '@/stores/app';
-import { defaultActiveModuleId } from '@/config/modules';
 import { mockAjaxResponse } from '../../../tests/setup';
 
 describe('useAppStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
-  });
-
-  it('hydrates activeModuleId from the module registry default', () => {
-    const store = useAppStore();
-
-    expect(store.activeModuleId).toBe(defaultActiveModuleId);
-  });
-
-  it('setActiveModule updates the active module id', () => {
-    const store = useAppStore();
-
-    store.setActiveModule('hardening');
-
-    expect(store.activeModuleId).toBe('hardening');
-  });
-
-  it('setActiveModule is a no-op when the id is unchanged', () => {
-    const store = useAppStore();
-    store.setActiveModule('hardening');
-    const before = store.activeModuleId;
-
-    store.setActiveModule('hardening');
-
-    // Hard to observe a skipped write directly in Pinia without instrumentation,
-    // but we can at least confirm the state stays coherent.
-    expect(store.activeModuleId).toBe(before);
   });
 
   describe('doPing', () => {

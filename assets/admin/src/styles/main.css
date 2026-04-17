@@ -246,9 +246,43 @@
   font-family: var(--fx-font-mono);
 }
 
-/* Accessible focus ring applied consistently across the SPA. */
-#fanxie-wp-core-admin :focus-visible {
-  outline: 2px solid var(--fx-color-focus-ring);
+/* ---------------- Links ---------------------------------------------
+ * Nav links (sidebar items, sub-tabs, eventual detail links) should
+ * never carry the browser's default underline — they're chrome, not
+ * body copy. A future `.fx-link` utility can opt in to underlines for
+ * inline body-copy links; no consumer uses it yet.
+ * ------------------------------------------------------------------- */
+:where(#fanxie-wp-core-admin a) {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ---------------- Focus ring -----------------------------------------
+ * Kill the UA blue focus ring on nav elements (RouterLinks render as
+ * <a>). Replace with the brand-mint :focus-visible ring so keyboard
+ * users still get a clear indicator — mouse click shows nothing.
+ *
+ * We intentionally use ID-scoped selectors + !important here because
+ * the previous :where() approach (specificity 0) was losing to WP
+ * admin global rules that leak into our mount node (e.g. .wrap a rules
+ * from wp-admin.css). The !important is scoped to these two pseudos
+ * only — component rules can still override by adding !important too
+ * if they genuinely need a different focus treatment.
+ * ------------------------------------------------------------------- */
+#fanxie-wp-core-admin a:focus,
+#fanxie-wp-core-admin a:active,
+#fanxie-wp-core-admin button:focus,
+#fanxie-wp-core-admin [role='tab']:focus,
+#fanxie-wp-core-admin [role='switch']:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+#fanxie-wp-core-admin a:focus-visible,
+#fanxie-wp-core-admin button:focus-visible,
+#fanxie-wp-core-admin [role='tab']:focus-visible,
+#fanxie-wp-core-admin [role='switch']:focus-visible {
+  outline: 2px solid var(--fx-color-focus-ring) !important;
   outline-offset: 2px;
   border-radius: var(--fx-radius-sm);
 }

@@ -85,37 +85,20 @@ function stableStringify(value: unknown): string {
   return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(rec[k])}`).join(',')}}`;
 }
 
-function buildBody(
+function buildJsonBody(
   subAction: string,
   payload: Record<string, unknown> | undefined,
   nonce: string,
-): URLSearchParams {
-  const body = new URLSearchParams();
-  body.set('action', WP_ACTION);
-  body.set('_action', subAction);
-  body.set('_ajax_nonce', nonce);
-
-  if (payload) {
-    for (const [key, value] of Object.entries(payload)) {
-      if (value === undefined) continue;
-      if (value === null) {
-        body.set(key, '');
-        continue;
-      }
-      if (typeof value === 'string') {
-        body.set(key, value);
-        continue;
-      }
-      if (typeof value === 'number' || typeof value === 'boolean') {
-        body.set(key, String(value));
-        continue;
-      }
-      // Objects, arrays, etc. — stringify. The PHP side should expect JSON
-      // for fields where the schema calls for structured data.
-      body.set(key, JSON.stringify(value));
-    }
-  }
-  return body;
+): string {
+  // WP's admin-ajax routes on the `action` query-string param; `_action` and
+  // `_ajax_nonce` travel inside the JSON body so nested payloads survive the
+  // wire intact (form-urlencoded flattens object values to JSON strings).
+  const envelope: Record<string, unknown> = {
+    _action: subAction,
+    _ajax_nonce: nonce,
+    ...(payload ?? {}),
+  };
+  return JSON.stringify(envelope);
 }
 
 /**
@@ -149,17 +132,17 @@ export async function ajax<TResponse>(
   }
 
   const promise = (async (): Promise<TResponse> => {
-    const body = buildBody(subAction, payload, bootstrap.nonce);
+    const body = buildJsonBody(subAction, payload, bootstrap.nonce);
+    const url = new URL(bootstrap.ajaxUrl, window.location.origin);
+    url.searchParams.set('action', WP_ACTION);
 
     let response: Response;
     try {
-      response = await fetch(bootstrap.ajaxUrl, {
+      response = await fetch(url.toString(), {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
-          // URLSearchParams implies application/x-www-form-urlencoded; set
-          // explicitly for clarity and to play well with proxies.
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'Content-Type': 'application/json',
           Accept: 'application/json',
         },
         body,

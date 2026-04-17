@@ -35,8 +35,11 @@ function seedStore(): ReturnType<typeof useSecurityHeadersStore> {
     hsts_detected: true,
     csp_detected: false,
     report_endpoint: 'https://example.test/csp-report',
+    active: true,
+    active_header_count: 4,
+    csp_active: true,
+    summary: '4 headers · CSP Report-Only',
   };
-  store.enabled = true;
   return store;
 }
 

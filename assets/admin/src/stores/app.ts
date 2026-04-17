@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { ajax } from '@/api/ajaxClient';
-import { defaultActiveModuleId } from '@/config/modules';
 import type { FanxieBootstrap } from '@/types/global';
 
 export interface PingResponse {
@@ -16,8 +15,6 @@ export interface PingState {
 
 interface AppState extends FanxieBootstrap {
   ping: PingState;
-  /** The currently-visible module in the sidebar-driven SPA. */
-  activeModuleId: string;
 }
 
 // Deep-ish freeze of the initial bootstrap snapshot at module load time.
@@ -60,7 +57,6 @@ export const useAppStore = defineStore('app', {
       lastPingError: null,
       inFlight: false,
     },
-    activeModuleId: defaultActiveModuleId,
   }),
 
   getters: {
@@ -82,16 +78,6 @@ export const useAppStore = defineStore('app', {
   },
 
   actions: {
-    /**
-     * Change the active module. No-op if the id is unchanged.
-     * Validation of the id against the module registry is handled by the caller
-     * (the sidebar only emits known ids), keeping this setter cheap.
-     */
-    setActiveModule(id: string): void {
-      if (this.activeModuleId === id) return;
-      this.activeModuleId = id;
-    },
-
     /**
      * Proof-of-life call against the PHP AjaxRouter's `ping` sub-action.
      * Updates `ping` state but never throws.

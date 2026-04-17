@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace FanxieLab\WPCore\Modules\SecurityHeaders\Csp;
 
+use FanxieLab\WPCore\Modules\SecurityHeaders\SecurityHeaders;
 use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRecord;
 use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
 use WP_REST_Request;
@@ -26,8 +27,13 @@ defined( 'ABSPATH' ) || exit;
  * currently in the wild (`application/csp-report` and the newer
  * `application/reports+json`).
  *
+ * The REST route is registered unconditionally so stale browser caches posting
+ * to a retired URL still get a clean response. When `csp.mode === 'off'` the
+ * handler silently accepts-and-drops (204 without persisting) so violation
+ * storage doesn't accumulate junk while CSP is disabled.
+ *
  * Responses:
- *   - 204 No Content — report accepted and stored.
+ *   - 204 No Content — report accepted (stored when CSP is on; dropped when off).
  *   - 400 Bad Request — payload missing or malformed.
  *   - 429 Too Many Requests — rate limit exceeded (no body written).
  */
@@ -53,9 +59,16 @@ final class CspReportController {
 	/**
 	 * Constructor.
 	 *
-	 * @param ViolationRepository $repository Persistence layer.
+	 * @param ViolationRepository  $repository Persistence layer.
+	 * @param SecurityHeaders|null $module     Optional module reference used to
+	 *                                         read `csp.mode` at request time.
+	 *                                         When null (e.g. tests), mode is
+	 *                                         treated as active.
 	 */
-	public function __construct( private readonly ViolationRepository $repository ) {}
+	public function __construct(
+		private readonly ViolationRepository $repository,
+		private readonly ?SecurityHeaders $module = null,
+	) {}
 
 	/**
 	 * Register the route on `rest_api_init`.
@@ -95,6 +108,21 @@ final class CspReportController {
 		}
 
 		set_transient( $key, $hits + 1, $window );
+
+		// --- CSP off? Accept-and-drop ------------------------------------------
+		// The route stays registered unconditionally so stale browser caches
+		// don't see a 404. When the operator has switched CSP off, skip
+		// persistence so reports (which the browser may keep sending for a
+		// while) don't pollute the violation log.
+		if ( null !== $this->module ) {
+			$config = $this->module->get_config();
+			$mode   = isset( $config['csp']['mode'] ) && is_string( $config['csp']['mode'] )
+				? $config['csp']['mode']
+				: '';
+			if ( CspPolicy::MODE_OFF === $mode ) {
+				return new WP_REST_Response( null, 204 );
+			}
+		}
 
 		// --- Parse the body ------------------------------------------------------
 		$raw  = (string) $request->get_body();
