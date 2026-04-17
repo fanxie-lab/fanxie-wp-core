@@ -102,10 +102,32 @@ assets/admin/
     └── types/global.d.ts   # window.fanxieWPCore contract
 ```
 
+## Linting & formatting
+
+Two tools, one gate:
+
+- **ESLint 9 (flat config)** — `@eslint/js` + `typescript-eslint` strict + stylistic, `eslint-plugin-vue` `flat/recommended`, `@vue/eslint-config-typescript`, with `eslint-config-prettier` layered last to hand formatting to Prettier.
+- **Prettier 3** — owns all whitespace / quote / trailing-comma decisions.
+
+```bash
+cd assets/admin
+npm run lint          # ESLint, report only
+npm run lint:fix      # ESLint with --fix
+npm run format        # Prettier, write
+npm run format:check  # Prettier, verify only (CI path)
+npm run check         # format:check → lint → type-check, fail fast
+```
+
+CI (`.github/workflows/ci.yml`) runs `cd assets/admin && npm run check` on every PR — any of the three stages failing blocks merge.
+
+Editor integration: a `.editorconfig` ships alongside `prettier.config.js` so editors pick up the same whitespace rules without project-specific plugins. For in-editor lint hints, install the ESLint + Prettier extensions for your editor and point them at `assets/admin/` as the working directory.
+
+> **Note on `@wordpress/eslint-plugin`.** The current release ships an eslintrc-shaped config that does not integrate cleanly with ESLint 9 flat config + Vue 3. We have deferred layering it in to avoid legacy-compat shims; the rule intent (no-console warn, prefer-const, no-floating-promises, etc.) is replicated explicitly in `eslint.config.js`. Revisit when `@wordpress/eslint-plugin` ships a flat-config entry.
+
 ## Not yet set up (tracked on the Phase 0 checklist)
 
 - **Phase 0.3** — Vitest, Vue Test Utils, MSW.
-- **Phase 0.4** — ESLint, Prettier, Stylelint.
+- **Phase 0.4** — Stylelint (ESLint + Prettier are live).
 
 ## Conventions
 

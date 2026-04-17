@@ -1,0 +1,34 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 8
+
+    # Target PHP runtime — matches composer.json `require.php` (>=8.1).
+    phpVersion: 80100
+
+    # Paths analysed. Composer bootstrap file + uninstall handler + everything
+    # under `src/`. Tests will join the list in Phase 0.3 once the test harness
+    # lands.
+    paths:
+        - src
+        - fanxie-wp-core.php
+        - uninstall.php
+
+    # Paths PHPStan should ignore even if one of the paths above would otherwise
+    # recurse into them.
+    excludePaths:
+        - vendor
+        - node_modules
+        - assets
+        - build
+        - dist
+        - languages
+        - .phpunit.cache
+
+    # Disallow weak typing shortcuts we explicitly do not want in this codebase.
+    treatPhpDocTypesAsCertain: false
+
+    # Do not fail on the rare places where the WP ecosystem legitimately needs
+    # `@phpstan-ignore-*` annotations. Keep the list tight — no broad excludes.
+    reportUnmatchedIgnoredErrors: true

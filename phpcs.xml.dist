@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<ruleset name="Fanxie WP Core">
+	<description>PHP_CodeSniffer configuration for Fanxie WP Core (WordPress-Extra + WP-Docs + PHPCompatibilityWP @ PHP 8.1+).</description>
+
+	<!-- CLI defaults — bake these in so contributors and CI see the same output. -->
+	<arg value="sp"/>
+	<arg name="colors"/>
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="."/>
+	<arg name="parallel" value="8"/>
+	<arg name="cache" value=".phpcs.cache"/>
+
+	<!-- Files to scan. -->
+	<file>.</file>
+
+	<!-- Exclusions: do not scan vendored code, the JS workspace, or build output. -->
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/assets/admin/*</exclude-pattern>
+	<exclude-pattern>*/languages/*</exclude-pattern>
+	<exclude-pattern>*/.phpunit.cache/*</exclude-pattern>
+	<exclude-pattern>*/build/*</exclude-pattern>
+	<exclude-pattern>*/dist/*</exclude-pattern>
+
+	<!-- Rulesets. -->
+	<rule ref="WordPress-Extra">
+		<!--
+			Project convention (CLAUDE.md §3.1): short array syntax is required.
+			The project targets PHP 8.1+ and uses modern language features.
+		-->
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+
+		<!--
+			Project convention (CLAUDE.md §3.1): custom hooks use slash
+			namespacing, e.g. `fanxie_wp_core/module/registered`. WordPress
+			core hooks themselves use this pattern in places; WPCS's default
+			preference for underscores-only conflicts with the project's
+			documented architecture.
+		-->
+		<exclude name="WordPress.NamingConventions.ValidHookName.UseUnderscores"/>
+	</rule>
+	<rule ref="WordPress-Docs"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<!-- PHPCompatibility: target PHP 8.1 and up. -->
+	<config name="testVersion" value="8.1-"/>
+
+	<!-- Minimum supported WordPress version (mirrors `Requires at least` header). -->
+	<config name="minimum_supported_wp_version" value="6.4"/>
+
+	<!-- Enforce our text domain on every translation call. -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="fanxie-wp-core"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!--
+		Enforce our prefixes on globals, functions, classes, and constants.
+		Hook-name prefixing (slash-namespaced, e.g. `fanxie_wp_core/foo/bar`)
+		is handled by `WordPress.NamingConventions.ValidHookName` above.
+	-->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="fanxie_wp_core"/>
+				<element value="FANXIE_WP_CORE"/>
+				<element value="FanxieLab\WPCore"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!--
+		PSR-4 friction: WPCS's file-name sniffs expect `class-foo.php`, while
+		Composer-autoloaded classes use `Foo.php`. Scope the exclusion to
+		`src/` only so root bootstrap files still obey the rule.
+	-->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>*/src/*</exclude-pattern>
+	</rule>
+
+	<!--
+		Test harness: Phase 0.3 will add PHPUnit classes (camelCase methods,
+		PSR-4 filenames). Relax the matching sniffs for `tests/` up-front so
+		Phase 0.3 drops in cleanly.
+	-->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.NamingConventions.ValidFunctionName">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+
+</ruleset>

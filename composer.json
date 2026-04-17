@@ -43,21 +43,20 @@
         "optimize-autoloader": true
     },
     "scripts": {
-        "phpcs": "phpcs --standard=phpcs.xml.dist",
-        "phpcbf": "phpcbf --standard=phpcs.xml.dist",
-        "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G",
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf",
+        "phpstan": "phpstan analyse --memory-limit=1G",
         "test": "phpunit",
         "check": [
             "@phpcs",
-            "@phpstan",
-            "@test"
+            "@phpstan"
         ]
     },
     "scripts-descriptions": {
-        "phpcs": "Run WordPress Coding Standards checks.",
+        "phpcs": "Run WordPress Coding Standards checks (phpcs.xml.dist).",
         "phpcbf": "Auto-fix fixable WordPress Coding Standards violations.",
-        "phpstan": "Run PHPStan static analysis (level 8).",
-        "test": "Run the PHPUnit test suite.",
-        "check": "Run the full quality gate: PHPCS, PHPStan, PHPUnit."
+        "phpstan": "Run PHPStan static analysis (level 8, phpstan.neon.dist).",
+        "test": "Run the PHPUnit test suite (wired in Phase 0.3).",
+        "check": "Run the quality gate: PHPCS + PHPStan. Tests run via `composer test`."
     }
 }

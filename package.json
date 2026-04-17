@@ -29,7 +29,10 @@
 		"plugin:check": "wp-env run cli wp plugin check fanxie-wp-core --format=table",
 		"plugin:check:json": "wp-env run cli wp plugin check fanxie-wp-core --format=json",
 		"db:cli": "wp-env run cli wp db cli",
-		"db:reset": "wp-env run cli wp db reset --yes"
+		"db:reset": "wp-env run cli wp db reset --yes",
+		"check:php": "composer run check",
+		"check:js": "cd assets/admin && npm run check",
+		"check": "npm run check:php && npm run check:js"
 	},
 	"devDependencies": {
 		"@wordpress/env": "^10.0.0"

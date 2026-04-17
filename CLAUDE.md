@@ -14,6 +14,7 @@ Progress lives in [`_PRD/checklist-fanxie-wp-core.md`](./_PRD/checklist-fanxie-w
 - **Author:** Fanxie Lab
 - **Destination:** WordPress.org public release (day-one wp.org compliance)
 - **Quality bar:** Plugin Check passes with **100%** (zero errors, zero warnings) before any release is cut.
+  - *Scaffold-phase concession:* during Phase 0–6 the CI job `plugin-check` (see `.github/workflows/ci.yml`) is configured with `wp-plugin-check-ignore-warnings: true` so expected scaffolding-era warnings (missing banner/icon, placeholder screenshots, `Stable tag: 0.1.0-dev`) do not block PRs. Phase 7 (wp.org submission) flips this flag to `false`; warnings become hard-fail. Expected warnings are catalogued in [`docs/plugin-check-notes.md`](./docs/plugin-check-notes.md).
 
 ---
 
