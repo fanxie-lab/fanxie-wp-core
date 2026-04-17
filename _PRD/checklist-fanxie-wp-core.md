@@ -53,9 +53,9 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 - [x] Plugin Check passing at **100%** on an empty skeleton (baseline) — expected scaffold-phase warnings catalogued in [`docs/plugin-check-notes.md`](../docs/plugin-check-notes.md); CI currently ignores warnings and fails on errors only (Phase 7 flips this to 100% strict)
 
 ### 0.5 i18n & docs
-- [ ] `languages/fanxie-wp-core.pot` generated
-- [ ] `CHANGELOG.md` initialised
-- [ ] README dev section: local setup, test commands, agent routing pointer
+- [x] `languages/fanxie-wp-core.pot` generated
+- [x] `CHANGELOG.md` initialised
+- [x] README dev section: local setup, test commands, agent routing pointer
 
 ---
 

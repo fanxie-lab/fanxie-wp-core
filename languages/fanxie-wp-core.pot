@@ -1,0 +1,98 @@
+# Copyright (C) 2026 Fanxie Lab
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Fanxie WP Core 0.1.0-dev\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/fanxie-wp-core\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-04-17T05:52:22+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: fanxie-wp-core\n"
+
+#. Plugin Name of the plugin
+#: fanxie-wp-core.php
+#: src/Admin/SettingsPage.php:111
+#: src/Admin/SettingsPage.php:112
+#: src/Admin/SettingsPage.php:165
+msgid "Fanxie WP Core"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: fanxie-wp-core.php
+msgid "https://fanxielab.com/plugins/fanxie-wp-core"
+msgstr ""
+
+#. Description of the plugin
+#: fanxie-wp-core.php
+msgid "Modular WordPress security, hardening, maintenance, and performance toolkit by Fanxie Lab."
+msgstr ""
+
+#. Author of the plugin
+#: fanxie-wp-core.php
+msgid "Fanxie Lab"
+msgstr ""
+
+#. Author URI of the plugin
+#: fanxie-wp-core.php
+msgid "https://fanxielab.com"
+msgstr ""
+
+#. translators: 1: required PHP version, 2: current PHP version
+#: fanxie-wp-core.php:54
+#, php-format
+msgid "Fanxie WP Core requires PHP %1$s or higher. You are running PHP %2$s. The plugin is inactive until PHP is upgraded."
+msgstr ""
+
+#. translators: 1: required WordPress version, 2: current WordPress version
+#: fanxie-wp-core.php:75
+#, php-format
+msgid "Fanxie WP Core requires WordPress %1$s or higher. You are running WordPress %2$s. The plugin is inactive until WordPress is upgraded."
+msgstr ""
+
+#: fanxie-wp-core.php:103
+msgid "Fanxie WP Core: Composer dependencies are missing. Run `composer install` inside the plugin directory."
+msgstr ""
+
+#: src/Admin/AjaxRouter.php:112
+#: src/Admin/AjaxRouter.php:158
+msgid "You do not have permission to perform this action."
+msgstr ""
+
+#: src/Admin/AjaxRouter.php:125
+msgid "Missing sub-action."
+msgstr ""
+
+#: src/Admin/AjaxRouter.php:146
+msgid "Unknown sub-action."
+msgstr ""
+
+#: src/Admin/AjaxRouter.php:172
+msgid "An unexpected error occurred."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:126
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:170
+msgid "Vite dev server connected."
+msgstr ""
+
+#. translators: %s: Vite dev server URL (e.g. http://localhost:5173)
+#: src/Admin/SettingsPage.php:174
+#, php-format
+msgid "HMR active at %s."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:186
+msgid "Admin UI build missing — run `npm run build` in `assets/admin/`."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:199
+msgid "Fanxie WP Core requires JavaScript to configure. See the documentation for alternative options."
+msgstr ""
