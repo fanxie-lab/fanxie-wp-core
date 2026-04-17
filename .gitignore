@@ -1,0 +1,65 @@
+# ----- Node / npm -----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.pnp.*
+.yarn/
+package-lock.json.bak
+
+# ----- PHP / Composer -----
+# NOTE: vendor/ is committed on tagged releases (wp.org requirement, see CLAUDE.md §3.1).
+# It is ignored during day-to-day development; the release workflow will force-add it.
+vendor/
+composer.phar
+
+# ----- Testing -----
+.phpunit.cache/
+.phpunit.result.cache
+coverage/
+coverage.xml
+clover.xml
+.nyc_output/
+
+# ----- Build output -----
+dist/
+build/
+assets/admin/dist/
+*.map
+
+# Vite dev-mode hot-file marker (also ignored in assets/admin/.gitignore; listed
+# here as defence-in-depth so it can never land in a commit).
+assets/admin/.vite-hot
+
+# ----- wp-env -----
+# Per-developer local overrides (see .wp-env.override.json.example).
+.wp-env.override.json
+# Any local state wp-env might drop in the project (it normally lives in ~/.wp-env).
+.wp-env/
+
+# ----- Editor / OS -----
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/*
+!.vscode/settings.json.example
+!.vscode/extensions.json
+
+# ----- Env / secrets -----
+.env
+.env.local
+.env.*.local
+
+# ----- Logs -----
+*.log
+debug.log
+error.log
+
+# ----- Misc -----
+.cache/
+tmp/
+*.tmp

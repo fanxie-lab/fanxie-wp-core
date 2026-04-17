@@ -1,0 +1,37 @@
+{
+	"name": "fanxie-wp-core",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Fanxie WP Core — WordPress plugin. Repo-root tooling (wp-env, dev scripts). The Vue admin SPA lives under assets/admin/ with its own package.json.",
+	"license": "GPL-2.0-or-later",
+	"author": "Fanxie Lab",
+	"engines": {
+		"node": ">=20",
+		"npm": ">=10"
+	},
+	"scripts": {
+		"env:start": "wp-env start",
+		"env:stop": "wp-env stop",
+		"env:restart": "wp-env stop && wp-env start",
+		"env:destroy": "wp-env destroy",
+		"env:clean": "wp-env clean all",
+		"env:clean:dev": "wp-env clean development",
+		"env:clean:tests": "wp-env clean tests",
+		"env:logs": "wp-env logs",
+		"env:logs:tests": "wp-env logs tests",
+		"env:cli": "wp-env run cli wp",
+		"env:cli:tests": "wp-env run tests-cli wp",
+		"env:install-path": "wp-env install-path",
+		"test:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/fanxie-wp-core ./vendor/bin/phpunit",
+		"test:php:watch": "wp-env run tests-cli --env-cwd=wp-content/plugins/fanxie-wp-core ./vendor/bin/phpunit --watch",
+		"test:php:coverage": "wp-env run tests-cli --env-cwd=wp-content/plugins/fanxie-wp-core ./vendor/bin/phpunit --coverage-text",
+		"lint:php": "composer run lint",
+		"plugin:check": "wp-env run cli wp plugin check fanxie-wp-core --format=table",
+		"plugin:check:json": "wp-env run cli wp plugin check fanxie-wp-core --format=json",
+		"db:cli": "wp-env run cli wp db cli",
+		"db:reset": "wp-env run cli wp db reset --yes"
+	},
+	"devDependencies": {
+		"@wordpress/env": "^10.0.0"
+	}
+}

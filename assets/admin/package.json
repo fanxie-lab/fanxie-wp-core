@@ -1,0 +1,33 @@
+{
+  "name": "@fanxie-wp-core/admin",
+  "version": "0.1.0-dev",
+  "private": true,
+  "type": "module",
+  "description": "Fanxie WP Core — Vue 3 admin SPA. Built with Vite; output consumed by the PHP plugin (wp_enqueue_script/style against dist/admin.js + dist/admin.css).",
+  "license": "GPL-2.0-or-later",
+  "author": "Fanxie Lab",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "type-check": "vue-tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.1.0",
+    "@fontsource/lexend": "^5.1.0",
+    "lucide-vue-next": "^1.0.0",
+    "pinia": "^2.2.4",
+    "vue": "^3.5.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "@vue/tsconfig": "^0.5.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.9",
+    "vue-tsc": "^2.1.6"
+  }
+}

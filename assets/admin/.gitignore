@@ -1,0 +1,23 @@
+# Local defence-in-depth — the repo-root .gitignore already excludes these,
+# but keeping a workspace-local copy means the rules survive if this folder
+# is ever vendored into another repo.
+
+node_modules/
+dist/
+.vite/
+
+# Vite dev-mode hot-file marker (Laravel-Vite style). Written while `npm run
+# dev` is running so PHP can detect dev mode; cleaned up on shutdown.
+.vite-hot
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / OS
+.DS_Store
+*.swp
+*.swo

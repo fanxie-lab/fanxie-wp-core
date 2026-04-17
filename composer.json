@@ -1,0 +1,63 @@
+{
+    "name": "fanxielab/fanxie-wp-core",
+    "description": "Modular WordPress security, hardening, maintenance, and performance toolkit by Fanxie Lab.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://fanxielab.com/plugins/fanxie-wp-core",
+    "authors": [
+        {
+            "name": "Fanxie Lab",
+            "homepage": "https://fanxielab.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10",
+        "brain/monkey": "^2.6",
+        "mockery/mockery": "^1.6",
+        "squizlabs/php_codesniffer": "^3.9",
+        "wp-coding-standards/wpcs": "^3",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/phpstan": "^1.10",
+        "szepeviktor/phpstan-wordpress": "^1.3",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "FanxieLab\\WPCore\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FanxieLab\\WPCore\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "scripts": {
+        "phpcs": "phpcs --standard=phpcs.xml.dist",
+        "phpcbf": "phpcbf --standard=phpcs.xml.dist",
+        "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G",
+        "test": "phpunit",
+        "check": [
+            "@phpcs",
+            "@phpstan",
+            "@test"
+        ]
+    },
+    "scripts-descriptions": {
+        "phpcs": "Run WordPress Coding Standards checks.",
+        "phpcbf": "Auto-fix fixable WordPress Coding Standards violations.",
+        "phpstan": "Run PHPStan static analysis (level 8).",
+        "test": "Run the PHPUnit test suite.",
+        "check": "Run the full quality gate: PHPCS, PHPStan, PHPUnit."
+    }
+}

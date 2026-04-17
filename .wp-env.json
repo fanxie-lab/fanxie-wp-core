@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
+	"core": null,
+	"phpVersion": "8.3",
+	"plugins": [
+		".",
+		"https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip",
+		"https://downloads.wordpress.org/plugin/plugin-check.latest-stable.zip"
+	],
+	"themes": [
+		"https://downloads.wordpress.org/theme/twentytwentyfour.latest-stable.zip",
+		"https://downloads.wordpress.org/theme/twentytwentythree.latest-stable.zip"
+	],
+	"config": {
+		"WP_DEBUG": true,
+		"WP_DEBUG_LOG": true,
+		"WP_DEBUG_DISPLAY": false,
+		"SCRIPT_DEBUG": true,
+		"WP_ENVIRONMENT_TYPE": "local",
+		"WP_DISABLE_FATAL_ERROR_HANDLER": true,
+		"FS_METHOD": "direct"
+	},
+	"port": 8888,
+	"testsPort": 8889,
+	"env": {
+		"development": {
+			"config": {
+				"WP_DEBUG": true,
+				"WP_DEBUG_LOG": true,
+				"WP_DEBUG_DISPLAY": false,
+				"SCRIPT_DEBUG": true,
+				"WP_ENVIRONMENT_TYPE": "local"
+			}
+		},
+		"tests": {
+			"config": {
+				"WP_DEBUG": true,
+				"WP_DEBUG_LOG": true,
+				"WP_DEBUG_DISPLAY": false,
+				"SCRIPT_DEBUG": false,
+				"WP_ENVIRONMENT_TYPE": "local"
+			},
+			"mappings": {
+				"wp-content/plugins/fanxie-wp-core/tests": "./tests"
+			}
+		}
+	}
+}
