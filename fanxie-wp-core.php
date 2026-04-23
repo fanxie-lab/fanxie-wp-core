@@ -6,7 +6,7 @@
  * Version:           0.1.0-dev
  * Requires at least: 6.4
  * Requires PHP:      8.1
- * Tested up to:      6.7
+ * Tested up to:      6.9
  * Author:            Fanxie Lab
  * Author URI:        https://fanxielab.com
  * License:           GPLv2 or later

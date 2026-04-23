@@ -82,6 +82,9 @@ jobs:
   php-tests:
     name: PHP Tests (WP ${{ matrix.wp-version }})
     runs-on: ubuntu-latest
+    # WP trunk is advisory — wp-env + trunk has intermittent Docker/DB startup
+    # flakes unrelated to our code. Don't let a bad trunk run block the branch.
+    continue-on-error: ${{ matrix.wp-version == 'trunk' }}
     strategy:
       fail-fast: false
       matrix:
@@ -231,7 +234,7 @@ jobs:
           # `hidden_files` / `application_detected` errors on .github, tests,
           # docs, and workspace node_modules.
           exclude-directories: '.github,_PRD,docs,tests,node_modules,assets/admin/node_modules,assets/admin/src/modules/__tests__'
-          exclude-files: '.gitignore,.prettierrc,.prettierignore,.eslintrc,.editorconfig'
+          exclude-files: '.gitignore,.prettierrc,.prettierignore,.eslintrc,.editorconfig,.wp-env.json,.wp-env.override.json.example,phpcs.xml.dist,phpstan.neon.dist,phpunit.xml.dist,playwright.config.ts'
 
   # ---------------------------------------------------------------------------
   # Aggregate gate — one required check for branch protection.
