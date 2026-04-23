@@ -13,8 +13,6 @@
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       fanxie-wp-core
  * Domain Path:       /languages
- * Network:           false
- * Update URI:        false
  *
  * @package FanxieLab\WPCore
  */

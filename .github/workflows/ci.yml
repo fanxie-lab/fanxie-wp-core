@@ -48,8 +48,13 @@ jobs:
           restore-keys: |
             composer-${{ runner.os }}-php${{ matrix.php }}-
 
+      # Ignore PHP platform reqs: composer.lock pins PHPUnit 12 (requires PHP
+      # 8.3). PHPCS + PHPStan themselves run fine on 8.1/8.2, and we never
+      # invoke PHPUnit in this job — so skipping the platform check is safe and
+      # keeps static-analysis coverage across the full supported PHP matrix.
+      # PHPUnit runs in the dedicated `php-tests` job on PHP 8.3 only.
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction --ignore-platform-req=php
 
       - name: PHPCS (WordPress-Extra + WP-Docs + PHPCompatibilityWP)
         run: composer run phpcs
@@ -85,10 +90,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Host PHP must match PHPUnit 12's floor (PHP 8.3) for the host-side
+      # `composer install` to resolve the lock file. PHPUnit itself runs inside
+      # wp-env's Docker container — this version is only for dependency
+      # resolution on the runner.
       - name: Setup PHP (host-side, for `composer install`)
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.3'
           extensions: mbstring, intl, dom, libxml
           coverage: none
           tools: composer:v2
@@ -99,9 +108,9 @@ jobs:
           path: |
             ~/.composer/cache
             vendor
-          key: composer-${{ runner.os }}-php81-${{ hashFiles('composer.lock') }}
+          key: composer-${{ runner.os }}-php83-${{ hashFiles('composer.lock') }}
           restore-keys: |
-            composer-${{ runner.os }}-php81-
+            composer-${{ runner.os }}-php83-
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
@@ -215,8 +224,14 @@ jobs:
           build-dir: '.'
           # Errors block the build. Warnings are still surfaced but tolerated
           # during scaffold phases. Before first public release this flips.
-          wp-plugin-check-ignore-warnings: true
-          wp-plugin-check-ignore-errors: false
+          ignore-warnings: true
+          ignore-errors: false
+          # Dev-only directories that live in the repo root but are not part of
+          # the shipped plugin. Excluding them stops Plugin Check from firing
+          # `hidden_files` / `application_detected` errors on .github, tests,
+          # docs, and workspace node_modules.
+          exclude-directories: '.github,_PRD,docs,tests,node_modules,assets/admin/node_modules,assets/admin/src/modules/__tests__'
+          exclude-files: '.gitignore,.prettierrc,.prettierignore,.eslintrc,.editorconfig'
 
   # ---------------------------------------------------------------------------
   # Aggregate gate — one required check for branch protection.

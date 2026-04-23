@@ -36,13 +36,13 @@ parameters:
     # bundle has been generated locally.
     excludePaths:
         - vendor
-        - node_modules
+        - node_modules (?)
         - assets
         - build (?)
         - dist (?)
         - languages
         - tests
-        - .phpunit.cache
+        - .phpunit.cache (?)
 
     # Disallow weak typing shortcuts we explicitly do not want in this codebase.
     treatPhpDocTypesAsCertain: false
