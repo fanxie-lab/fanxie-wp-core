@@ -12,12 +12,27 @@ interface Props {
   disabled?: boolean;
   /** Optional explicit id; one is generated otherwise. */
   id?: string;
+  /**
+   * When true, the visible label text is rendered visually-hidden (still
+   * readable by screen readers). Use this when the Toggle is embedded inside
+   * a wrapper that already renders the visible label — pair with
+   * `ariaLabelledby` so the switch still has an accessible name.
+   */
+  hideLabel?: boolean;
+  /**
+   * Optional id of an element that labels the switch. When set, the switch
+   * uses this as its accessible name via aria-labelledby, and the internal
+   * <label for> / sr-only text is dropped from the accessibility tree.
+   */
+  ariaLabelledby?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   description: undefined,
   disabled: false,
   id: undefined,
+  hideLabel: false,
+  ariaLabelledby: undefined,
 });
 
 const emit = defineEmits<{
@@ -47,7 +62,13 @@ function onKeydown(event: KeyboardEvent): void {
 </script>
 
 <template>
-  <div class="fx-toggle" :class="{ 'fx-toggle--disabled': disabled }">
+  <div
+    class="fx-toggle"
+    :class="{
+      'fx-toggle--disabled': disabled,
+      'fx-toggle--label-hidden': hideLabel,
+    }"
+  >
     <button
       :id="fieldId"
       type="button"
@@ -55,18 +76,43 @@ function onKeydown(event: KeyboardEvent): void {
       class="fx-toggle__switch"
       :aria-checked="modelValue"
       :aria-describedby="description ? descId : undefined"
+      :aria-labelledby="ariaLabelledby"
+      :aria-label="ariaLabelledby ? undefined : label"
       :disabled="disabled"
       @click="toggle"
       @keydown="onKeydown"
     >
       <span class="fx-toggle__thumb" aria-hidden="true"></span>
     </button>
-    <label :for="fieldId" class="fx-toggle__label">
-      <span class="fx-toggle__label-text">{{ label }}</span>
-      <span v-if="description" :id="descId" class="fx-toggle__description">
+    <!--
+      Visible label. Omitted entirely when an external label is wired via
+      `ariaLabelledby` (otherwise the DOM would expose the same name twice,
+      and clicking the external label would not toggle the switch because
+      its `for` points at a different id).
+    -->
+    <label v-if="!ariaLabelledby" :for="fieldId" class="fx-toggle__label">
+      <span
+        class="fx-toggle__label-text"
+        :class="{ 'fx-visually-hidden': hideLabel }"
+      >
+        {{ label }}
+      </span>
+      <span
+        v-if="description && !hideLabel"
+        :id="descId"
+        class="fx-toggle__description"
+      >
         {{ description }}
       </span>
     </label>
+    <!-- When label is driven externally we still need the description wired up. -->
+    <span
+      v-if="description && ariaLabelledby"
+      :id="descId"
+      class="fx-visually-hidden"
+    >
+      {{ description }}
+    </span>
   </div>
 </template>
 

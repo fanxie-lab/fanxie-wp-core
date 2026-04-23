@@ -80,6 +80,14 @@ const liveModuleRoutes: Record<string, RouteRecordRaw> = {
       },
     ],
   },
+  // Hardening ships as a single scrollable checklist view — no sub-tabs,
+  // no redirect target, no children. Status is derived per-row inside the
+  // component itself from the shared store.
+  hardening: {
+    path: '/hardening',
+    name: 'hardening',
+    component: () => import('@/modules/Hardening/Hardening.vue'),
+  },
 };
 
 /** Build a placeholder route for a module id. */

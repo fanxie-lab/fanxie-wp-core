@@ -84,4 +84,49 @@ describe('<Toggle>', () => {
     const desc = wrapper.get(`#${describedBy!}`);
     expect(desc.text()).toContain('This turns the feature on site-wide.');
   });
+
+  it('visually hides the label text when hideLabel is true (sr-only)', () => {
+    const wrapper = mount(Toggle, {
+      props: {
+        modelValue: false,
+        label: 'Enable feature',
+        hideLabel: true,
+      },
+    });
+
+    const labelText = wrapper.get('.fx-toggle__label-text');
+    expect(labelText.classes()).toContain('fx-visually-hidden');
+    // The label text is still present in the accessibility tree.
+    expect(labelText.text()).toBe('Enable feature');
+  });
+
+  it('wires aria-labelledby onto the switch and drops the internal <label> when ariaLabelledby is provided', () => {
+    const wrapper = mount(Toggle, {
+      props: {
+        modelValue: false,
+        label: 'Enable feature',
+        ariaLabelledby: 'external-label-id',
+      },
+    });
+
+    const sw = wrapper.get('[role="switch"]');
+    expect(sw.attributes('aria-labelledby')).toBe('external-label-id');
+    // With an external label we must not also render an internal <label>
+    // (otherwise the accessible name is announced twice).
+    expect(wrapper.find('label').exists()).toBe(false);
+    // aria-label is suppressed so it does not fight aria-labelledby.
+    expect(sw.attributes('aria-label')).toBeUndefined();
+  });
+
+  it('falls back to aria-label with the label text when no ariaLabelledby is set', () => {
+    const wrapper = mount(Toggle, {
+      props: {
+        modelValue: false,
+        label: 'Enable feature',
+      },
+    });
+
+    const sw = wrapper.get('[role="switch"]');
+    expect(sw.attributes('aria-label')).toBe('Enable feature');
+  });
 });

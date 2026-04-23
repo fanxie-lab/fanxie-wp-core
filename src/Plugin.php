@@ -11,6 +11,7 @@ namespace FanxieLab\WPCore;
 
 use FanxieLab\WPCore\Admin\AjaxRouter;
 use FanxieLab\WPCore\Admin\SettingsPage;
+use FanxieLab\WPCore\Modules\Hardening\Hardening;
 use FanxieLab\WPCore\Modules\ModuleRegistry;
 use FanxieLab\WPCore\Modules\SecurityHeaders\SecurityHeaders;
 use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
@@ -109,6 +110,28 @@ final class Plugin {
 		// Ensure module-owned tables exist before any hooks fire.
 		( new ViolationRepository() )->install();
 
+		// Hardening: drop protection files into uploads (idempotent).
+		// Uses the current option value so a user who's toggled either uploads
+		// flag off on a previous activation doesn't get the files re-created.
+		$hardening_settings = get_option( 'fanxie_wp_core_hardening_settings', [] );
+		$hardening_config   = is_array( $hardening_settings ) ? $hardening_settings : [];
+		if (
+			! isset( $hardening_config['uploads']['drop_index'] )
+			|| ! empty( $hardening_config['uploads']['drop_index'] )
+			|| ! isset( $hardening_config['uploads']['block_php_execution'] )
+			|| ! empty( $hardening_config['uploads']['block_php_execution'] )
+		) {
+			( new \FanxieLab\WPCore\Modules\Hardening\UploadsProtector( $hardening_config ) )->ensure_protection( $hardening_config );
+		}
+
+		// Hardening: install the root `.htaccess` block for `/readme.html` and
+		// `/license.txt` when the toggle is on (defaults to on for fresh installs).
+		$block_readme_license = ! isset( $hardening_config['version_hiding']['block_readme_license'] )
+			|| ! empty( $hardening_config['version_hiding']['block_readme_license'] );
+		if ( $block_readme_license ) {
+			( new \FanxieLab\WPCore\Modules\Hardening\Runtime\RootHtaccessWriter() )->ensure_readme_license_block();
+		}
+
 		flush_rewrite_rules( false );
 	}
 
@@ -182,12 +205,16 @@ final class Plugin {
 		$security_headers = new SecurityHeaders( $ajax_router );
 		$registry->register( $security_headers );
 
+		$hardening = new Hardening( $ajax_router );
+		$registry->register( $hardening );
+
 		$settings_page = new SettingsPage( $registry );
 
 		$this->services[ ModuleRegistry::class ]  = $registry;
 		$this->services[ AjaxRouter::class ]      = $ajax_router;
 		$this->services[ SettingsPage::class ]    = $settings_page;
 		$this->services[ SecurityHeaders::class ] = $security_headers;
+		$this->services[ Hardening::class ]       = $hardening;
 	}
 
 	/**

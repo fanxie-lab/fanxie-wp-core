@@ -217,6 +217,7 @@
 }
 
 #fanxie-wp-core-admin h2 {
+  margin: 0;
   font-size: var(--fx-font-size-2xl);
   font-weight: var(--fx-font-weight-semibold);
 }

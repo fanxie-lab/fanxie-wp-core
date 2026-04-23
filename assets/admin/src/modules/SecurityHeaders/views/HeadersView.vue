@@ -58,12 +58,12 @@ const hstsMaxAge = computed<string>({
       </header>
       <div class="fx-headers-view__callout fx-headers-view__callout--warning">
         <strong>Heads up — HSTS can break a site.</strong>
-        Once a browser has cached this header, it will refuse plain HTTP for
-        the entire <code>max-age</code> window (up to a year), even if HTTPS
-        later breaks. Only enable on a domain that is fully and permanently
-        on HTTPS with a valid certificate. The header is also only emitted
-        over HTTPS — it will not appear on
-        <code>http://localhost</code> or any plain-HTTP request.
+        Once a browser has cached this header, it will refuse plain HTTP for the
+        entire <code>max-age</code> window (up to a year), even if HTTPS later
+        breaks. Only enable on a domain that is fully and permanently on HTTPS
+        with a valid certificate. The header is also only emitted over HTTPS —
+        it will not appear on <code>http://localhost</code> or any plain-HTTP
+        request.
       </div>
       <Toggle
         v-model="config.headers.hsts.enabled"

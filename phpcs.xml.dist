@@ -112,4 +112,43 @@
 		<exclude-pattern>*/tests/*</exclude-pattern>
 	</rule>
 
+	<!--
+		Tests: temp-directory fixtures legitimately use PHP filesystem APIs
+		(mkdir/touch/unlink/rmdir) directly — WP_Filesystem carries the full
+		admin bootstrap that we don't need in isolated test runs.
+	-->
+	<rule ref="WordPress.WP.AlternativeFunctions">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.PHP.NoSilencedErrors">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.GlobalVariablesOverride">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.PHP.Eval">
+		<!--
+			Test-only WP core class shims (e.g. `WP_REST_Request`) are defined
+			via `eval()` so they're created lazily, inside the test setup,
+			after the unit bootstrap has decided we're not running under the
+			real WordPress test suite.
+		-->
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Universal.Operators.DisallowShortTernary">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.VariableComment.Missing">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.VariableComment.MissingVar">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="Generic.Commenting.DocComment">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Arrays.ArrayDeclarationSpacing">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+
 </ruleset>

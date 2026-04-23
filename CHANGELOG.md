@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Hardening module (PRD §4): information-leakage and attack-surface
+  reduction across user enumeration (`?author=N`, REST `/users`),
+  XML-RPC (disable / restrict methods / IP allowlist with `X-Pingback`
+  stripping), version hiding (generator meta, feed generators, asset
+  `?ver=`, `readme.html` / `license.txt` 404), uploads protection
+  (idempotent `index.php` + Apache `.htaccess` drop plus nginx snippet
+  surfacer and live HTTP probes), login error obfuscation,
+  `DISALLOW_FILE_EDIT` detection with runtime `file_mod_allowed`
+  fallback, and Application Password disabling. Four new hooks
+  documented in `docs/hooks.md`.
+- Hardening `RootHtaccessWriter`: idempotent root `.htaccess` block
+  writer (between `# BEGIN Fanxie WP Core` / `# END Fanxie WP Core`
+  markers) enforcing `Require all denied` on `readme.html` and
+  `license.txt` at the Apache layer. The previous PHP-only
+  `template_redirect` block never ran because Apache serves static
+  files without entering PHP.
+- Hardening AJAX surface: two new sub-actions for the uploads status
+  row in the Vue admin — `hardening/drop-upload-guard` (re-writes
+  `uploads/index.php` or `uploads/.htaccess`) and
+  `hardening/remove-upload-guard` (deletes them).
+- `StatusInspector` snapshot: `readme_blocked` and `license_blocked`
+  booleans derived from live HTTP probes of `home_url('/readme.html')`
+  and `home_url('/license.txt')`, plus a new
+  `fanxie_wp_core/hardening/root_htaccess_path` filter.
+
+### Fixed
+- Hardening `StatusInspector` — `x_powered_by_present` now fires an
+  HTTP probe against the frontend (`home_url('/')`) and inspects the
+  response headers case-insensitively, rather than reading
+  `headers_list()` during an admin-ajax request (which has no bearing
+  on what the public pipeline emits).
+- Hardening `UploadsProtector::probe_php_execution()` — the null-return
+  path is now reserved for "couldn't even write the canary", so a
+  working probe against a genuinely blocked URL no longer leaves the
+  status row stuck on "inconclusive"; the canary is always deleted in
+  a `finally` block.
+- Hardening `XmlRpcGate` `disabled` mode — in addition to
+  `xmlrpc_enabled => false`, we now empty the method table at
+  `PHP_INT_MAX` and 403 via `xmlrpc_call` before any handler runs.
+  `restrict_methods` / `restrict_ips` filters were also bumped to
+  `PHP_INT_MAX` so plugins re-adding `pingback.*` after our filter
+  can't sneak past.
+- Hardening `VersionHider` — `readme.html` / `license.txt` block now
+  runs on `init` priority 1 as a PHP fallback, while the primary path
+  is the new `.htaccess` snippet (Apache serves these static files
+  without entering PHP, so `template_redirect` never fired).
+- Hardening `AjaxController` — `save-config` now invalidates the
+  `StatusInspector` transient after `update_config()` (mirroring
+  `apply-fix`) so the next `get-config` re-probes against the new
+  settings.
+
 ### Security
 - Security Headers: HSTS and its `includeSubDomains` flag are now **off**
   by default with an inline warning explaining the lock-in risk. The

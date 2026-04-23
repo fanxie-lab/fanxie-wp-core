@@ -74,15 +74,15 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 - [x] Tests: header presence, idempotency, CSP merge logic, preset application
 
 ### 1.2 Hardening (PRD §4)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] User enumeration block (author scan + REST users endpoint)
-- [ ] XML-RPC modes: disable / restrict dangerous / IP-allowlist
-- [ ] Version hiding: generator tag, RSS version, `?ver=`, readme.html/license.txt 404
-- [ ] Uploads directory: `index.php` drop + `.htaccess` PHP deny + nginx snippet surfacer + live probe
-- [ ] `DISALLOW_FILE_EDIT` detection + runtime `file_mod_allowed` fallback
-- [ ] Application Passwords toggle (only shown when none exist)
-- [ ] Login error obfuscation
-- [ ] Vue tab: checklist-style UI, each item with status pill + fix/learn-more
-- [ ] Tests: each toggle round-trips, Apache/nginx branches, REST 401 behaviour
+- [x] User enumeration block (author scan + REST users endpoint)
+- [x] XML-RPC modes: disable / restrict dangerous / IP-allowlist
+- [x] Version hiding: generator tag, RSS version, `?ver=`, readme.html/license.txt 404
+- [x] Uploads directory: `index.php` drop + `.htaccess` PHP deny + nginx snippet surfacer + live probe
+- [x] `DISALLOW_FILE_EDIT` detection + runtime `file_mod_allowed` fallback
+- [x] Application Passwords toggle (only shown when none exist)
+- [x] Login error obfuscation
+- [x] Vue tab: checklist-style UI, each item with status pill + fix/learn-more
+- [x] Tests: each toggle round-trips, Apache/nginx branches, REST 401 behaviour
 
 ### 1.3 Login Protection (PRD §5)  *(→ wordpress-development-expert + frontend-expert)*
 - [ ] Failed-attempt tracker (IP + username) with tiered lockouts

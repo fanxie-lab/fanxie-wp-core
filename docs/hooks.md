@@ -2,7 +2,7 @@
 
 Every custom action and filter exposed by the plugin lives here. Keep this file in sync with the code. Naming convention: `fanxie_wp_core/<area>/<verb>`.
 
-Last updated for Phase 1.1.
+Last updated for Phase 1.2.
 
 ---
 
@@ -190,6 +190,88 @@ Last updated for Phase 1.1.
       return [ 60, 200 ];
   } );
   ```
+
+---
+
+### `fanxie_wp_core/hardening/should_block_author_enum`
+
+- **Type:** Filter
+- **Since:** 0.2.0-dev
+- **Fires:** Inside `UserEnumerationGuard::register_hooks()` when deciding whether to install the author-archive block for the current request.
+- **Params:**
+  - `bool $value` — current decision sourced from `user_enumeration.block_author_archive`.
+- **Returns:** `bool` — final decision.
+- **Example:**
+
+  ```php
+  // Allow author archives on a public blog only for a specific path.
+  add_filter( 'fanxie_wp_core/hardening/should_block_author_enum', function ( bool $block ): bool {
+      return ! str_starts_with( $_SERVER['REQUEST_URI'] ?? '', '/authors/' );
+  } );
+  ```
+
+---
+
+### `fanxie_wp_core/hardening/xmlrpc_allowed_ips`
+
+- **Type:** Filter
+- **Since:** 0.2.0-dev
+- **Fires:** Inside `XmlRpcGate::allowed_ips()` when resolving the per-request IP allowlist in `restrict_ips` mode.
+- **Params:**
+  - `array<int, string> $clean` — sanitised allowlist from the module config.
+  - `array<string, mixed> $config` — full module config snapshot.
+- **Returns:** `array<int, string>` — final allowlist.
+- **Example:**
+
+  ```php
+  // Pull the Jetpack IP list from a cached option at runtime.
+  add_filter( 'fanxie_wp_core/hardening/xmlrpc_allowed_ips', function ( array $ips ): array {
+      $dynamic = (array) get_option( 'my_jetpack_ip_cache', [] );
+      return array_values( array_unique( array_merge( $ips, $dynamic ) ) );
+  } );
+  ```
+
+---
+
+### `fanxie_wp_core/hardening/uploads_dir`
+
+- **Type:** Filter
+- **Since:** 0.2.0-dev
+- **Fires:** Inside `UploadsProtector::uploads_dir()` when resolving the protection target directory.
+- **Params:**
+  - `string $basedir` — directory resolved from `wp_upload_dir()['basedir']`.
+- **Returns:** `string` — custom path (multisite / non-standard layouts).
+
+---
+
+### `fanxie_wp_core/hardening/root_htaccess_path`
+
+- **Type:** Filter
+- **Since:** 0.2.0-dev
+- **Fires:** Inside `RootHtaccessWriter::__construct()` when resolving the root `.htaccess` path used for the readme/license server-layer block.
+- **Params:**
+  - `string $path` — default `ABSPATH . '/.htaccess'`.
+- **Returns:** `string` — overridden absolute path (non-standard installs, subdirectory routing, etc.).
+- **Example:**
+
+  ```php
+  // Point the writer at the parent-domain .htaccess on a subdir install.
+  add_filter( 'fanxie_wp_core/hardening/root_htaccess_path', static function (): string {
+      return '/var/www/html/.htaccess';
+  } );
+  ```
+
+---
+
+### `fanxie_wp_core/hardening/login_error_message`
+
+- **Type:** Filter
+- **Since:** 0.2.0-dev
+- **Fires:** Inside `LoginErrorObfuscator::filter_message()` after a target error code has been detected and the generic message is about to be returned.
+- **Params:**
+  - `string $generic` — default replacement message.
+  - `array<int, string> $codes` — WP error codes present on the current request.
+- **Returns:** `string` — final message shown to the user.
 
 ---
 
