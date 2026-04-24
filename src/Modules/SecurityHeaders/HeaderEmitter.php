@@ -73,6 +73,16 @@ final class HeaderEmitter {
 			return function_exists( 'is_ssl' ) ? (bool) is_ssl() : false;
 		};
 		$this->header_writer            = $header_writer ?? static function ( string $name, string $value ): void {
+			// Guard against late emission once PHP has already flushed the
+			// response headers (CLI tests, output-buffered plugins flushing
+			// early, etc.). `header()` would emit a non-fatal warning and
+			// return void, but under `beStrictAboutOutputDuringTests` that
+			// warning is promoted to a failure. Checking `headers_sent()`
+			// first makes the writer a no-op in those situations without
+			// masking the broader problem (nothing to emit to).
+			if ( headers_sent() ) {
+				return;
+			}
 			header( $name . ': ' . $value, false );
 		};
 	}

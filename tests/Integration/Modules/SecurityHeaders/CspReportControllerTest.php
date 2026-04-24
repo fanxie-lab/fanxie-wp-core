@@ -33,7 +33,7 @@ final class CspReportControllerTest extends WP_UnitTestCase {
 	 */
 	private CspReportController $controller;
 
-	protected function set_up(): void {
+	public function set_up(): void {
 		parent::set_up();
 		delete_option( ViolationRepository::SCHEMA_VERSION_OPTION );
 		$this->repo       = new ViolationRepository();
@@ -45,7 +45,7 @@ final class CspReportControllerTest extends WP_UnitTestCase {
 		delete_transient( 'fanxie_wp_core_csp_rate_' . sha1( (string) $_SERVER['REMOTE_ADDR'] ) );
 	}
 
-	protected function tear_down(): void {
+	public function tear_down(): void {
 		global $wpdb;
 		$table = $this->repo->table_name();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared

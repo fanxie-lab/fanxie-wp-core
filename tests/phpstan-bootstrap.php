@@ -19,11 +19,15 @@ if ( ! defined( 'FANXIE_WP_CORE_VERSION' ) ) {
 }
 
 if ( ! defined( 'FANXIE_WP_CORE_FILE' ) ) {
-	define( 'FANXIE_WP_CORE_FILE', __FILE__ );
+	// Point at the real plugin bootstrap, not this file. Several places
+	// (`register_activation_hook`, `plugin_dir_path`) derive the plugin root
+	// from this constant — pointing it at `tests/phpstan-bootstrap.php` would
+	// shift `FANXIE_WP_CORE_PATH` one directory too deep.
+	define( 'FANXIE_WP_CORE_FILE', dirname( __DIR__ ) . '/fanxie-wp-core.php' );
 }
 
 if ( ! defined( 'FANXIE_WP_CORE_PATH' ) ) {
-	define( 'FANXIE_WP_CORE_PATH', __DIR__ . '/' );
+	define( 'FANXIE_WP_CORE_PATH', dirname( __DIR__ ) . '/' );
 }
 
 if ( ! defined( 'FANXIE_WP_CORE_URL' ) ) {

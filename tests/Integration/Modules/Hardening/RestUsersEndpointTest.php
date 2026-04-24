@@ -18,7 +18,7 @@ use WP_UnitTestCase;
  */
 final class RestUsersEndpointTest extends WP_UnitTestCase {
 
-	protected function set_up(): void {
+	public function set_up(): void {
 		parent::set_up();
 
 		$guard = new UserEnumerationGuard(

@@ -31,7 +31,7 @@ final class PluginBootTest extends WP_UnitTestCase {
 	 */
 	private int $admin_user_id = 0;
 
-	protected function set_up(): void {
+	public function set_up(): void {
 		parent::set_up();
 
 		// Activation must run once so the custom cap is granted; the boot
@@ -42,7 +42,7 @@ final class PluginBootTest extends WP_UnitTestCase {
 		$this->admin_user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 	}
 
-	protected function tear_down(): void {
+	public function tear_down(): void {
 		// Drop the admin cap again so state does not bleed between test classes.
 		$administrator = get_role( 'administrator' );
 		if ( $administrator instanceof \WP_Role ) {

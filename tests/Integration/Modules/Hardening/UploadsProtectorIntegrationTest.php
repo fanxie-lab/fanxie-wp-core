@@ -19,7 +19,7 @@ final class UploadsProtectorIntegrationTest extends WP_UnitTestCase {
 
 	private string $uploads_basedir = '';
 
-	protected function set_up(): void {
+	public function set_up(): void {
 		parent::set_up();
 
 		$info                  = wp_upload_dir( null, false );
@@ -34,7 +34,7 @@ final class UploadsProtectorIntegrationTest extends WP_UnitTestCase {
 		}
 	}
 
-	protected function tear_down(): void {
+	public function tear_down(): void {
 		foreach ( [ 'index.php', '.htaccess' ] as $file ) {
 			$path = $this->uploads_basedir . '/' . $file;
 			if ( file_exists( $path ) ) {

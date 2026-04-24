@@ -19,7 +19,7 @@ use WP_UnitTestCase;
  */
 final class ReadmeLicense404Test extends WP_UnitTestCase {
 
-	protected function set_up(): void {
+	public function set_up(): void {
 		parent::set_up();
 
 		$hider = new VersionHider(

@@ -24,14 +24,19 @@ defined( 'ABSPATH' ) || exit;
 /*
  * -----------------------------------------------------------------------------
  * Plugin constants
+ *
+ * All six constants are re-asserted via `defined() || define()` so that the
+ * plugin file is safe to re-require (the PHPUnit integration bootstrap and the
+ * PHPStan bootstrap both predefine a subset of these constants before this
+ * file runs).
  * -----------------------------------------------------------------------------
  */
-define( 'FANXIE_WP_CORE_VERSION', '0.1.0-dev' );
-define( 'FANXIE_WP_CORE_FILE', __FILE__ );
-define( 'FANXIE_WP_CORE_PATH', plugin_dir_path( __FILE__ ) );
-define( 'FANXIE_WP_CORE_URL', plugin_dir_url( __FILE__ ) );
-define( 'FANXIE_WP_CORE_MIN_PHP', '8.1' );
-define( 'FANXIE_WP_CORE_MIN_WP', '6.4' );
+defined( 'FANXIE_WP_CORE_VERSION' ) || define( 'FANXIE_WP_CORE_VERSION', '0.1.0-dev' );
+defined( 'FANXIE_WP_CORE_FILE' ) || define( 'FANXIE_WP_CORE_FILE', __FILE__ );
+defined( 'FANXIE_WP_CORE_PATH' ) || define( 'FANXIE_WP_CORE_PATH', plugin_dir_path( __FILE__ ) );
+defined( 'FANXIE_WP_CORE_URL' ) || define( 'FANXIE_WP_CORE_URL', plugin_dir_url( __FILE__ ) );
+defined( 'FANXIE_WP_CORE_MIN_PHP' ) || define( 'FANXIE_WP_CORE_MIN_PHP', '8.1' );
+defined( 'FANXIE_WP_CORE_MIN_WP' ) || define( 'FANXIE_WP_CORE_MIN_WP', '6.4' );
 
 /*
  * -----------------------------------------------------------------------------

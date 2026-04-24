@@ -25,7 +25,7 @@ final class ViolationRepositoryTest extends WP_UnitTestCase {
 	 */
 	private ViolationRepository $repo;
 
-	protected function set_up(): void {
+	public function set_up(): void {
 		parent::set_up();
 
 		delete_option( ViolationRepository::SCHEMA_VERSION_OPTION );
@@ -33,7 +33,7 @@ final class ViolationRepositoryTest extends WP_UnitTestCase {
 		$this->repo->install();
 	}
 
-	protected function tear_down(): void {
+	public function tear_down(): void {
 		global $wpdb;
 		$table = $this->repo->table_name();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared
