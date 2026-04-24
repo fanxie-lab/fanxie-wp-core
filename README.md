@@ -2,7 +2,7 @@
 
 > WordPress plugin consolidating security, performance, and maintenance modules by Fanxie Lab.
 
-[![CI](https://github.com/fanxielab/fanxie-wp-core/actions/workflows/ci.yml/badge.svg)](https://github.com/fanxielab/fanxie-wp-core/actions/workflows/ci.yml)
+[![CI](https://github.com/fanxie-lab/fanxie-wp-core/actions/workflows/ci.yml/badge.svg)](https://github.com/fanxie-lab/fanxie-wp-core/actions/workflows/ci.yml)
 
 ## About
 
