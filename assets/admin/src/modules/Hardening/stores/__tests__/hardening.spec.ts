@@ -49,6 +49,7 @@ function makeChecks(overrides: Partial<ChecksResult> = {}): ChecksResult {
     uploads_htaccess_exists: true,
     uploads_index_exists: true,
     application_passwords_count: 0,
+    application_passwords_users: [],
     readme_blocked: true,
     license_blocked: true,
     probed_at: 1_713_300_000,

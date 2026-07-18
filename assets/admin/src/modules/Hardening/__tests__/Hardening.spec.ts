@@ -41,6 +41,7 @@ function makeChecks(overrides: Partial<ChecksResult> = {}): ChecksResult {
     uploads_htaccess_exists: true,
     uploads_index_exists: true,
     application_passwords_count: 0,
+    application_passwords_users: [],
     readme_blocked: true,
     license_blocked: true,
     probed_at: 1_713_300_000,
@@ -103,9 +104,7 @@ describe('<Hardening>', () => {
     });
 
     // The row's toggle should not be present; the explanatory note should be.
-    expect(wrapper.text()).toContain(
-      'Application Passwords are currently in use',
-    );
+    expect(wrapper.text()).toContain('in use site-wide');
     expect(wrapper.text()).not.toContain('Disable Application Passwords');
   });
 
@@ -120,6 +119,24 @@ describe('<Hardening>', () => {
     expect(wrapper.text()).not.toContain(
       'Application Passwords are currently in use',
     );
+  });
+
+  it('names Application Password holders and states the scope is site-wide', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      store.config = makeConfig();
+      store.status = makeStatus();
+      store.checks = makeChecks({
+        application_passwords_count: 2,
+        application_passwords_users: [
+          { user_login: 'app_pw_editor', count: 2 },
+        ],
+      });
+    });
+
+    const text = wrapper.text();
+    expect(text).toContain('app_pw_editor');
+    expect(text.toLowerCase()).toContain('site-wide');
+    expect(text).not.toContain('Revoke them before disabling');
   });
 
   it('renders the wp-config snippet when DISALLOW_FILE_EDIT is not defined', async () => {

@@ -223,6 +223,19 @@ const showApplicationPasswordsRow = computed<boolean>(() => {
 const applicationPasswordsCount = computed<number>(
   () => store.checks?.application_passwords_count ?? 0,
 );
+const applicationPasswordsSummary = computed<string>(() => {
+  const users = store.checks?.application_passwords_users ?? [];
+  const count = applicationPasswordsCount.value;
+  const noun = count === 1 ? 'credential' : 'credentials';
+  if (users.length === 0) {
+    return `${String(count)} ${noun} in use site-wide.`;
+  }
+  const who = users
+    .map((u) => `${u.user_login} (${String(u.count)})`)
+    .join(', ');
+  const userNoun = users.length === 1 ? 'user' : 'users';
+  return `In use by ${String(count)} ${noun} across ${String(users.length)} ${userNoun}: ${who}. These are site-wide, not just your account.`;
+});
 
 // --- wp-config snippet copy-to-clipboard -----------------------------------
 const WP_CONFIG_SNIPPET = "define( 'DISALLOW_FILE_EDIT', true );";
@@ -793,10 +806,10 @@ onMounted(() => {
           </ChecklistItem>
         </div>
         <p v-else class="fx-hardening__ap-note" role="note">
-          Application Passwords are currently in use by
-          {{ applicationPasswordsCount }} credential{{
-            applicationPasswordsCount === 1 ? '' : 's'
-          }}. Revoke them before disabling this feature.
+          {{ applicationPasswordsSummary }}
+          Manage them per user under
+          <strong>Users → Profile → Application Passwords</strong> before
+          disabling this feature.
         </p>
       </section>
 

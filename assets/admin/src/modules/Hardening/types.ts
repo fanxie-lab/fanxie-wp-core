@@ -71,6 +71,8 @@ export interface ChecksResult {
   uploads_htaccess_exists: boolean;
   uploads_index_exists: boolean;
   application_passwords_count: number;
+  /** Users holding ≥1 Application Password, site-wide. */
+  application_passwords_users: { user_login: string; count: number }[];
   /**
    * Front-door probe for /readme.html. `true` = blocked, `false` = still
    * served, `null` = probe could not reach the host (inconclusive).
