@@ -130,6 +130,7 @@ final class StatusInspectorTest extends TestCase {
 				'readme_blocked',
 				'license_blocked',
 				'application_passwords_count',
+				'application_passwords_users',
 				'probed_at',
 			] as $key
 		) {
@@ -232,6 +233,7 @@ final class StatusInspectorTest extends TestCase {
 			'readme_blocked'              => true,
 			'license_blocked'             => true,
 			'application_passwords_count' => 0,
+			'application_passwords_users' => [],
 			'probed_at'                   => 1,
 		];
 

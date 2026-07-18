@@ -73,6 +73,7 @@ final class StatusInspector {
 	 *   readme_blocked: bool|null,
 	 *   license_blocked: bool|null,
 	 *   application_passwords_count: int,
+	 *   application_passwords_users: list<array{user_login: string, count: int}>,
 	 *   probed_at: int,
 	 * }
 	 */
@@ -95,12 +96,15 @@ final class StatusInspector {
 				 *   readme_blocked: bool|null,
 				 *   license_blocked: bool|null,
 				 *   application_passwords_count: int,
+				 *   application_passwords_users: list<array{user_login: string, count: int}>,
 				 *   probed_at: int,
 				 * } $cached
 				 */
 				return $cached;
 			}
 		}
+
+		$ap_holders = $this->application_password_holders();
 
 		$snapshot = [
 			'server_type'                 => $this->uploads->detect_server_type(),
@@ -113,7 +117,8 @@ final class StatusInspector {
 			'uploads_index_exists'        => $this->uploads->index_exists(),
 			'readme_blocked'              => $this->probe_path_blocked( 'readme.html' ),
 			'license_blocked'             => $this->probe_path_blocked( 'license.txt' ),
-			'application_passwords_count' => $this->count_application_passwords(),
+			'application_passwords_count' => $this->count_application_passwords( $ap_holders ),
+			'application_passwords_users' => $ap_holders,
 			'probed_at'                   => time(),
 		];
 
@@ -232,16 +237,13 @@ final class StatusInspector {
 	}
 
 	/**
-	 * Count Application Passwords across all users.
+	 * Enumerate Application Password holders across all users.
 	 *
-	 * Application Passwords are stored in `wp_usermeta` under the
-	 * `_application_passwords` key as a serialised array. Rather than unserialise
-	 * every row we ask WordPress to count them via `WP_Application_Passwords`
-	 * when available; otherwise we fall back to a `usermeta` scan.
+	 * @return list<array{user_login: string, count: int}> Users with ≥1 AP.
 	 */
-	private function count_application_passwords(): int {
+	private function application_password_holders(): array {
 		if ( ! class_exists( \WP_Application_Passwords::class ) ) {
-			return 0;
+			return [];
 		}
 
 		/**
@@ -252,16 +254,13 @@ final class StatusInspector {
 		global $wpdb;
 
 		if ( ! $wpdb instanceof \wpdb ) {
-			return 0;
+			return [];
 		}
 
-		// `$wpdb->usermeta` is the internally-owned, filter-safe table name.
-		// PHPStan asks for a literal-string query, so we `%i`-quote the table
-		// name through `prepare()` itself rather than string-interpolating.
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-		$rows = $wpdb->get_col(
+		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				'SELECT meta_value FROM %i WHERE meta_key = %s',
+				'SELECT user_id, meta_value FROM %i WHERE meta_key = %s',
 				$wpdb->usermeta,
 				\WP_Application_Passwords::USERMETA_KEY_APPLICATION_PASSWORDS
 			)
@@ -269,20 +268,41 @@ final class StatusInspector {
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 
 		if ( ! is_array( $rows ) ) {
-			return 0;
+			return [];
 		}
 
-		$total = 0;
-		foreach ( $rows as $serialised ) {
-			if ( ! is_string( $serialised ) || '' === $serialised ) {
+		$holders = [];
+		foreach ( $rows as $row ) {
+			if ( ! is_object( $row ) || ! isset( $row->meta_value ) ) {
 				continue;
 			}
-			$decoded = maybe_unserialize( $serialised );
-			if ( is_array( $decoded ) ) {
-				$total += count( $decoded );
+			$decoded = maybe_unserialize( (string) $row->meta_value );
+			if ( ! is_array( $decoded ) || 0 === count( $decoded ) ) {
+				continue;
 			}
+
+			$user  = get_userdata( (int) $row->user_id );
+			$login = ( $user instanceof \WP_User ) ? (string) $user->user_login : (string) $row->user_id;
+
+			$holders[] = [
+				'user_login' => $login,
+				'count'      => count( $decoded ),
+			];
 		}
 
+		return $holders;
+	}
+
+	/**
+	 * Total Application Passwords across all users (sum of holder counts).
+	 *
+	 * @param list<array{user_login: string, count: int}> $holders Holder rows.
+	 */
+	private function count_application_passwords( array $holders ): int {
+		$total = 0;
+		foreach ( $holders as $holder ) {
+			$total += (int) ( $holder['count'] ?? 0 );
+		}
 		return $total;
 	}
 
@@ -305,6 +325,7 @@ final class StatusInspector {
 				'readme_blocked',
 				'license_blocked',
 				'application_passwords_count',
+				'application_passwords_users',
 				'probed_at',
 			] as $key
 		) {
