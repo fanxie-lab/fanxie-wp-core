@@ -17,8 +17,9 @@ import type { ChecklistStatus, UploadsGuardTarget } from './types';
  *   1. User Enumeration      (2 toggles)
  *   2. XML-RPC               (XmlRpcControl)
  *   3. Version Disclosure    (5 toggles — readme/license row surfaces a
- *                             "Still accessible" pill + help text when the
- *                             server-side rewrite silently failed)
+ *                             "Still accessible" pill + server-aware
+ *                             remediation copy when a probe reports the
+ *                             file is still served)
  *   4. Uploads Directory     (UploadsGuardRow ×2 — status + drop/restore
  *                             buttons derived from filesystem probe)
  *   5. Login & Sessions      (1 toggle)
