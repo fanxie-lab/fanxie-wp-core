@@ -153,6 +153,17 @@ final class StatusInspectorTest extends TestCase {
 		$this->assertFalse( $snapshot['license_blocked'] );
 	}
 
+	public function test_snapshot_marks_readme_inconclusive_on_transport_error(): void {
+		// Container can't reach its own public URL — wp_remote_get returns WP_Error.
+		Functions\when( 'wp_remote_get' )->justReturn( new \WP_Error( 'timeout', 'unreachable' ) );
+		Functions\when( 'is_wp_error' )->alias( static fn ( $v ) => $v instanceof \WP_Error );
+
+		$snapshot = $this->make_inspector()->snapshot( true );
+
+		$this->assertNull( $snapshot['readme_blocked'] );
+		$this->assertNull( $snapshot['license_blocked'] );
+	}
+
 	public function test_snapshot_detects_x_powered_by_header_case_insensitively(): void {
 		// Give `wp_remote_get` a response with the header lurking under a mixed-case key.
 		Functions\when( 'wp_remote_get' )->justReturn(

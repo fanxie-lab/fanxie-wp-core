@@ -304,12 +304,15 @@ final class UploadsProtector {
 	}
 
 	/**
-	 * Is the current server either Apache proper or LiteSpeed (which honours
-	 * `.htaccess` with the same syntax)?
+	 * Whether the current server honours `.htaccess` — Apache proper or
+	 * LiteSpeed (same syntax). We no longer treat `unknown` as Apache: writing
+	 * a `.htaccess` we can't confirm is honoured produced misleading "write
+	 * failed" states. On unknown/nginx/IIS the UI surfaces a server-appropriate
+	 * snippet instead (see StatusInspector + the Hardening admin view).
 	 */
 	private function is_apache_compatible(): bool {
 		$type = $this->detect_server_type();
-		return 'apache' === $type || 'litespeed' === $type || 'unknown' === $type;
+		return 'apache' === $type || 'litespeed' === $type;
 	}
 
 	/**

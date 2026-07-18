@@ -101,6 +101,21 @@ final class UploadsProtectorTest extends TestCase {
 		$this->assertFileDoesNotExist( $this->uploads_dir . '/.htaccess' );
 	}
 
+	public function test_ensure_protection_skips_htaccess_on_unknown_server(): void {
+		unset( $_SERVER['SERVER_SOFTWARE'] ); // → detect_server_type() === 'unknown'
+
+		$protector = new UploadsProtector(
+			[ 'uploads' => [ 'drop_index' => true, 'block_php_execution' => true ] ]
+		);
+
+		$protector->ensure_protection();
+
+		// index.php is server-agnostic and still drops; .htaccess must NOT, because
+		// we can't confirm the server honors it.
+		$this->assertFileExists( $this->uploads_dir . '/index.php' );
+		$this->assertFileDoesNotExist( $this->uploads_dir . '/.htaccess' );
+	}
+
 	public function test_ensure_protection_is_idempotent(): void {
 		$_SERVER['SERVER_SOFTWARE'] = 'Apache';
 

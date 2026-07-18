@@ -70,8 +70,8 @@ final class StatusInspector {
 	 *   uploads_php_executable: bool|null,
 	 *   uploads_htaccess_exists: bool,
 	 *   uploads_index_exists: bool,
-	 *   readme_blocked: bool,
-	 *   license_blocked: bool,
+	 *   readme_blocked: bool|null,
+	 *   license_blocked: bool|null,
 	 *   application_passwords_count: int,
 	 *   probed_at: int,
 	 * }
@@ -92,8 +92,8 @@ final class StatusInspector {
 				 *   uploads_php_executable: bool|null,
 				 *   uploads_htaccess_exists: bool,
 				 *   uploads_index_exists: bool,
-				 *   readme_blocked: bool,
-				 *   license_blocked: bool,
+				 *   readme_blocked: bool|null,
+				 *   license_blocked: bool|null,
 				 *   application_passwords_count: int,
 				 *   probed_at: int,
 				 * } $cached
@@ -193,18 +193,20 @@ final class StatusInspector {
 	}
 
 	/**
-	 * HTTP-probe a path under the site root; returns `true` when the server
-	 * refuses it (403 / 404 / 4xx / 5xx), `false` when it returns 200.
+	 * HTTP-probe a path under the site root. Returns:
+	 *   - `true`  when the server refuses it (non-200) → blocked.
+	 *   - `false` when it returns 200 → still served.
+	 *   - `null`  when the probe can't reach the host (WP_Error) → inconclusive.
 	 *
-	 * We treat any non-200 response as "blocked" — a redirect is still exposing
-	 * the file if the ultimate target is 200, but we use `redirection => 0` to
-	 * force a first-hop evaluation.
+	 * The `null` case matters in container/dev setups (e.g. wp-env) where the
+	 * site cannot resolve its own public URL: we must not report "accessible"
+	 * (a false warning) when we simply couldn't look.
 	 *
 	 * @param string $relative Path under the site root (e.g. `readme.html`).
 	 */
-	private function probe_path_blocked( string $relative ): bool {
+	private function probe_path_blocked( string $relative ): ?bool {
 		if ( ! function_exists( 'home_url' ) ) {
-			return false;
+			return null;
 		}
 
 		$url = (string) home_url( '/' . ltrim( $relative, '/' ) );
@@ -219,9 +221,7 @@ final class StatusInspector {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			// We genuinely can't tell — report unblocked so the UI surfaces a
-			// yellow warning rather than a false green tick.
-			return false;
+			return null;
 		}
 
 		$status = (int) wp_remote_retrieve_response_code( $response );
