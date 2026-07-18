@@ -72,13 +72,12 @@ export interface ChecksResult {
   uploads_index_exists: boolean;
   application_passwords_count: number;
   /**
-   * True when the front-door probe for /readme.html returns a blocked status.
-   * Derived server-side — drives the "Still accessible" pill on the
-   * version-disclosure row when the toggle is on but the rewrite is missing.
+   * Front-door probe for /readme.html. `true` = blocked, `false` = still
+   * served, `null` = probe could not reach the host (inconclusive).
    */
-  readme_blocked: boolean;
-  /** True when the front-door probe for /license.txt returns a blocked status. */
-  license_blocked: boolean;
+  readme_blocked: boolean | null;
+  /** Front-door probe for /license.txt. Same tri-state as readme_blocked. */
+  license_blocked: boolean | null;
   /** Unix timestamp (seconds) of the probe. */
   probed_at: number;
 }

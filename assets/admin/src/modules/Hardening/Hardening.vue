@@ -134,12 +134,30 @@ const statusStripVersionQuery = computed<ChecklistStatus>(() =>
 const statusBlockReadmeLicense = computed<ChecklistStatus>(() => {
   const enabled = store.config?.version_hiding.block_readme_license ?? false;
   if (!enabled) return 'inactive';
-  // Server-side rewrite may silently fail (e.g., hosting locks .htaccess).
-  // Warn when the toggle is on but either probe still reports accessible.
-  const readmeBlocked = store.checks?.readme_blocked ?? true;
-  const licenseBlocked = store.checks?.license_blocked ?? true;
-  if (!readmeBlocked || !licenseBlocked) return 'warning';
+  // Warn only when a probe positively reports the file is STILL served
+  // (=== false). `null` (inconclusive — e.g. dev host can't reach itself) is
+  // treated as active so we don't cry wolf.
+  const readmeServed = store.checks?.readme_blocked === false;
+  const licenseServed = store.checks?.license_blocked === false;
+  if (readmeServed || licenseServed) return 'warning';
   return 'active';
+});
+
+/**
+ * Server-aware remediation copy for the readme/license warning footer.
+ * Branches by detected `server_type` — Apache/LiteSpeed honor .htaccess so
+ * the fix is confirming AllowOverride; nginx/IIS never read .htaccess at
+ * all, so the fix is a server-block rule instead.
+ */
+const readmeServerGuidance = computed<string>(() => {
+  const type = store.checks?.server_type ?? 'unknown';
+  if (type === 'apache' || type === 'litespeed') {
+    return 'The rewrite rule is in place but one or both files still respond. Confirm your host allows .htaccess overrides (AllowOverride) for the site root.';
+  }
+  if (type === 'nginx' || type === 'iis') {
+    return `Your server (${type}) does not use .htaccess. Add a rule to block these files, then run checks again.`;
+  }
+  return 'One or both files still respond. If your server is nginx/IIS, add the equivalent server-block rule; on Apache, confirm .htaccess overrides are allowed.';
 });
 
 // Uploads section now renders status rows (not toggles) driven directly by
@@ -544,11 +562,14 @@ onMounted(() => {
                 class="fx-hardening__help fx-hardening__help--warn"
                 role="note"
               >
-                .htaccess write failed — one or both files still respond to
-                public requests. Run checks again after confirming the server
-                rewrite rules are applied (or that your host allows
-                <code>.htaccess</code> edits).
+                {{ readmeServerGuidance }}
               </p>
+              <pre
+                v-if="store.checks?.server_type === 'nginx'"
+                class="fx-hardening__snippet"
+              ><code>location ~* /(readme\.html|license\.txt)$ {
+    deny all;
+}</code></pre>
             </template>
           </ChecklistItem>
         </div>
@@ -666,9 +687,10 @@ onMounted(() => {
             File Editing
           </h3>
           <p class="fx-hardening__section-hint">
-            Disable the dashboard <strong>Appearance → Theme File Editor</strong>
-            and <strong>Plugins → Plugin File Editor</strong> so a compromised
-            admin cannot edit PHP directly. Enabling this hides both editors.
+            Disable the dashboard
+            <strong>Appearance → Theme File Editor</strong> and
+            <strong>Plugins → Plugin File Editor</strong> so a compromised admin
+            cannot edit PHP directly. Enabling this hides both editors.
           </p>
         </header>
         <div class="fx-hardening__items">

@@ -304,7 +304,8 @@ describe('<Hardening>', () => {
       });
 
       expect(wrapper.text()).toContain('Still accessible');
-      expect(wrapper.text()).toContain('.htaccess write failed');
+      expect(wrapper.text()).not.toContain('write failed');
+      expect(wrapper.text()).toContain('AllowOverride');
     });
 
     it('warns when license_blocked is false even if readme is blocked', async () => {
@@ -327,6 +328,35 @@ describe('<Hardening>', () => {
         store.checks = makeChecks({
           readme_blocked: true,
           license_blocked: true,
+        });
+      });
+
+      expect(wrapper.text()).not.toContain('Still accessible');
+    });
+
+    it('shows server-aware guidance (not "write failed") when readme is still served on nginx', async () => {
+      const { wrapper } = await mountWithStore((store) => {
+        store.config = makeConfig();
+        store.status = makeStatus();
+        store.checks = makeChecks({
+          server_type: 'nginx',
+          readme_blocked: false,
+          license_blocked: true,
+        });
+      });
+
+      const text = wrapper.text();
+      expect(text).not.toContain('write failed');
+      expect(text.toLowerCase()).toContain('nginx');
+    });
+
+    it('treats an inconclusive (null) probe as active — no false-alarm warning', async () => {
+      const { wrapper } = await mountWithStore((store) => {
+        store.config = makeConfig();
+        store.status = makeStatus();
+        store.checks = makeChecks({
+          readme_blocked: null,
+          license_blocked: null,
         });
       });
 
