@@ -666,8 +666,9 @@ onMounted(() => {
             File Editing
           </h3>
           <p class="fx-hardening__section-hint">
-            Disable the dashboard plugin and theme editors so a compromised
-            admin cannot modify PHP files directly.
+            Disable the dashboard <strong>Appearance → Theme File Editor</strong>
+            and <strong>Plugins → Plugin File Editor</strong> so a compromised
+            admin cannot edit PHP directly. Enabling this hides both editors.
           </p>
         </header>
         <div class="fx-hardening__items">

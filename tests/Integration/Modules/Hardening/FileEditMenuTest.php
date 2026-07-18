@@ -52,7 +52,7 @@ final class FileEditMenuTest extends WP_UnitTestCase {
 			]
 		) )->register_hooks();
 
-		foreach ( [ 'edit_themes', 'edit_plugins' ] as $context ) {
+		foreach ( [ 'capability_edit_themes', 'capability_edit_plugins' ] as $context ) {
 			$this->assertFalse(
 				wp_is_file_mod_allowed( $context ),
 				"wp_is_file_mod_allowed({$context}) should be false when runtime enforce is on."
@@ -69,7 +69,7 @@ final class FileEditMenuTest extends WP_UnitTestCase {
 			$this->markTestSkipped( 'Core-level file edit block active — guard is redundant here.' );
 		}
 
-		foreach ( [ 'edit_themes', 'edit_plugins' ] as $context ) {
+		foreach ( [ 'capability_edit_themes', 'capability_edit_plugins' ] as $context ) {
 			$this->assertTrue(
 				wp_is_file_mod_allowed( $context ),
 				"wp_is_file_mod_allowed({$context}) should be true when the Hardening guard is not registered."

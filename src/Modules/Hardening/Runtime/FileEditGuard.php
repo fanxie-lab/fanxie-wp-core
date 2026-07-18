@@ -22,17 +22,20 @@ defined( 'ABSPATH' ) || exit;
 final class FileEditGuard {
 
 	/**
-	 * Contexts we lock down. WordPress passes these strings to the
-	 * `file_mod_allowed` filter from every core call-site that gates a
-	 * code-editing operation.
+	 * Contexts we lock down. WordPress gates BOTH the theme editor and the
+	 * plugin editor through a single `file_mod_allowed` call with the context
+	 * `capability_edit_themes` (see wp-includes/capabilities.php, the
+	 * edit_files / edit_plugins / edit_themes meta-cap branch).
+	 * `capability_edit_plugins` is included defensively in case a plugin or a
+	 * future core version gates the plugin editor separately. We deliberately do
+	 * NOT block `capability_update_core` so installs/updates keep working — this
+	 * mirrors DISALLOW_FILE_EDIT, not the broader DISALLOW_FILE_MODS.
 	 *
 	 * @var array<int, string>
 	 */
 	private const BLOCKED_CONTEXTS = [
-		'edit_themes',
-		'edit_plugins',
-		'edit_theme',
-		'edit_plugin',
+		'capability_edit_themes',
+		'capability_edit_plugins',
 	];
 
 	/**

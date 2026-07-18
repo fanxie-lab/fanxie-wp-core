@@ -31,20 +31,23 @@ final class FileEditGuardTest extends TestCase {
 		parent::tearDown();
 	}
 
-	public function test_blocks_edit_themes_and_edit_plugins(): void {
+	public function test_blocks_the_editor_contexts_wordpress_actually_emits(): void {
 		$guard = new FileEditGuard( [ 'file_editing' => [ 'runtime_enforce' => true ] ] );
 
-		$this->assertFalse( $guard->filter_file_mod_allowed( true, 'edit_themes' ) );
-		$this->assertFalse( $guard->filter_file_mod_allowed( true, 'edit_plugins' ) );
-		$this->assertFalse( $guard->filter_file_mod_allowed( true, 'edit_theme' ) );
-		$this->assertFalse( $guard->filter_file_mod_allowed( true, 'edit_plugin' ) );
+		// WordPress core gates BOTH editors via `capability_edit_themes`
+		// (wp-includes/capabilities.php); `capability_edit_plugins` is defensive.
+		$this->assertFalse( $guard->filter_file_mod_allowed( true, 'capability_edit_themes' ) );
+		$this->assertFalse( $guard->filter_file_mod_allowed( true, 'capability_edit_plugins' ) );
 	}
 
-	public function test_passes_through_other_contexts(): void {
+	public function test_does_not_block_installs_updates_or_unrelated_contexts(): void {
 		$guard = new FileEditGuard( [ 'file_editing' => [ 'runtime_enforce' => true ] ] );
 
-		$this->assertTrue( $guard->filter_file_mod_allowed( true, 'automatic_updater_disabled' ) );
-		$this->assertFalse( $guard->filter_file_mod_allowed( false, 'download_url' ) );
+		// Must NOT over-block: plugin/theme install/update flow through this one.
+		$this->assertTrue( $guard->filter_file_mod_allowed( true, 'capability_update_core' ) );
+		// The old, unprefixed strings are fictional — they pass through untouched now.
+		$this->assertTrue( $guard->filter_file_mod_allowed( true, 'edit_themes' ) );
+		$this->assertFalse( $guard->filter_file_mod_allowed( false, 'automatic_updater' ) );
 	}
 
 	public function test_register_hooks_is_noop_when_disabled(): void {
