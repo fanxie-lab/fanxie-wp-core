@@ -215,4 +215,21 @@ final class LoginSlugGuardIntegrationTest extends WP_UnitTestCase {
 
 		remove_filter( 'wp_doing_cron', '__return_true' );
 	}
+
+	public function test_rest_api_path_is_a_carve_out_with_a_colliding_slug(): void {
+		// `users` collides with a core REST route's trailing segment: a request to
+		// `/wp-json/wp/v2/users` has trailing segment `users`, which matches the
+		// slug and — absent the path-based REST carve-out — would be served the
+		// login form. The carve-out must decide this at wp_loaded, using the real
+		// `rest_get_url_prefix()` and `home_url()`, before core defines
+		// `REST_REQUEST` on parse_request.
+		$guard = $this->active_guard( [ 'slug' => 'users' ] );
+
+		$_SERVER['REQUEST_URI'] = '/' . rest_get_url_prefix() . '/wp/v2/users';
+		$this->assertTrue(
+			$guard->is_safe_context(),
+			'A /wp-json/… request is a carve-out context even with a colliding slug.'
+		);
+		$this->assertSame( 'none', $guard->resolve_action(), 'The REST API must never be intercepted.' );
+	}
 }

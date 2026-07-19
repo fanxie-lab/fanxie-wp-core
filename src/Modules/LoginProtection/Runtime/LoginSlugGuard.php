@@ -204,11 +204,26 @@ final class LoginSlugGuard {
 	 * what the request path looks like. `wp_doing_ajax()` and `wp_doing_cron()`
 	 * are the canonical, filterable expressions of `defined('DOING_AJAX')` /
 	 * `defined('DOING_CRON')` (and are what the coding standards mandate over a
-	 * raw constant read); REST is gated on `REST_REQUEST`, which has no core
-	 * helper on the minimum supported WordPress version.
+	 * raw constant read); those constants are set before `wp-load.php`, so the
+	 * helpers are authoritative at `wp_loaded`.
+	 *
+	 * REST needs a path check, not a constant check. The guard runs on
+	 * `wp_loaded` (priority 1), but core only defines `REST_REQUEST` inside
+	 * `rest_api_loaded()`, which is hooked on `parse_request` — that fires
+	 * *after* `wp_loaded`. So for a genuine `/wp-json/…` request `REST_REQUEST`
+	 * is not yet defined when the guard evaluates, and a `defined('REST_REQUEST')`
+	 * gate could never fire in time. Matching the request path against
+	 * {@see self::is_rest_path()} (which reads the filterable
+	 * `rest_get_url_prefix()`) is what actually keeps the REST API reachable
+	 * here; the `REST_REQUEST` check is retained only as belt-and-suspenders for
+	 * any later re-evaluation once core has defined it.
 	 */
 	public function is_safe_context(): bool {
 		if ( wp_doing_ajax() || wp_doing_cron() ) {
+			return true;
+		}
+
+		if ( $this->is_rest_path() ) {
 			return true;
 		}
 
@@ -333,6 +348,34 @@ final class LoginSlugGuard {
 	}
 
 	/**
+	 * Whether the current request targets the REST API, decided by path alone.
+	 *
+	 * This is the REST carve-out that actually works at `wp_loaded`: it never
+	 * consults `REST_REQUEST` (undefined until `parse_request`) and instead asks
+	 * whether the request path begins with the site's REST prefix. The prefix is
+	 * read from `rest_get_url_prefix()` (default `wp-json`) so a filtered prefix
+	 * is honoured, and the site's home path is stripped first so the check holds
+	 * on subdirectory installs (`/blog/wp-json/…`) as well as root installs.
+	 */
+	private function is_rest_path(): bool {
+		$prefix = trim( rest_get_url_prefix(), '/' );
+		if ( '' === $prefix ) {
+			return false;
+		}
+
+		$path = trim( $this->request_path(), '/' );
+
+		// Reduce to a site-relative path so a subdirectory install still matches.
+		$home_path = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+		$home_path = is_string( $home_path ) ? trim( $home_path, '/' ) : '';
+		if ( '' !== $home_path && ( $path === $home_path || str_starts_with( $path, $home_path . '/' ) ) ) {
+			$path = trim( substr( $path, strlen( $home_path ) ), '/' );
+		}
+
+		return $path === $prefix || str_starts_with( $path, $prefix . '/' );
+	}
+
+	/**
 	 * The decoded path of the current request (query string stripped).
 	 */
 	private function request_path(): string {
@@ -360,10 +403,19 @@ final class LoginSlugGuard {
 	}
 
 	/**
-	 * Swap a `wp-login.php` URL for the slug, preserving any query args.
+	 * Swap a `wp-login.php` URL for the slug, preserving any query string verbatim.
 	 *
 	 * Idempotent: a URL that does not contain `wp-login.php` (including one
 	 * already rewritten to the slug) is returned untouched.
+	 *
+	 * The original query string is re-attached byte-for-byte rather than decoded
+	 * and rebuilt. Decoding then rebuilding (`wp_parse_str()` → `add_query_arg()`)
+	 * is unsafe here: `add_query_arg()` does not re-encode values, so a
+	 * percent-encoded `&`/`=` inside a value would first decode and then splice in
+	 * an unintended parameter. Keeping the raw query verbatim closes that gap and
+	 * leaves normal login/reset URLs byte-identical in practice — the only query
+	 * strings this ever sees are core's own (`action=logout`, `action=rp&key=…`,
+	 * `loggedout=true`), which carry no encoded separators.
 	 *
 	 * @param string $url Candidate URL.
 	 */
@@ -374,14 +426,16 @@ final class LoginSlugGuard {
 
 		$base  = $this->new_login_url();
 		$parts = explode( '?', $url, 2 );
-		if ( isset( $parts[1] ) && '' !== $parts[1] ) {
-			$args = [];
-			wp_parse_str( $parts[1], $args );
-
-			return add_query_arg( $args, $base );
+		if ( ! isset( $parts[1] ) || '' === $parts[1] ) {
+			return $base;
 		}
 
-		return $base;
+		// The plain-permalink base already carries the slug as `?slug`, so a
+		// second parameter group must join with `&`; the pretty-permalink base is
+		// query-less and opens the string with `?`.
+		$separator = str_contains( $base, '?' ) ? '&' : '?';
+
+		return $base . $separator . $parts[1];
 	}
 
 	/**

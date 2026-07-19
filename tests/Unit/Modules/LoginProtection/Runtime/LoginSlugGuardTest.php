@@ -59,6 +59,13 @@ final class LoginSlugGuardTest extends TestCase {
 		// ordinary requests are classified, and flip them per-test for carve-outs.
 		Functions\when( 'wp_doing_ajax' )->justReturn( false );
 		Functions\when( 'wp_doing_cron' )->justReturn( false );
+		// The REST carve-out matches the request path against the REST prefix and
+		// strips the site's home path first; default a root install so ordinary
+		// requests classify normally.
+		Functions\when( 'rest_get_url_prefix' )->justReturn( 'wp-json' );
+		Functions\when( 'home_url' )->alias(
+			static fn ( $path = '' ): string => 'http://example.test/' . ltrim( (string) $path, '/' )
+		);
 	}
 
 	protected function tearDown(): void {
@@ -226,6 +233,31 @@ final class LoginSlugGuardTest extends TestCase {
 
 		$_SERVER['REQUEST_URI'] = '/my-login';
 		$this->assertTrue( $guard->is_safe_context() );
+		$this->assertSame( 'none', $guard->resolve_action(), 'The REST API must never be intercepted.' );
+	}
+
+	/**
+	 * The real timing gap: the guard runs on `wp_loaded`, but core only defines
+	 * `REST_REQUEST` on `parse_request` (later), so at interception time the
+	 * constant is *undefined* for a genuine `/wp-json/…` request. Only a
+	 * path-based carve-out can keep REST reachable this early. The slug is set to
+	 * `users` on purpose so the request's trailing segment (`/wp-json/wp/v2/users`
+	 * → `users`) collides with the slug — precisely the case that would otherwise
+	 * be misrouted to the login form.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_rest_path_is_safe_without_rest_request_constant(): void {
+		$guard = $this->guard( [ 'enabled' => true, 'slug' => 'users' ] );
+
+		$this->assertFalse( defined( 'REST_REQUEST' ), 'Timing gap: REST_REQUEST is undefined at wp_loaded.' );
+
+		$_SERVER['REQUEST_URI'] = '/wp-json/wp/v2/users';
+		$this->assertTrue(
+			$guard->is_safe_context(),
+			'A /wp-json/… path is a carve-out even before REST_REQUEST exists.'
+		);
 		$this->assertSame( 'none', $guard->resolve_action(), 'The REST API must never be intercepted.' );
 	}
 }
