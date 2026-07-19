@@ -54,14 +54,33 @@ describe('<HeadersView>', () => {
 
     expect(store.isDirty).toBe(false);
 
-    // The first Toggle in the HSTS section is the "Enable HSTS" switch.
-    const switches = wrapper.findAll('[role="switch"]');
-    expect(switches.length).toBeGreaterThan(0);
-    await switches[0]!.trigger('click');
+    // Target the HSTS switch by its accessible label — it now lives in the
+    // Advanced section at the bottom, so index-based lookup is not reliable.
+    const hstsSwitch = wrapper
+      .findAll('[role="switch"]')
+      .find((s) => s.attributes('aria-label') === 'Enable HSTS');
+    expect(hstsSwitch).toBeDefined();
+    await hstsSwitch!.trigger('click');
     await flushPromises();
 
     expect(store.config?.headers.hsts.enabled).toBe(false);
     expect(store.isDirty).toBe(true);
+  });
+
+  it('places HSTS inside a collapsed Advanced section', () => {
+    seedStore();
+    const wrapper = mount(HeadersView);
+
+    const advanced = wrapper.get('details.fx-headers-view__advanced');
+    expect(advanced.attributes('open')).toBeUndefined(); // collapsed by default
+    expect(advanced.text()).toContain('HTTP Strict Transport Security');
+  });
+
+  it('explains Cache-Control inline', () => {
+    seedStore();
+    const wrapper = mount(HeadersView);
+
+    expect(wrapper.text().toLowerCase()).toContain('proxies');
   });
 
   it('calls store.save() when the Save button is clicked', async () => {
@@ -69,7 +88,7 @@ describe('<HeadersView>', () => {
     const saveSpy = vi.spyOn(store, 'save').mockResolvedValue();
 
     const wrapper = mount(HeadersView);
-    // Flip HSTS toggle so the form is dirty and SaveBar enables its button.
+    // Flip the first toggle so the form is dirty and SaveBar enables its button.
     await wrapper.findAll('[role="switch"]')[0]!.trigger('click');
     await flushPromises();
 

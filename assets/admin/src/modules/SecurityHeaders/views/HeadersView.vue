@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Toggle, TextField, Select, SaveBar } from '@/components';
+import {
+  Toggle,
+  TextField,
+  Select,
+  SaveBar,
+  Tooltip,
+  HelpText,
+} from '@/components';
 import type { SelectOption } from '@/components';
 import { useSecurityHeadersStore } from '../stores/securityHeaders';
 import { useSecurityHeadersConfig } from '../composables/useSecurityHeadersConfig';
@@ -47,49 +54,16 @@ const hstsMaxAge = computed<string>({
 
 <template>
   <div v-if="config" class="fx-headers-view">
-    <section class="fx-headers-view__section" aria-labelledby="fx-headers-hsts">
-      <header class="fx-headers-view__section-header">
-        <h3 id="fx-headers-hsts" class="fx-headers-view__section-title">
-          HTTP Strict Transport Security (HSTS)
-        </h3>
-        <p class="fx-headers-view__section-hint">
-          Instructs browsers to use HTTPS only for this domain.
-        </p>
-      </header>
-      <div class="fx-headers-view__callout fx-headers-view__callout--warning">
-        <strong>Heads up — HSTS can break a site.</strong>
-        Once a browser has cached this header, it will refuse plain HTTP for the
-        entire <code>max-age</code> window (up to a year), even if HTTPS later
-        breaks. Only enable on a domain that is fully and permanently on HTTPS
-        with a valid certificate. The header is also only emitted over HTTPS —
-        it will not appear on <code>http://localhost</code> or any plain-HTTP
-        request.
-      </div>
-      <Toggle
-        v-model="config.headers.hsts.enabled"
-        label="Enable HSTS"
-        description="Sends Strict-Transport-Security on every HTTPS response."
-      />
-      <TextField
-        v-model="hstsMaxAge"
-        type="number"
-        label="max-age (seconds)"
-        help="Recommended minimum: 31536000 (1 year)."
-        :disabled="!config.headers.hsts.enabled"
-      />
-      <Toggle
-        v-model="config.headers.hsts.include_subdomains"
-        label="includeSubDomains"
-        description="Apply HSTS to all sub-domains. Off by default — turning this on can lock out subdomains that are not yet on HTTPS."
-        :disabled="!config.headers.hsts.enabled"
-      />
-    </section>
-
     <section class="fx-headers-view__section" aria-labelledby="fx-headers-xfo">
       <header class="fx-headers-view__section-header">
-        <h3 id="fx-headers-xfo" class="fx-headers-view__section-title">
-          X-Frame-Options
-        </h3>
+        <div class="fx-headers-view__title-row">
+          <h3 id="fx-headers-xfo" class="fx-headers-view__section-title">
+            X-Frame-Options
+          </h3>
+          <Tooltip
+            text="Stops other sites from embedding yours in a frame (clickjacking). SAMEORIGIN allows your own site to frame itself."
+          />
+        </div>
         <p class="fx-headers-view__section-hint">
           Legacy clickjacking protection. Modern browsers also honour the CSP
           <code>frame-ancestors</code> directive.
@@ -109,9 +83,14 @@ const hstsMaxAge = computed<string>({
 
     <section class="fx-headers-view__section" aria-labelledby="fx-headers-xcto">
       <header class="fx-headers-view__section-header">
-        <h3 id="fx-headers-xcto" class="fx-headers-view__section-title">
-          X-Content-Type-Options
-        </h3>
+        <div class="fx-headers-view__title-row">
+          <h3 id="fx-headers-xcto" class="fx-headers-view__section-title">
+            X-Content-Type-Options
+          </h3>
+          <Tooltip
+            text="Sends nosniff so browsers don't guess a file's type — blocks tricks that run an upload as script."
+          />
+        </div>
         <p class="fx-headers-view__section-hint">
           Always <code>nosniff</code> — disables MIME-type sniffing.
         </p>
@@ -124,9 +103,14 @@ const hstsMaxAge = computed<string>({
       aria-labelledby="fx-headers-referrer"
     >
       <header class="fx-headers-view__section-header">
-        <h3 id="fx-headers-referrer" class="fx-headers-view__section-title">
-          Referrer-Policy
-        </h3>
+        <div class="fx-headers-view__title-row">
+          <h3 id="fx-headers-referrer" class="fx-headers-view__section-title">
+            Referrer-Policy
+          </h3>
+          <Tooltip
+            text="Limits how much of the current URL is sent when users click outbound links."
+          />
+        </div>
         <p class="fx-headers-view__section-hint">
           Controls how much of the referring URL is sent with outgoing requests.
         </p>
@@ -148,9 +132,17 @@ const hstsMaxAge = computed<string>({
       aria-labelledby="fx-headers-permissions"
     >
       <header class="fx-headers-view__section-header">
-        <h3 id="fx-headers-permissions" class="fx-headers-view__section-title">
-          Permissions-Policy
-        </h3>
+        <div class="fx-headers-view__title-row">
+          <h3
+            id="fx-headers-permissions"
+            class="fx-headers-view__section-title"
+          >
+            Permissions-Policy
+          </h3>
+          <Tooltip
+            text="Turns off browser features (camera, mic, geolocation…) your site doesn't use."
+          />
+        </div>
         <p class="fx-headers-view__section-hint">
           Restricts browser features (camera, microphone, geolocation, …).
         </p>
@@ -175,17 +167,66 @@ const hstsMaxAge = computed<string>({
         <h3 id="fx-headers-cache" class="fx-headers-view__section-title">
           Cache-Control (admin)
         </h3>
-        <p class="fx-headers-view__section-hint">
-          Sends a strict Cache-Control header on admin and logged-in responses
-          only.
-        </p>
       </header>
+      <HelpText id="fx-cache-help">
+        Sends a strict <code>Cache-Control: no-store</code> on wp-admin and
+        logged-in responses so proxies, CDNs, and browsers never cache private
+        or per-user admin pages. Frontend/anonymous caching is untouched. Leave
+        on unless a plugin manages admin caching itself — wrong values here can
+        serve stale dashboards or leak one user's page to another.
+      </HelpText>
       <Toggle
         v-model="config.headers.cache_control.enabled"
         label="Enable admin Cache-Control"
-        description="Frontend caching is not affected."
+        aria-describedby="fx-cache-help"
       />
     </section>
+
+    <details class="fx-headers-view__advanced">
+      <summary class="fx-headers-view__advanced-summary">
+        Advanced — HSTS (can break sites)
+      </summary>
+      <section
+        class="fx-headers-view__section"
+        aria-labelledby="fx-headers-hsts"
+      >
+        <header class="fx-headers-view__section-header">
+          <h3 id="fx-headers-hsts" class="fx-headers-view__section-title">
+            HTTP Strict Transport Security (HSTS)
+          </h3>
+          <p class="fx-headers-view__section-hint">
+            Instructs browsers to use HTTPS only for this domain.
+          </p>
+        </header>
+        <div class="fx-headers-view__callout fx-headers-view__callout--warning">
+          <strong>Heads up — HSTS can break a site.</strong>
+          Once a browser has cached this header, it will refuse plain HTTP for
+          the entire <code>max-age</code> window (up to a year), even if HTTPS
+          later breaks. Only enable on a domain that is fully and permanently on
+          HTTPS with a valid certificate. The header is also only emitted over
+          HTTPS — it will not appear on <code>http://localhost</code> or any
+          plain-HTTP request.
+        </div>
+        <Toggle
+          v-model="config.headers.hsts.enabled"
+          label="Enable HSTS"
+          description="Sends Strict-Transport-Security on every HTTPS response."
+        />
+        <TextField
+          v-model="hstsMaxAge"
+          type="number"
+          label="max-age (seconds)"
+          help="Recommended minimum: 31536000 (1 year)."
+          :disabled="!config.headers.hsts.enabled"
+        />
+        <Toggle
+          v-model="config.headers.hsts.include_subdomains"
+          label="includeSubDomains"
+          description="Apply HSTS to all sub-domains. Off by default — turning this on can lock out subdomains that are not yet on HTTPS."
+          :disabled="!config.headers.hsts.enabled"
+        />
+      </section>
+    </details>
 
     <SaveBar
       :dirty="isDirty"
@@ -222,6 +263,12 @@ const hstsMaxAge = computed<string>({
   display: flex;
   flex-direction: column;
   gap: var(--fx-space-1);
+}
+
+.fx-headers-view__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-2);
 }
 
 .fx-headers-view__section-title {
@@ -280,6 +327,31 @@ const hstsMaxAge = computed<string>({
   background: var(--fx-color-warn-bg);
   border: 1px solid var(--fx-color-warn);
   color: var(--fx-color-warn);
+}
+
+.fx-headers-view__advanced {
+  border: 1px solid var(--fx-color-border);
+  border-radius: var(--fx-radius-lg);
+  background: var(--fx-color-surface);
+  box-shadow: var(--fx-shadow-sm);
+  padding: var(--fx-space-4) var(--fx-space-5);
+}
+
+.fx-headers-view__advanced-summary {
+  cursor: pointer;
+  font-family: var(--fx-font-heading);
+  font-weight: var(--fx-font-weight-medium);
+  color: var(--fx-color-warn);
+}
+
+.fx-headers-view__advanced-summary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--fx-color-primary-soft);
+  border-radius: var(--fx-radius-sm);
+}
+
+.fx-headers-view__advanced[open] .fx-headers-view__advanced-summary {
+  margin-bottom: var(--fx-space-3);
 }
 
 .fx-headers-view__loading {
