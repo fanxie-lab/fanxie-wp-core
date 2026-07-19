@@ -141,7 +141,7 @@ final class LoginLogRepository implements LoginLogRecorder {
 	 *                                       Date filters accept `Y-m-d` or `Y-m-d H:i:s`.
 	 * @param int                  $page     1-based page number.
 	 * @param int                  $per_page Page size (clamped to 1..200).
-	 * @return array{rows: list<array<array-key, mixed>>, total: int}
+	 * @return array{rows: list<array{id: int, event_type: string, ip: string, username: string, user_id: int|null, context: string|null, created_at: string}>, total: int}
 	 */
 	public function query( array $filters, int $page = 1, int $per_page = 25 ): array {
 		global $wpdb;
@@ -194,7 +194,20 @@ final class LoginLogRepository implements LoginLogRecorder {
 		if ( is_array( $rows ) ) {
 			foreach ( $rows as $row ) {
 				if ( is_array( $row ) ) {
-					$records[] = $row;
+					// $wpdb returns every column as a string; cast the integer
+					// columns back so the JSON payload matches the TS contract
+					// (LoginLogRow.id: number, user_id: number | null). A NULL
+					// user_id (unresolved username) surfaces as an unset ARRAY_A
+					// value, so isset() is false and it stays null.
+					$records[] = [
+						'id'         => isset( $row['id'] ) ? (int) $row['id'] : 0,
+						'event_type' => isset( $row['event_type'] ) ? (string) $row['event_type'] : '',
+						'ip'         => isset( $row['ip'] ) ? (string) $row['ip'] : '',
+						'username'   => isset( $row['username'] ) ? (string) $row['username'] : '',
+						'user_id'    => isset( $row['user_id'] ) ? (int) $row['user_id'] : null,
+						'context'    => isset( $row['context'] ) ? (string) $row['context'] : null,
+						'created_at' => isset( $row['created_at'] ) ? (string) $row['created_at'] : '',
+					];
 				}
 			}
 		}

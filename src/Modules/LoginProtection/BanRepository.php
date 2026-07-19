@@ -196,7 +196,7 @@ final class BanRepository implements BanStore {
 	 *
 	 * @param int $page     1-based page number.
 	 * @param int $per_page Page size (clamped to 1..200).
-	 * @return array{rows: list<array<array-key, mixed>>, total: int}
+	 * @return array{rows: list<array{id: int, subject_type: string, subject_value: string, reason: string|null, expires_at: string|null, created_at: string|null}>, total: int}
 	 */
 	public function query( int $page = 1, int $per_page = 25 ): array {
 		global $wpdb;
@@ -222,7 +222,18 @@ final class BanRepository implements BanStore {
 		if ( is_array( $rows ) ) {
 			foreach ( $rows as $row ) {
 				if ( is_array( $row ) ) {
-					$records[] = $row;
+					// $wpdb returns every column as a string; cast the integer
+					// `id` back so the JSON payload matches the TS contract
+					// (BanRow.id: number). Nullable text columns surface as unset
+					// ARRAY_A values, so isset() is false and they stay null.
+					$records[] = [
+						'id'            => isset( $row['id'] ) ? (int) $row['id'] : 0,
+						'subject_type'  => isset( $row['subject_type'] ) ? (string) $row['subject_type'] : '',
+						'subject_value' => isset( $row['subject_value'] ) ? (string) $row['subject_value'] : '',
+						'reason'        => isset( $row['reason'] ) ? (string) $row['reason'] : null,
+						'expires_at'    => isset( $row['expires_at'] ) ? (string) $row['expires_at'] : null,
+						'created_at'    => isset( $row['created_at'] ) ? (string) $row['created_at'] : null,
+					];
 				}
 			}
 		}

@@ -31,6 +31,20 @@ final class RepositoriesTest extends LoginProtectionTableTestCase {
 		$this->assertSame( 1, $out['total'] );
 		$this->assertSame( 'failed_login', $out['rows'][0]['event_type'] );
 		$this->assertSame( '203.0.113.5', $out['rows'][0]['ip'] );
+
+		// $wpdb returns integer columns as numeric strings; query() must cast
+		// them so the JSON payload matches the TS contract (LoginLogRow.id:
+		// number, user_id: number | null).
+		$this->assertIsInt( $out['rows'][0]['id'] );
+		$this->assertTrue( null === $out['rows'][0]['user_id'] || is_int( $out['rows'][0]['user_id'] ) );
+		$this->assertNull( $out['rows'][0]['user_id'] );
+
+		// A resolved user_id (non-null) is also returned as a real int.
+		$user_id = self::factory()->user->create();
+		$repo->record( 'failed_login', '203.0.113.6', 'editor', $user_id, [] );
+		$resolved = $repo->query( [], 1, 25 );
+		$this->assertIsInt( $resolved['rows'][0]['user_id'] );
+		$this->assertSame( $user_id, $resolved['rows'][0]['user_id'] );
 	}
 
 	public function test_ban_add_lookup_remove_and_expiry(): void {
@@ -81,6 +95,10 @@ final class RepositoriesTest extends LoginProtectionTableTestCase {
 		$all = $repo->query( 1, 25 );
 		$this->assertSame( 2, $all['total'] );
 		$this->assertCount( 2, $all['rows'] );
+
+		// $wpdb returns `id` as a numeric string; query() must cast it so the
+		// JSON payload matches the TS contract (BanRow.id: number).
+		$this->assertIsInt( $all['rows'][0]['id'] );
 
 		$paged = $repo->query( 1, 1 );
 		$this->assertSame( 2, $paged['total'] );
