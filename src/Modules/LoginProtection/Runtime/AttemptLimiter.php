@@ -166,6 +166,23 @@ final class AttemptLimiter {
 	}
 
 	/**
+	 * Whether a subject's lockout transient is currently set.
+	 *
+	 * The read-seam companion to {@see self::clear_subject()}: both derive their
+	 * key from the single private {@see self::lock_key()} builder, so the lock-key
+	 * format has exactly one source of truth. Used by the `wp fx-core login unlock
+	 * --dry-run` CLI report to inspect lock state without reconstructing the
+	 * private key scheme.
+	 *
+	 * @param string $type  Lockout dimension, `ip` or `user`.
+	 * @param string $value The subject value (IP address or login name).
+	 * @return bool True when the subject is currently locked in that dimension.
+	 */
+	public static function is_locked( string $type, string $value ): bool {
+		return false !== get_transient( self::lock_key( $type, $value ) );
+	}
+
+	/**
 	 * Resolve the strongest applicable tier for a failure count.
 	 *
 	 * Returns the tier with the highest `threshold` that is still `<=` the

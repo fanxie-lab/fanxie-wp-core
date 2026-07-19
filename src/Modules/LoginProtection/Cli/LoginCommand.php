@@ -131,7 +131,7 @@ final class LoginCommand {
 	 *
 	 * [--dry-run]
 	 * : Report what is currently locked/banned and what would be cleared, without
-	 * : changing anything.
+	 * changing anything.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -204,8 +204,8 @@ final class LoginCommand {
 			)
 		);
 
-		$ip_locked   = false !== get_transient( $this->lock_transient_key( 'ip', $subject ) );
-		$user_locked = false !== get_transient( $this->lock_transient_key( 'user', $subject ) );
+		$ip_locked   = AttemptLimiter::is_locked( 'ip', $subject );
+		$user_locked = AttemptLimiter::is_locked( 'user', $subject );
 		$ip_banned   = $this->bans->is_banned( 'ip', $subject );
 		$user_banned = $this->bans->is_banned( 'username', $subject );
 
@@ -242,22 +242,6 @@ final class LoginCommand {
 
 		// The `label: status` join is presentational, not linguistic — no `__()`.
 		return $label . ': ' . $status;
-	}
-
-	/**
-	 * Rebuild {@see AttemptLimiter}'s lock transient key for a dimension.
-	 *
-	 * Read-only mirror of AttemptLimiter's private key scheme (its `PREFIX` and
-	 * md5 hashing are private), used only to report lock presence during a dry
-	 * run. Kept in lockstep with AttemptLimiter — if that key scheme changes,
-	 * update this in step. `clear_subject()` remains the single writer, so the
-	 * apply path never reconstructs keys.
-	 *
-	 * @param string $dimension Lockout dimension, `ip` or `user`.
-	 * @param string $value     The subject value (IP address or login name).
-	 */
-	private function lock_transient_key( string $dimension, string $value ): string {
-		return 'fanxie_wp_core_lp_lock_' . $dimension . '_' . md5( $value );
 	}
 
 	/**

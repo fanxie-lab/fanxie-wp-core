@@ -168,6 +168,33 @@ final class AttemptLimiterTest extends TestCase {
 	}
 
 	/**
+	 * The `is_locked()` read seam reports true only when the subject's lock
+	 * transient is set, and it must query the exact key its own private
+	 * `lock_key()` builder produces (proven via reflection, not a hardcoded
+	 * mirror) — so a drift in the key format cannot silently break lock reporting.
+	 */
+	public function test_is_locked_reads_the_lock_transient_via_lock_key(): void {
+		$lock_key    = new \ReflectionMethod( AttemptLimiter::class, 'lock_key' );
+		$ip_lock_key = (string) $lock_key->invoke( null, 'ip', '203.0.113.55' );
+
+		$queried = [];
+		Functions\when( 'get_transient' )->alias(
+			static function ( $key ) use ( &$queried, $ip_lock_key ): mixed {
+				$queried[] = (string) $key;
+				return (string) $key === $ip_lock_key ? 42 : false;
+			}
+		);
+
+		// A subject whose lock transient is set reads as locked, and the key looked
+		// up is exactly the one `lock_key()` builds.
+		$this->assertTrue( AttemptLimiter::is_locked( 'ip', '203.0.113.55' ) );
+		$this->assertContains( $ip_lock_key, $queried, 'is_locked() must query the key lock_key() produces.' );
+
+		// A subject with no lock transient reads as unlocked.
+		$this->assertFalse( AttemptLimiter::is_locked( 'user', 'nobody' ) );
+	}
+
+	/**
 	 * Threshold gating: a failure whose count merely re-matches the already-applied
 	 * tier must not re-arm the lock or write another `lockout` row — but it MUST
 	 * still refresh the `applied_*` marker's TTL so it stays in lockstep with the

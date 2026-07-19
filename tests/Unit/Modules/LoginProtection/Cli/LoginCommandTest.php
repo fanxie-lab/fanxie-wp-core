@@ -13,6 +13,7 @@ use Brain\Monkey;
 use Brain\Monkey\Functions;
 use FanxieLab\WPCore\Modules\LoginProtection\BanStore;
 use FanxieLab\WPCore\Modules\LoginProtection\Cli\LoginCommand;
+use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
@@ -98,10 +99,17 @@ final class LoginCommandTest extends TestCase {
 				throw new \LogicException( 'delete_transient must not run during --dry-run.' );
 			}
 		);
-		// A lock is present for the username dimension, absent for the IP one.
+
+		// Drive the "locked" verdict off the exact key AttemptLimiter builds for the
+		// username dimension (reflected from its own private `lock_key()`), so the
+		// dry-run exercises the real `AttemptLimiter::is_locked()` read seam rather
+		// than a hardcoded key mirror — a drift in the key format would now surface
+		// through this path too. The IP dimension has no lock transient.
+		$lock_key      = new \ReflectionMethod( AttemptLimiter::class, 'lock_key' );
+		$user_lock_key = (string) $lock_key->invoke( null, 'user', $subject );
 		Functions\when( 'get_transient' )->alias(
-			static function ( $key ): mixed {
-				return str_starts_with( (string) $key, 'fanxie_wp_core_lp_lock_user_' ) ? 1 : false;
+			static function ( $key ) use ( $user_lock_key ): mixed {
+				return (string) $key === $user_lock_key ? 1 : false;
 			}
 		);
 
@@ -112,7 +120,9 @@ final class LoginCommandTest extends TestCase {
 		$command = new LoginCommand( $this->config(), $bans );
 		$command->unlock( [ $subject ], [ 'dry-run' => true ] );
 
-		$this->assertNotEmpty( \WP_CLI::all_text() );
+		// The username lock (keyed exactly as AttemptLimiter::lock_key() produces) is
+		// reported present — proof the dry-run resolved lock state through the seam.
+		$this->assertMatchesRegularExpression( '/present|would be cleared/i', \WP_CLI::all_text() );
 		$this->assertNotEmpty( \WP_CLI::messages_for( 'success' ) );
 	}
 
