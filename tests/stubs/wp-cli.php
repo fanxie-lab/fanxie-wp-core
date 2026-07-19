@@ -114,5 +114,22 @@ if ( ! class_exists( 'WP_CLI', false ) ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Test stub; the message is internal and never rendered to a browser.
 			throw new \RuntimeException( $message );
 		}
+
+		/**
+		 * Register a command with the WP-CLI runtime.
+		 *
+		 * Symbol-only stand-in so the static analyser can resolve
+		 * `WP_CLI::add_command()` in the Login Protection module's
+		 * `register_hooks()` wiring. The real facade ships with WP-CLI and is only
+		 * reached under a live `WP_CLI` runtime, never inside the test process, so
+		 * the stub records nothing.
+		 *
+		 * @param string               $name    Command name (e.g. `fx-core login`).
+		 * @param object|string        $handler Command implementation (instance or class name).
+		 * @param array<string, mixed> $args    Optional registration arguments.
+		 */
+		public static function add_command( string $name, object|string $handler, array $args = [] ): void {
+			unset( $name, $handler, $args );
+		}
 	}
 }

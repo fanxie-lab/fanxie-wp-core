@@ -10,6 +10,11 @@ declare( strict_types=1 );
 namespace FanxieLab\WPCore\Modules\LoginProtection;
 
 use FanxieLab\WPCore\Admin\AjaxRouter;
+use FanxieLab\WPCore\Modules\LoginProtection\Cli\LoginCommand;
+use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
+use FanxieLab\WPCore\Modules\LoginProtection\Runtime\LoginSlugGuard;
+use FanxieLab\WPCore\Modules\LoginProtection\Runtime\PasswordPolicy;
+use FanxieLab\WPCore\Modules\LoginProtection\Runtime\SessionTimeout;
 use FanxieLab\WPCore\Modules\ModuleBase;
 
 defined( 'ABSPATH' ) || exit;
@@ -44,19 +49,6 @@ final class LoginProtection extends ModuleBase {
 	 */
 	public function name(): string {
 		return __( 'Login Protection', 'fanxie-wp-core' );
-	}
-
-	/**
-	 * Shared AJAX router accessor.
-	 *
-	 * Exposes the injected router to the collaborators wired up in later tasks
-	 * (the module's AJAX controller and runtime emitters). Holding the
-	 * dependency behind an accessor keeps it captured now while the wiring in
-	 * `register_hooks()` lands incrementally — mirroring the accessor idiom the
-	 * Hardening module uses for its own collaborators.
-	 */
-	public function ajax_router(): AjaxRouter {
-		return $this->ajax_router;
 	}
 
 	/**
@@ -317,9 +309,58 @@ final class LoginProtection extends ModuleBase {
 	}
 
 	/**
-	 * Wire the module. Collaborators are added in later tasks.
+	 * Assemble and wire the module's runtime collaborators.
+	 *
+	 * Builds the shared IP resolver + persistence repositories, mounts the admin
+	 * AJAX surface on the shared router, then hands each fine-grained feature its
+	 * own config slice and lets it decide whether to attach. Every emitter gates
+	 * itself on its settings, so at the shipped defaults only attempt limiting
+	 * (on by default) hooks `authenticate`; hide-login, strong passwords, and
+	 * session timeout stand down until switched on. The daily prune handler is
+	 * wired unconditionally, and the break-glass WP-CLI commands are registered
+	 * only under a live WP-CLI runtime.
 	 */
 	public function register_hooks(): void {
-		// Populated by Tasks 3-10.
+		$config = $this->get_config();
+
+		// Narrow each `mixed` sub-tree to an array before handing it to a
+		// collaborator that expects one — the config is schema-sanitised, but
+		// `get_config()` is typed loosely as `array<string, mixed>`.
+		$attempts   = isset( $config['attempts'] ) && is_array( $config['attempts'] ) ? $config['attempts'] : array();
+		$hide_login = isset( $config['hide_login'] ) && is_array( $config['hide_login'] ) ? $config['hide_login'] : array();
+		$passwords  = isset( $config['passwords'] ) && is_array( $config['passwords'] ) ? $config['passwords'] : array();
+		$sessions   = isset( $config['sessions'] ) && is_array( $config['sessions'] ) ? $config['sessions'] : array();
+
+		$ip   = new IpResolver(
+			(bool) ( $attempts['trust_proxy'] ?? false ),
+			(string) ( $attempts['proxy_header'] ?? 'HTTP_X_FORWARDED_FOR' )
+		);
+		$log  = new LoginLogRepository();
+		$bans = new BanRepository();
+
+		// The AJAX controller registers its sub-actions on the shared router and
+		// schedules the daily prune event; this is the module's first real read
+		// of the injected router.
+		( new AjaxController( $this, $log, $bans ) )->register( $this->ajax_router );
+
+		( new AttemptLimiter( $attempts, $ip, $log, $bans ) )->register_hooks();
+		( new LoginSlugGuard( $hide_login ) )->register_hooks();
+		( new PasswordPolicy( $passwords ) )->register_hooks();
+		( new SessionTimeout( $sessions ) )->register_hooks();
+
+		// Cron handler for the event the AJAX controller scheduled: trim stale log
+		// rows and expired bans on the module's retention window.
+		$retention_days = (int) ( $attempts['log_retention_days'] ?? 30 );
+		add_action(
+			AjaxController::PRUNE_HOOK,
+			static function () use ( $log, $bans, $retention_days ): void {
+				$log->prune( $retention_days );
+				$bans->prune_expired();
+			}
+		);
+
+		if ( defined( 'WP_CLI' ) && constant( 'WP_CLI' ) ) {
+			\WP_CLI::add_command( 'fx-core login', new LoginCommand( $config, $bans ) );
+		}
 	}
 }

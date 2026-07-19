@@ -31,6 +31,19 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 		// The base case installs and truncates both custom tables before every
 		// test; here we only need local repository handles for the assertions.
 		parent::setUp();
+
+		// The module now wires itself at plugin boot (Task 10), so a live
+		// AttemptLimiter built from the shipped default config is already attached
+		// to `authenticate`, `wp_login_failed`, and `wp_login`. It shares the
+		// per-subject transient keyspace with the limiter each test builds via
+		// make_limiter(), so leaving it attached would double-count every failure
+		// and corrupt the tier arithmetic under test. Detach the boot limiter so
+		// each case exercises only its own limiter; WP_UnitTestCase restores every
+		// hook on tear-down, so this is scoped to the current test.
+		remove_all_filters( 'authenticate' );
+		remove_all_actions( 'wp_login_failed' );
+		remove_all_actions( 'wp_login' );
+
 		$this->log  = new LoginLogRepository();
 		$this->bans = new BanRepository();
 	}
