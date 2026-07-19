@@ -130,13 +130,39 @@ final class AttemptLimiter {
 		unset( $user );
 		$ip = $this->ip->resolve();
 		if ( '' !== $ip ) {
-			delete_transient( $this->count_key( 'ip', $ip ) );
-			delete_transient( $this->applied_key( 'ip', $ip ) );
+			delete_transient( self::count_key( 'ip', $ip ) );
+			delete_transient( self::applied_key( 'ip', $ip ) );
 		}
 		if ( is_string( $user_login ) && '' !== $user_login ) {
-			delete_transient( $this->count_key( 'user', $user_login ) );
-			delete_transient( $this->applied_key( 'user', $user_login ) );
+			delete_transient( self::count_key( 'user', $user_login ) );
+			delete_transient( self::applied_key( 'user', $user_login ) );
 		}
+	}
+
+	/**
+	 * Delete the live failure counter, lockout, and applied-tier transients for
+	 * a subject, releasing any active lock without touching persistent bans.
+	 *
+	 * A static, config-independent entry point (the transient keys derive only
+	 * from the subject, never from settings) shared by the admin
+	 * `login_protection/clear-lockout` AJAX action and the `wp fx-core login
+	 * unlock` CLI command. `$type` accepts the module's canonical subject types
+	 * — `ip` or `username` — and maps `username` onto the internal `user`
+	 * counter dimension so callers speak the same vocabulary the bans + log use.
+	 *
+	 * @param string $type  Subject dimension, `ip` or `username`.
+	 * @param string $value The subject value (IP address or login name).
+	 */
+	public static function clear_subject( string $type, string $value ): void {
+		if ( '' === $value ) {
+			return;
+		}
+
+		$dimension = 'ip' === $type ? 'ip' : 'user';
+
+		delete_transient( self::count_key( $dimension, $value ) );
+		delete_transient( self::lock_key( $dimension, $value ) );
+		delete_transient( self::applied_key( $dimension, $value ) );
 	}
 
 	/**
@@ -169,7 +195,7 @@ final class AttemptLimiter {
 		if ( '' === $value ) {
 			return;
 		}
-		$key   = $this->count_key( $type, $value );
+		$key   = self::count_key( $type, $value );
 		$count = (int) get_transient( $key ) + 1;
 		set_transient( $key, $count, DAY_IN_SECONDS );
 
@@ -185,7 +211,7 @@ final class AttemptLimiter {
 		// higher tier exactly once. A count that merely re-matches the current tier
 		// — e.g. a genuine failure after a lower-tier lock window has expired — will
 		// not renew the lock or write a duplicate `lockout` row.
-		$applied_key  = $this->applied_key( $type, $value );
+		$applied_key  = self::applied_key( $type, $value );
 		$applied_tier = (int) get_transient( $applied_key );
 		if ( $tier['threshold'] <= $applied_tier ) {
 			// Keep the marker's TTL in lockstep with the counter (both rolling to a
@@ -198,7 +224,7 @@ final class AttemptLimiter {
 		}
 
 		set_transient( $applied_key, $tier['threshold'], DAY_IN_SECONDS );
-		set_transient( $this->lock_key( $type, $value ), $count, $tier['lockout_minutes'] * MINUTE_IN_SECONDS );
+		set_transient( self::lock_key( $type, $value ), $count, $tier['lockout_minutes'] * MINUTE_IN_SECONDS );
 		$this->log->record(
 			'lockout',
 			'ip' === $type ? $value : '',
@@ -219,8 +245,8 @@ final class AttemptLimiter {
 	 * @param string $username Attempted login name (may be empty).
 	 */
 	private function is_locked_or_banned( string $ip, string $username ): bool {
-		return ( '' !== $ip && false !== get_transient( $this->lock_key( 'ip', $ip ) ) )
-			|| ( '' !== $username && false !== get_transient( $this->lock_key( 'user', $username ) ) )
+		return ( '' !== $ip && false !== get_transient( self::lock_key( 'ip', $ip ) ) )
+			|| ( '' !== $username && false !== get_transient( self::lock_key( 'user', $username ) ) )
 			|| ( '' !== $ip && $this->bans->is_banned( 'ip', $ip ) )
 			|| ( '' !== $username && $this->bans->is_banned( 'username', $username ) );
 	}
@@ -266,7 +292,7 @@ final class AttemptLimiter {
 	 * @param string $type  Counter dimension, `ip` or `user`.
 	 * @param string $value The subject value.
 	 */
-	private function count_key( string $type, string $value ): string {
+	private static function count_key( string $type, string $value ): string {
 		return self::PREFIX . 'cnt_' . $type . '_' . md5( $value );
 	}
 
@@ -276,7 +302,7 @@ final class AttemptLimiter {
 	 * @param string $type  Counter dimension, `ip` or `user`.
 	 * @param string $value The subject value.
 	 */
-	private function lock_key( string $type, string $value ): string {
+	private static function lock_key( string $type, string $value ): string {
 		return self::PREFIX . 'lock_' . $type . '_' . md5( $value );
 	}
 
@@ -289,7 +315,7 @@ final class AttemptLimiter {
 	 * @param string $type  Counter dimension, `ip` or `user`.
 	 * @param string $value The subject value.
 	 */
-	private function applied_key( string $type, string $value ): string {
+	private static function applied_key( string $type, string $value ): string {
 		return self::PREFIX . 'applied_' . $type . '_' . md5( $value );
 	}
 }
