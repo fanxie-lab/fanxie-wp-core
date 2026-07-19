@@ -111,12 +111,21 @@ final class SessionTimeoutTest extends TestCase {
 		$this->assertSame( 172800, $session->cookie_lifetime( 172800, 0, false ) );
 	}
 
-	public function test_enqueue_idle_script_localizes_role_timeout_and_logout_url(): void {
+	public function test_enqueue_idle_script_injects_numeric_timeout_and_logout_url(): void {
 		$current        = new \stdClass();
 		$current->ID    = 42;
 		$current->roles = [ 'administrator' ];
 		Functions\when( 'wp_get_current_user' )->justReturn( $current );
 		Functions\when( 'wp_logout_url' )->justReturn( 'https://example.test/logout?nonce=abc' );
+
+		// Mirror WordPress's real wp_json_encode(): plain json_encode preserves
+		// scalar types (an int stays a JSON number), which is the whole point of
+		// switching away from wp_localize_script()'s string-casting behaviour.
+		Functions\when( 'wp_json_encode' )->alias(
+			static function ( $data ) {
+				return json_encode( $data );
+			}
+		);
 
 		$enqueued = [];
 		Functions\when( 'wp_enqueue_script' )->alias(
@@ -125,13 +134,13 @@ final class SessionTimeoutTest extends TestCase {
 			}
 		);
 
-		$localized = [];
-		Functions\when( 'wp_localize_script' )->alias(
-			static function ( $handle, $object_name, $data ) use ( &$localized ): bool {
-				$localized = [
-					'handle' => (string) $handle,
-					'object' => (string) $object_name,
-					'data'   => $data,
+		$inline = [];
+		Functions\when( 'wp_add_inline_script' )->alias(
+			static function ( $handle, $data, $position = 'after' ) use ( &$inline ): bool {
+				$inline = [
+					'handle'   => (string) $handle,
+					'data'     => (string) $data,
+					'position' => (string) $position,
 				];
 				return true;
 			}
@@ -140,9 +149,24 @@ final class SessionTimeoutTest extends TestCase {
 		( new SessionTimeout( $this->config() ) )->enqueue_idle_script();
 
 		$this->assertSame( [ 'fanxie-wp-core-idle-logout' ], $enqueued );
-		$this->assertSame( 'fanxieWpCoreIdle', $localized['object'] );
-		$this->assertSame( 30 * 60 * 1000, $localized['data']['timeoutMs'] );
-		$this->assertSame( 'https://example.test/logout?nonce=abc', $localized['data']['logoutUrl'] );
+		$this->assertSame( 'fanxie-wp-core-idle-logout', $inline['handle'] );
+		$this->assertSame( 'before', $inline['position'] );
+
+		// The config is assigned to the same global the script reads.
+		$this->assertStringContainsString( 'window.fanxieWpCoreIdle =', $inline['data'] );
+
+		// Regression guard: the timeout MUST be delivered as a bare JSON number.
+		// The old wp_localize_script() path stringified it to "1800000", which
+		// tripped the script's guard and silently disabled the idle-logout.
+		$this->assertStringContainsString( '"timeoutMs":1800000', $inline['data'] );
+		$this->assertStringNotContainsString( '"timeoutMs":"', $inline['data'] );
+
+		// Decode the injected literal and prove the type + values survived.
+		$json    = trim( str_replace( 'window.fanxieWpCoreIdle =', '', $inline['data'] ) );
+		$decoded = json_decode( rtrim( $json, ';' ), true );
+		$this->assertIsInt( $decoded['timeoutMs'] );
+		$this->assertSame( 30 * 60 * 1000, $decoded['timeoutMs'] );
+		$this->assertSame( 'https://example.test/logout?nonce=abc', $decoded['logoutUrl'] );
 	}
 
 	public function test_enqueue_idle_script_skips_a_logged_out_visitor(): void {
@@ -150,7 +174,7 @@ final class SessionTimeoutTest extends TestCase {
 		$anon->ID = 0;
 		Functions\when( 'wp_get_current_user' )->justReturn( $anon );
 		Functions\expect( 'wp_enqueue_script' )->never();
-		Functions\expect( 'wp_localize_script' )->never();
+		Functions\expect( 'wp_add_inline_script' )->never();
 
 		( new SessionTimeout( $this->config() ) )->enqueue_idle_script();
 
@@ -164,7 +188,7 @@ final class SessionTimeoutTest extends TestCase {
 		$current->roles = [];
 		Functions\when( 'wp_get_current_user' )->justReturn( $current );
 		Functions\expect( 'wp_enqueue_script' )->never();
-		Functions\expect( 'wp_localize_script' )->never();
+		Functions\expect( 'wp_add_inline_script' )->never();
 
 		( new SessionTimeout( $this->config() ) )->enqueue_idle_script();
 

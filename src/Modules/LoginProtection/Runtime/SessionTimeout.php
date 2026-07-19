@@ -160,13 +160,29 @@ final class SessionTimeout {
 			[ 'in_footer' => true ]
 		);
 
-		wp_localize_script(
-			self::SCRIPT_HANDLE,
-			self::SCRIPT_OBJECT,
+		/*
+		 * Inject the runtime config as a JSON literal via wp_add_inline_script()
+		 * rather than wp_localize_script(). `WP_Scripts::localize()` casts every
+		 * scalar to a string before JSON-encoding, so `timeoutMs` would reach the
+		 * browser as the STRING "1800000"; wp_json_encode() preserves the integer
+		 * type so the script receives a real number. This mirrors how the admin
+		 * SPA hydrates `window.fanxieWPCore` (see Admin\SettingsPage).
+		 */
+		$config = wp_json_encode(
 			[
 				'timeoutMs' => $cap * 1000,
 				'logoutUrl' => wp_logout_url(),
 			]
+		);
+
+		if ( false === $config ) {
+			return;
+		}
+
+		wp_add_inline_script(
+			self::SCRIPT_HANDLE,
+			'window.' . self::SCRIPT_OBJECT . ' = ' . $config . ';',
+			'before'
 		);
 	}
 
