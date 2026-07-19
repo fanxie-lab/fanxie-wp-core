@@ -7,6 +7,7 @@ export { default as Select } from './Select.vue';
 export { default as SaveBar } from './SaveBar.vue';
 export { default as StatusPill } from './StatusPill.vue';
 export { default as Toast } from './Toast.vue';
+export { default as Tooltip } from './Tooltip.vue';
 export { default as PlaceholderTab } from './PlaceholderTab.vue';
 
 export type { SaveStatus } from './SaveBar.vue';
