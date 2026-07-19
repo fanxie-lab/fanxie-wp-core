@@ -69,12 +69,19 @@ final class PluginBootTest extends WP_UnitTestCase {
 
 		do_action( 'admin_menu' );
 
-		global $submenu;
-		$this->assertIsArray( $submenu );
-		$this->assertArrayHasKey( 'options-general.php', $submenu );
+		// The plugin registers a top-level menu (add_menu_page) whose slug is
+		// SettingsPage::MENU_SLUG, then relabels its first submenu row "Settings".
+		global $menu, $submenu;
 
-		$slugs = array_map( static fn ( array $entry ): string => (string) ( $entry[2] ?? '' ), $submenu['options-general.php'] );
-		$this->assertContains( SettingsPage::MENU_SLUG, $slugs, 'Settings → Fanxie WP Core submenu should be registered.' );
+		$this->assertIsArray( $menu );
+		$menu_slugs = array_map( static fn ( array $entry ): string => (string) ( $entry[2] ?? '' ), $menu );
+		$this->assertContains( SettingsPage::MENU_SLUG, $menu_slugs, 'Top-level FX Core menu should be registered.' );
+
+		$this->assertIsArray( $submenu );
+		$this->assertArrayHasKey( SettingsPage::MENU_SLUG, $submenu );
+
+		$submenu_slugs = array_map( static fn ( array $entry ): string => (string) ( $entry[2] ?? '' ), $submenu[ SettingsPage::MENU_SLUG ] );
+		$this->assertContains( SettingsPage::MENU_SLUG, $submenu_slugs, 'Relabeled Settings row under the top-level FX Core menu should be registered.' );
 	}
 
 	public function test_activation_grants_capability_to_administrator_role(): void {
