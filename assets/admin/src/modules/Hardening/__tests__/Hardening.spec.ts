@@ -96,16 +96,26 @@ describe('<Hardening>', () => {
     expect(text).toContain('Application Passwords');
   });
 
-  it('hides the Application Passwords toggle when at least one AP exists', async () => {
+  it('keeps the disable toggle visible and shows a warning when app passwords exist', async () => {
     const { wrapper } = await mountWithStore((store) => {
       store.config = makeConfig();
       store.status = makeStatus();
-      store.checks = makeChecks({ application_passwords_count: 2 });
+      store.checks = makeChecks({
+        application_passwords_count: 2,
+        application_passwords_users: [{ user_login: 'admin', count: 2 }],
+      });
     });
 
-    // The row's toggle should not be present; the explanatory note should be.
-    expect(wrapper.text()).toContain('in use site-wide');
-    expect(wrapper.text()).not.toContain('Disable Application Passwords');
+    // Toggle stays reachable (reversible) even when APs exist:
+    const apSection = wrapper.find(
+      '[aria-labelledby="fx-hardening-app-passwords"]',
+    );
+    expect(apSection.find('[role="switch"]').exists()).toBe(true);
+    // ...and the site-wide warning is shown alongside it:
+    const text = apSection.text();
+    expect(text).toContain('admin');
+    expect(text.toLowerCase()).toContain('site-wide');
+    expect(text.toLowerCase()).toContain('not deleted');
   });
 
   it('shows the Application Passwords toggle when no AP exists', async () => {

@@ -24,7 +24,9 @@ import type { ChecklistStatus, UploadsGuardTarget } from './types';
  *                             buttons derived from filesystem probe)
  *   5. Login & Sessions      (1 toggle)
  *   6. File Editing          (1 toggle + wp-config snippet fallback)
- *   7. Application Passwords (1 toggle, hidden when any AP exists)
+ *   7. Application Passwords (1 toggle — always visible so it stays
+ *                             reversible; surfaces a footer warning when any
+ *                             AP currently exists)
  *
  * Status-pill variants per row are derived from `store.checks` where
  * server-level signals are available (e.g. X-Powered-By still arriving
@@ -215,11 +217,6 @@ const statusApplicationPasswords = computed<ChecklistStatus>(() =>
   booleanToggleStatus(store.config?.application_passwords.disable ?? false),
 );
 
-// Application Passwords row is hidden entirely when any AP currently exists.
-const showApplicationPasswordsRow = computed<boolean>(() => {
-  const count = store.checks?.application_passwords_count ?? 0;
-  return count === 0;
-});
 const applicationPasswordsCount = computed<number>(
   () => store.checks?.application_passwords_count ?? 0,
 );
@@ -789,10 +786,10 @@ onMounted(() => {
             the REST API from external tools.
           </p>
         </header>
-        <div v-if="showApplicationPasswordsRow" class="fx-hardening__items">
+        <div class="fx-hardening__items">
           <ChecklistItem
             label="Disable Application Passwords"
-            description="Makes wp_is_application_passwords_available return false."
+            description="Makes wp_is_application_passwords_available return false. Existing app passwords stop working but are not deleted."
             :status="statusApplicationPasswords"
           >
             <template #default="{ labelId }">
@@ -803,14 +800,18 @@ onMounted(() => {
                 :aria-labelledby="labelId"
               />
             </template>
+            <template v-if="applicationPasswordsCount > 0" #footer>
+              <p class="fx-hardening__ap-note" role="note">
+                {{ applicationPasswordsSummary }}
+                Disabling makes them stop working but does not delete them, and
+                hides the
+                <strong>Users → Profile → Application Passwords</strong>
+                screen used to revoke them — so revoke them there first if you
+                want them gone.
+              </p>
+            </template>
           </ChecklistItem>
         </div>
-        <p v-else class="fx-hardening__ap-note" role="note">
-          {{ applicationPasswordsSummary }}
-          Manage them per user under
-          <strong>Users → Profile → Application Passwords</strong> before
-          disabling this feature.
-        </p>
       </section>
 
       <SaveBar
