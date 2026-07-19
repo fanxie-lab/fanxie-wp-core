@@ -28,6 +28,15 @@ describe('Tooltip', () => {
   it('reveals on hover and stays visible when the pointer moves onto the bubble', async () => {
     // WCAG 2.1 SC 1.4.13 "Hoverable": a pointer user must be able to travel
     // from the trigger onto the bubble without the tooltip vanishing.
+    //
+    // Scope: this asserts only the container-scoped hide mechanism — hover
+    // handlers live on the wrapping `.fx-tip`, so a `mouseleave` from the inner
+    // button no longer dismisses the bubble. The physical gap-bridge that
+    // actually closes the literal pixel gap between trigger and bubble is
+    // CSS-only (`.fx-tip__bubble::after`, sized by `--fx-tip-gap`) and cannot be
+    // exercised under happy-dom, which does no layout or hit-testing. So this
+    // spec is necessary but NOT sufficient on its own for 1.4.13 sign-off; the
+    // bridge geometry needs a real browser (manual/e2e) to verify.
     const wrapper = mount(Tooltip, { props: { text: 'Explains it.' } });
     const container = wrapper.get('.fx-tip');
     const button = wrapper.get('button');

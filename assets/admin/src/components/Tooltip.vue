@@ -42,7 +42,7 @@ function onKeydown(event: KeyboardEvent): void {
     Hover show/hide live on the wrapping container (not the button) so the
     pointer can travel trigger → bubble without the tooltip vanishing
     (WCAG 2.1 SC 1.4.13 "Hoverable"). The bubble's transparent bridge
-    (see .fx-tip__bubble::after) keeps the 6px gap part of the container's
+    (see .fx-tip__bubble::after) keeps the --fx-tip-gap part of the container's
     hit area, so mouseleave only fires when the pointer truly exits both.
     Focus/blur/Escape stay on the button for keyboard + screen-reader users.
   -->
@@ -91,6 +91,15 @@ function onKeydown(event: KeyboardEvent): void {
   position: relative;
   display: inline-flex;
   vertical-align: middle;
+
+  /*
+   * Single source of truth for the gap between the trigger and the bubble.
+   * Referenced by BOTH the bubble's offset and its transparent hover-bridge
+   * (.fx-tip__bubble::after) so the two can never drift apart. If they did, a
+   * dead zone would reopen between them and the tooltip would stop being
+   * hoverable (WCAG 2.1 SC 1.4.13). Keep this as the only place the gap is set.
+   */
+  --fx-tip-gap: 6px;
 }
 
 .fx-tip__trigger {
@@ -124,7 +133,7 @@ function onKeydown(event: KeyboardEvent): void {
 
 .fx-tip__bubble {
   position: absolute;
-  bottom: calc(100% + 6px);
+  bottom: calc(100% + var(--fx-tip-gap));
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
@@ -141,10 +150,12 @@ function onKeydown(event: KeyboardEvent): void {
 }
 
 /*
- * Transparent bridge spanning the 6px gap between the bubble and the trigger.
- * It makes the gap part of the bubble's hit area so a pointer travelling from
- * the trigger up to the bubble never leaves the container — keeping the
- * tooltip hoverable (WCAG 2.1 SC 1.4.13). Non-interactive and invisible.
+ * Transparent bridge spanning the --fx-tip-gap between the bubble and the
+ * trigger. It makes the gap part of the bubble's hit area so a pointer
+ * travelling from the trigger up to the bubble never leaves the container —
+ * keeping the tooltip hoverable (WCAG 2.1 SC 1.4.13). Its height MUST equal the
+ * bubble's offset, which is why both read the same --fx-tip-gap custom
+ * property. Non-interactive and invisible.
  */
 .fx-tip__bubble::after {
   content: '';
@@ -152,6 +163,6 @@ function onKeydown(event: KeyboardEvent): void {
   top: 100%;
   left: 0;
   right: 0;
-  height: 6px;
+  height: var(--fx-tip-gap);
 }
 </style>
