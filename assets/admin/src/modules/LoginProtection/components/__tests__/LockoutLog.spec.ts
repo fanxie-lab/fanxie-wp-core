@@ -41,6 +41,7 @@ async function mountWithStore(seed: (store: Store) => void) {
   // no-unbound-method rule, mirroring Hardening.spec.
   const spies = {
     fetchLog: vi.spyOn(store, 'fetchLog').mockResolvedValue(),
+    fetchBans: vi.spyOn(store, 'fetchBans').mockResolvedValue(),
     clearLogFilters: vi.spyOn(store, 'clearLogFilters').mockResolvedValue(),
     addBan: vi.spyOn(store, 'addBan').mockResolvedValue(),
     removeBan: vi.spyOn(store, 'removeBan').mockResolvedValue(),
@@ -63,6 +64,13 @@ describe('<LockoutLog>', () => {
       /* no seed */
     });
     expect(spies.fetchLog).toHaveBeenCalledWith(1);
+  });
+
+  it('fetches the current bans on mount so per-row state is correct', async () => {
+    const { spies } = await mountWithStore(() => {
+      /* no seed */
+    });
+    expect(spies.fetchBans).toHaveBeenCalledWith(1);
   });
 
   it('renders log rows from the store with a semantic column-scoped header', async () => {

@@ -240,6 +240,29 @@ export const useLoginProtectionStore = defineStore('login-protection', {
       await this.fetchLog(1);
     },
 
+    /**
+     * Load a page of the persistent ban list. Called on mount so the ban table
+     * and every row's Ban/Unban affordance are correct on first render, before
+     * any mutation. Applies the response through the same `applyBans` setter
+     * that `addBan`/`removeBan` use, and mirrors `fetchLog`'s loading/error
+     * handling.
+     */
+    async fetchBans(page = 1): Promise<void> {
+      this.loading.bans = true;
+      this.error = null;
+      try {
+        const data = await ajax<BanListResponse>('login_protection/get-bans', {
+          page,
+        });
+        this.applyBans(data);
+      } catch (err) {
+        this.error = extractErrorMessage(err);
+        this.pushToast(this.error, 'error');
+      } finally {
+        this.loading.bans = false;
+      }
+    },
+
     /** Add a ban. Applies the server's fresh ban list on success. */
     async addBan(payload: AddBanPayload): Promise<void> {
       this.loading.bans = true;

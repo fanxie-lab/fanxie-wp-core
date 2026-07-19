@@ -20,10 +20,10 @@ import type { AddBanPayload, BanSubjectType } from '../types';
  * misclick can't silently weaken protection. Banning is additive and reversible
  * so it dispatches directly.
  *
- * NOTE: the store exposes no `fetch-bans` action — the ban list is populated as
- * a side effect of add/remove responses, so it starts empty until the first
- * mutation. Per-row Unban therefore only surfaces once a subject is known to be
- * banned. Flagged for the coordinator; implemented against the store as-is.
+ * The ban list is hydrated on mount via `store.fetchBans` (alongside the log
+ * fetch) and refreshed as a side effect of add/remove responses, so every log
+ * row's per-row Ban/Unban affordance reflects the current ban state on first
+ * render.
  */
 
 const store = useLoginProtectionStore();
@@ -242,6 +242,7 @@ async function submitAddBan(): Promise<void> {
 
 onMounted(() => {
   void store.fetchLog(1);
+  void store.fetchBans(1);
 });
 </script>
 

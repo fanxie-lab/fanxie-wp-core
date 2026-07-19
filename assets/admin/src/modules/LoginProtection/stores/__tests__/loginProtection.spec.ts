@@ -277,6 +277,43 @@ describe('useLoginProtectionStore', () => {
     });
   });
 
+  describe('fetchBans()', () => {
+    it('calls get-bans and populates the ban rows + total via applyBans', async () => {
+      const response = makeBanResponse({
+        rows: [
+          makeBanRow(),
+          makeBanRow({ id: 2, subject_value: '198.51.100.7' }),
+        ],
+        total: 2,
+      });
+      mockAjaxResponse('login_protection/get-bans', response);
+
+      const store = useLoginProtectionStore();
+      await store.fetchBans();
+
+      expect(store.bans.rows).toEqual(response.rows);
+      expect(store.bans.total).toBe(2);
+      expect(store.loading.bans).toBe(false);
+      expect(store.error).toBeNull();
+    });
+
+    it('surfaces an error toast when get-bans fails', async () => {
+      mockAjaxResponse(
+        'login_protection/get-bans',
+        { code: 'forbidden', message: 'Not allowed.' },
+        { success: false },
+      );
+
+      const store = useLoginProtectionStore();
+      await store.fetchBans();
+
+      expect(store.error).toBe('Not allowed.');
+      expect(store.bans.rows).toEqual([]);
+      expect(store.toast?.variant).toBe('error');
+      expect(store.loading.bans).toBe(false);
+    });
+  });
+
   describe('addBan()', () => {
     it('applies the returned ban list and toasts success', async () => {
       mockAjaxResponse('login_protection/add-ban', makeBanResponse());

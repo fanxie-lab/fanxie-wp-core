@@ -37,9 +37,11 @@ async function mountWithStore(seed: (store: Store) => void) {
   setActivePinia(createPinia());
   const store = useLoginProtectionStore();
   vi.spyOn(store, 'load').mockResolvedValue();
-  // LockoutLog (a child) fetches on mount — stub it so no ajax escapes. Capture
-  // the spy for assertions (avoids the no-unbound-method rule).
+  // LockoutLog (a child) fetches the log + ban list on mount — stub both so no
+  // ajax escapes. Capture the spy for assertions (avoids the no-unbound-method
+  // rule).
   const fetchLog = vi.spyOn(store, 'fetchLog').mockResolvedValue();
+  vi.spyOn(store, 'fetchBans').mockResolvedValue();
   seed(store);
 
   const wrapper = mount(LoginProtection, { attachTo: document.body });
