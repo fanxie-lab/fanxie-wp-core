@@ -178,7 +178,7 @@ const hstsMaxAge = computed<string>({
       <Toggle
         v-model="config.headers.cache_control.enabled"
         label="Enable admin Cache-Control"
-        aria-describedby="fx-cache-help"
+        :describedby="'fx-cache-help'"
       />
     </section>
 

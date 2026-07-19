@@ -83,6 +83,22 @@ describe('<HeadersView>', () => {
     expect(wrapper.text().toLowerCase()).toContain('proxies');
   });
 
+  it('wires the Cache-Control switch to its HelpText via aria-describedby', () => {
+    seedStore();
+    const wrapper = mount(HeadersView);
+
+    const cacheSwitch = wrapper
+      .findAll('[role="switch"]')
+      .find((s) => s.attributes('aria-label') === 'Enable admin Cache-Control');
+    expect(cacheSwitch).toBeDefined();
+
+    const ids = cacheSwitch!.attributes('aria-describedby')?.split(' ') ?? [];
+    expect(ids).toContain('fx-cache-help');
+
+    // The referenced element must actually exist so the description resolves.
+    expect(wrapper.find('#fx-cache-help').exists()).toBe(true);
+  });
+
   it('calls store.save() when the Save button is clicked', async () => {
     const store = seedStore();
     const saveSpy = vi.spyOn(store, 'save').mockResolvedValue();

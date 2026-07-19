@@ -85,6 +85,55 @@ describe('<Toggle>', () => {
     expect(desc.text()).toContain('This turns the feature on site-wide.');
   });
 
+  it('points the switch aria-describedby at an external describedby id', () => {
+    const wrapper = mount(Toggle, {
+      props: {
+        modelValue: false,
+        label: 'Enable feature',
+        describedby: 'ext-id',
+      },
+    });
+
+    const sw = wrapper.get('[role="switch"]');
+    const ids = sw.attributes('aria-describedby')?.split(' ') ?? [];
+    expect(ids).toContain('ext-id');
+  });
+
+  it('merges the internal description id and the external describedby id (space-separated)', () => {
+    const wrapper = mount(Toggle, {
+      props: {
+        modelValue: false,
+        label: 'Enable feature',
+        description: 'This turns the feature on site-wide.',
+        describedby: 'ext-id',
+      },
+    });
+
+    const sw = wrapper.get('[role="switch"]');
+    const describedBy = sw.attributes('aria-describedby');
+    expect(describedBy).toBeTruthy();
+
+    const ids = describedBy!.split(' ');
+    // The external id is present alongside the internal description id.
+    expect(ids).toContain('ext-id');
+    expect(ids.length).toBe(2);
+
+    // The internal id still resolves to the rendered description text.
+    const internalId = ids.find((id) => id !== 'ext-id');
+    expect(internalId).toBeTruthy();
+    const desc = wrapper.get(`#${internalId!}`);
+    expect(desc.text()).toContain('This turns the feature on site-wide.');
+  });
+
+  it('omits aria-describedby entirely when neither description nor describedby is set', () => {
+    const wrapper = mount(Toggle, {
+      props: { modelValue: false, label: 'Enable feature' },
+    });
+
+    const sw = wrapper.get('[role="switch"]');
+    expect(sw.attributes('aria-describedby')).toBeUndefined();
+  });
+
   it('visually hides the label text when hideLabel is true (sr-only)', () => {
     const wrapper = mount(Toggle, {
       props: {

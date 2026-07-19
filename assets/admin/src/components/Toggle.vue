@@ -25,6 +25,15 @@ interface Props {
    * <label for> / sr-only text is dropped from the accessibility tree.
    */
   ariaLabelledby?: string;
+  /**
+   * Optional id of an *external* element that describes the switch (e.g. a
+   * sibling HelpText block). It is merged with the internal `description` id
+   * onto the switch's aria-describedby so screen readers announce both. Use
+   * this prop rather than a raw aria-describedby attribute: default
+   * inheritAttrs would land the attribute on the wrapper <div>, not the
+   * interactive <button role="switch">.
+   */
+  describedby?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -33,6 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
   id: undefined,
   hideLabel: false,
   ariaLabelledby: undefined,
+  describedby: undefined,
 });
 
 const emit = defineEmits<{
@@ -43,6 +53,19 @@ const emit = defineEmits<{
 const generatedId = useId();
 const fieldId = computed(() => props.id ?? `fx-toggle-${generatedId}`);
 const descId = computed(() => `${fieldId.value}-desc`);
+
+/**
+ * The switch's aria-describedby merges the internal description id (when a
+ * `description` is rendered) with any external `describedby` id, so both are
+ * announced. Returns undefined when neither applies, keeping the attribute off
+ * the markup entirely rather than emitting an empty/`undefined` value.
+ */
+const describedByIds = computed<string | undefined>(() => {
+  const ids: string[] = [];
+  if (props.description) ids.push(descId.value);
+  if (props.describedby) ids.push(props.describedby);
+  return ids.length ? ids.join(' ') : undefined;
+});
 
 function toggle(): void {
   if (props.disabled) return;
@@ -75,7 +98,7 @@ function onKeydown(event: KeyboardEvent): void {
       role="switch"
       class="fx-toggle__switch"
       :aria-checked="modelValue"
-      :aria-describedby="description ? descId : undefined"
+      :aria-describedby="describedByIds"
       :aria-labelledby="ariaLabelledby"
       :aria-label="ariaLabelledby ? undefined : label"
       :disabled="disabled"
