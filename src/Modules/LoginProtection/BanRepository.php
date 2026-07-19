@@ -128,12 +128,14 @@ final class BanRepository {
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is a private property.
 				"INSERT INTO {$this->table_name()} (subject_type, subject_value, reason, expires_at, created_at)
 				 VALUES (%s, %s, NULLIF(%s, ''), NULLIF(%s, ''), %s)
-				 ON DUPLICATE KEY UPDATE reason = VALUES(reason), expires_at = VALUES(expires_at)",
+				 ON DUPLICATE KEY UPDATE reason = NULLIF(%s, ''), expires_at = NULLIF(%s, '')",
 				substr( $subject_type, 0, 16 ),
 				substr( $subject_value, 0, 180 ),
 				$reason_value,
 				$expires_value,
-				gmdate( 'Y-m-d H:i:s' )
+				gmdate( 'Y-m-d H:i:s' ),
+				$reason_value,
+				$expires_value
 			)
 		);
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
