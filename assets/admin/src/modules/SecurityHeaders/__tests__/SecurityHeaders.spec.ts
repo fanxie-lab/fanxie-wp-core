@@ -5,7 +5,6 @@ import { createRouter, createMemoryHistory, type Router } from 'vue-router';
 import SecurityHeaders from '../SecurityHeaders.vue';
 import HeadersView from '../views/HeadersView.vue';
 import CspView from '../views/CspView.vue';
-import ViolationsView from '../views/ViolationsView.vue';
 import { useSecurityHeadersStore } from '../stores/securityHeaders';
 import type { SecurityHeadersConfig } from '../types';
 
@@ -55,12 +54,12 @@ function makeTestRouter(): Router {
             name: 'security-headers.csp',
             component: CspView,
           },
-          {
-            path: 'violations',
-            name: 'security-headers.violations',
-            component: ViolationsView,
-          },
         ],
+      },
+      {
+        // Back-compat: the violations log now lives inside the CSP tab.
+        path: '/security-headers/violations',
+        redirect: { name: 'security-headers.csp' },
       },
     ],
   });
@@ -101,7 +100,7 @@ describe('<SecurityHeaders>', () => {
     expect(loadSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('renders three sub-tabs inside a tablist', async () => {
+  it('renders two sub-tabs inside a tablist', async () => {
     const store = useSecurityHeadersStore();
     vi.spyOn(store, 'load').mockResolvedValue();
     store.config = makeConfig();
@@ -120,11 +119,10 @@ describe('<SecurityHeaders>', () => {
 
     const tablist = wrapper.get('[role="tablist"]');
     const tabs = tablist.findAll('[role="tab"]');
-    expect(tabs).toHaveLength(3);
+    expect(tabs).toHaveLength(2);
     expect(tabs.map((t) => t.text())).toEqual([
-      'Headers',
+      'Response Headers',
       'Content Security Policy',
-      'Violations',
     ]);
   });
 
@@ -164,10 +162,24 @@ describe('<SecurityHeaders>', () => {
     vi.spyOn(store, 'load').mockResolvedValue();
     store.config = makeConfig();
 
-    const { wrapper } = await mountAt('/security-headers/violations');
+    const { wrapper } = await mountAt('/security-headers/csp');
 
     const tabs = wrapper.findAll('[role="tab"]');
-    expect(tabs[2]?.attributes('aria-selected')).toBe('true');
+    expect(tabs[1]?.attributes('aria-selected')).toBe('true');
+    expect(tabs[0]?.attributes('aria-selected')).toBe('false');
+  });
+
+  it('redirects the legacy violations deep link to the CSP tab', async () => {
+    const store = useSecurityHeadersStore();
+    vi.spyOn(store, 'load').mockResolvedValue();
+    store.config = makeConfig();
+
+    const { router, wrapper } = await mountAt('/security-headers/violations');
+
+    expect(router.currentRoute.value.name).toBe('security-headers.csp');
+
+    const tabs = wrapper.findAll('[role="tab"]');
+    expect(tabs[1]?.attributes('aria-selected')).toBe('true');
     expect(tabs[0]?.attributes('aria-selected')).toBe('false');
   });
 

@@ -10,15 +10,15 @@ import { useSecurityHeadersStore } from './stores/securityHeaders';
  * SecurityHeaders module root.
  *
  * - Mounts the per-module store and calls `load()` on mount.
- * - Renders three sub-tabs (Headers / CSP / Violations) as named router
- *   links so each tab is deep-linkable. RouterLink is used in `custom`
- *   slot mode so we can render it as a `<button role="tab">` and preserve
- *   full ARIA tablist semantics (keyboard arrow nav, aria-selected, roving
- *   tabindex).
+ * - Renders two sub-tabs (Response Headers / CSP) as named router links so
+ *   each tab is deep-linkable. RouterLink is used in `custom` slot mode so we
+ *   can render it as a `<button role="tab">` and preserve full ARIA tablist
+ *   semantics (keyboard arrow nav, aria-selected, roving tabindex). The CSP
+ *   violation log is folded into the CSP tab as a collapsible section.
  * - Shows a StatusPill rendering the server-formatted status summary.
  */
 
-type TabId = 'headers' | 'csp' | 'violations';
+type TabId = 'headers' | 'csp';
 
 interface Tab {
   id: TabId;
@@ -27,16 +27,15 @@ interface Tab {
 }
 
 const TABS: readonly Tab[] = [
-  { id: 'headers', label: 'Headers', routeName: 'security-headers.headers' },
+  {
+    id: 'headers',
+    label: 'Response Headers',
+    routeName: 'security-headers.headers',
+  },
   {
     id: 'csp',
     label: 'Content Security Policy',
     routeName: 'security-headers.csp',
-  },
-  {
-    id: 'violations',
-    label: 'Violations',
-    routeName: 'security-headers.violations',
   },
 ] as const;
 
@@ -53,7 +52,6 @@ const activeTab = computed<TabId>(() => {
 const tabButtons = ref<Record<TabId, HTMLButtonElement | null>>({
   headers: null,
   csp: null,
-  violations: null,
 });
 
 function setTabRef(id: TabId, el: Element | null): void {

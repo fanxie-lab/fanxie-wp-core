@@ -6,10 +6,12 @@ import type { SelectOption } from '@/components';
 import { useSecurityHeadersStore } from '../stores/securityHeaders';
 import { useSecurityHeadersConfig } from '../composables/useSecurityHeadersConfig';
 import { PRESETS, type CspMode } from '../types';
+import ViolationsView from './ViolationsView.vue';
 
 /**
- * CspView — CSP mode selector, directive builder, preset picker, and
- * read-only report URI display.
+ * CspView — CSP mode selector, directive builder, preset picker,
+ * read-only report URI display, and the CSP violation log (folded in as a
+ * collapsible section at the bottom).
  */
 
 const store = useSecurityHeadersStore();
@@ -307,6 +309,11 @@ function onModeChange(value: string): void {
       @save="save"
       @reset="reset"
     />
+
+    <details class="fx-csp__violations">
+      <summary class="fx-csp__violations-summary">Violation log</summary>
+      <ViolationsView />
+    </details>
   </div>
   <p v-else class="fx-csp-view__loading" role="status">
     Loading CSP configuration…
@@ -557,6 +564,29 @@ function onModeChange(value: string): void {
   background: var(--fx-color-surface);
   border: 1px dashed var(--fx-color-border);
   border-radius: var(--fx-radius-lg);
+}
+
+.fx-csp__violations {
+  border-top: 1px solid var(--fx-color-border);
+  padding-top: var(--fx-space-4);
+}
+
+.fx-csp__violations-summary {
+  cursor: pointer;
+  font-family: var(--fx-font-heading);
+  font-weight: var(--fx-font-weight-medium);
+  color: var(--fx-color-text);
+  padding: var(--fx-space-1) 0;
+}
+
+.fx-csp__violations-summary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--fx-color-primary-soft);
+  border-radius: var(--fx-radius-sm);
+}
+
+.fx-csp__violations[open] .fx-csp__violations-summary {
+  margin-bottom: var(--fx-space-4);
 }
 
 @media (max-width: 720px) {

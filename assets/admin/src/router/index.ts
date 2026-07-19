@@ -3,18 +3,19 @@
  *
  * We use `createWebHashHistory` (hash mode) rather than `createWebHistory`
  * because this SPA is served from a WordPress admin page at
- * `/wp-admin/options-general.php?page=fanxie-wp-core`. HTML5 history mode
- * would generate URLs like `/wp-admin/options-general.php/security-headers`
- * on in-app navigation, which WP's PHP router would 404 on reload. Hash
- * routing keeps all client-side state in the URL fragment, so every route
- * is bookmarkable and deep-link-safe without any server configuration.
+ * `admin.php?page=fanxie-wp-core`. HTML5 history mode would generate URLs
+ * like `admin.php/security-headers` on in-app navigation, which WP's PHP
+ * router would 404 on reload. Hash routing keeps all client-side state in
+ * the URL fragment, so every route is bookmarkable and deep-link-safe
+ * without any server configuration.
  *
  * Route IDs mirror the module ids in `@/config/modules.ts` so callers can
  * write `{ name: 'security-headers.csp' }` instead of hard-coding paths.
  *
- * SecurityHeaders ships with three nested sub-tabs (headers/csp/violations).
- * Every other module currently resolves to `PlaceholderTab` at the top
- * level until its real implementation lands.
+ * SecurityHeaders ships with two nested sub-tabs (headers/csp); the CSP
+ * violation log lives inside the CSP tab. Every other module currently
+ * resolves to `PlaceholderTab` at the top level until its real
+ * implementation lands.
  */
 
 import {
@@ -72,12 +73,6 @@ const liveModuleRoutes: Record<string, RouteRecordRaw> = {
         name: 'security-headers.csp',
         component: () => import('@/modules/SecurityHeaders/views/CspView.vue'),
       },
-      {
-        path: 'violations',
-        name: 'security-headers.violations',
-        component: () =>
-          import('@/modules/SecurityHeaders/views/ViolationsView.vue'),
-      },
     ],
   },
   // Hardening ships as a single scrollable checklist view — no sub-tabs,
@@ -108,6 +103,11 @@ const moduleRoutes: RouteRecordRaw[] = modules.map((m) => {
 export const routes: RouteRecordRaw[] = [
   { path: '/', redirect: { name: 'security-headers' } },
   ...moduleRoutes,
+  {
+    // Back-compat: the violations log now lives inside the CSP tab.
+    path: '/security-headers/violations',
+    redirect: { name: 'security-headers.csp' },
+  },
   {
     // Catch-all: unknown paths render a generic placeholder so deep-links
     // from future modules don't break the shell.
