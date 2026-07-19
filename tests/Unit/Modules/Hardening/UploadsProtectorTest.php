@@ -175,6 +175,23 @@ final class UploadsProtectorTest extends TestCase {
 		$this->assertFalse( $protector->apply_fix( 'bogus_target' ) );
 	}
 
+	public function test_apply_fix_skips_htaccess_on_non_apache_server(): void {
+		$_SERVER['SERVER_SOFTWARE'] = 'nginx/1.25';
+
+		$protector = new UploadsProtector();
+
+		// `.htaccess` must NOT be written where the server won't honour it —
+		// otherwise htaccess_exists() would report a no-op file as "protected".
+		// This mirrors ensure_protection(), which also gates on is_apache_compatible().
+		$this->assertFalse( $protector->apply_fix( 'uploads_htaccess' ) );
+		$this->assertFileDoesNotExist( $this->uploads_dir . '/.htaccess' );
+
+		// `index.php` is server-agnostic (blocks directory listing everywhere),
+		// so it still drops on nginx.
+		$this->assertTrue( $protector->apply_fix( 'uploads_index' ) );
+		$this->assertFileExists( $this->uploads_dir . '/index.php' );
+	}
+
 	public function test_nginx_snippet_returns_deterministic_string(): void {
 		$protector = new UploadsProtector();
 		$snippet   = $protector->nginx_snippet();

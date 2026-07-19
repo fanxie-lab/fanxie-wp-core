@@ -94,6 +94,14 @@ final class UploadsProtector {
 	 * Write a single target on demand (called by `hardening/apply-fix` +
 	 * `hardening/drop-upload-guard`).
 	 *
+	 * The `uploads_htaccess` target is gated on `is_apache_compatible()` — same
+	 * as `ensure_protection()` — so the two write paths agree. Dropping a
+	 * `.htaccess` a non-Apache server ignores would leave a no-op file that
+	 * `htaccess_exists()` then misreports as "protected". On nginx/IIS/unknown
+	 * we return false; the UI already warns and surfaces a server-specific
+	 * snippet instead. `uploads_index` stays unconditional: a blank `index.php`
+	 * suppresses directory listing everywhere.
+	 *
 	 * @param string $target `'uploads_index'` | `'uploads_htaccess'`.
 	 * @return bool Whether the target now exists on disk.
 	 */
@@ -108,10 +116,12 @@ final class UploadsProtector {
 				trailingslashit( $uploads ) . self::INDEX_FILENAME,
 				self::INDEX_PHP_CONTENTS
 			),
-			'uploads_htaccess' => $this->write_file(
-				trailingslashit( $uploads ) . self::HTACCESS_FILENAME,
-				self::HTACCESS_CONTENTS
-			),
+			'uploads_htaccess' => $this->is_apache_compatible()
+				? $this->write_file(
+					trailingslashit( $uploads ) . self::HTACCESS_FILENAME,
+					self::HTACCESS_CONTENTS
+				)
+				: false,
 			default            => false,
 		};
 	}

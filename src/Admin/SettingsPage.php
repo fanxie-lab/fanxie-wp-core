@@ -62,9 +62,14 @@ final class SettingsPage {
 	public const ASSET_HANDLE = 'fanxie-wp-core-admin';
 
 	/**
-	 * Monochrome shield used as the top-level menu icon. Emitted as a base64
-	 * `data:` URI so WordPress can recolor it via CSS mask to match the admin
-	 * color scheme (a colored glyph would not survive that masking).
+	 * Monochrome shield used as the top-level menu icon. The glyph is baked to
+	 * `#a7aaad` — WordPress's default admin-menu icon grey — so its resting
+	 * state matches the other menu icons out of the box.
+	 *
+	 * Emitted as a base64 `data:` URI. Core renders a `data:`-URI `menu_icon`
+	 * as a CSS `background-image` on `.wp-menu-image.svg` — NOT a CSS mask — so
+	 * it is not recolorable: the glyph keeps this baked-in colour on hover and
+	 * on the active menu item; only opacity shifts across those states.
 	 *
 	 * @var string
 	 */
