@@ -85,6 +85,120 @@ final class AttemptLimiterIntegrationTest extends WP_UnitTestCase {
 		$this->assertGreaterThanOrEqual( 1, $blocked['total'] );
 	}
 
+	public function test_locked_subject_repeated_attempts_do_not_renew_lock_or_relog(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.88';
+		$this->make_limiter( [ [ 'threshold' => 2, 'lockout_minutes' => 15 ] ] );
+
+		// Two genuine failures cross the threshold-2 tier and arm the lock.
+		do_action( 'wp_login_failed', 'victim' );
+		do_action( 'wp_login_failed', 'victim' );
+
+		$lock_ip_key   = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.88' );
+		$count_ip_key  = 'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.88' );
+		$timeout_key   = '_transient_timeout_' . $lock_ip_key;
+		$lockouts_at_2 = $this->log->query(
+			[
+				'event_type' => 'lockout',
+				'ip'         => '203.0.113.88',
+			],
+			1,
+			25
+		);
+
+		// Baseline captured while locked.
+		$this->assertSame( 1, $lockouts_at_2['total'], 'Exactly one lockout row after crossing the tier once.' );
+		$this->assertSame( 2, (int) get_transient( $count_ip_key ), 'Counter sits at the tier threshold.' );
+		$lock_timeout_before = get_option( $timeout_key );
+
+		// Simulate an attacker hammering the already-locked subject: `gate()`
+		// returns our WP_Error, which `wp_signon()` echoes as `wp_login_failed`.
+		for ( $i = 0; $i < 5; $i++ ) {
+			$result = apply_filters( 'authenticate', null, 'victim', 'wrong-password' );
+			$this->assertInstanceOf( WP_Error::class, $result );
+			$this->assertSame( 'fanxie_login_locked', $result->get_error_code() );
+			do_action( 'wp_login_failed', 'victim' );
+		}
+
+		// The lock must not renew and no new `lockout` rows may be written.
+		$lockouts_after = $this->log->query(
+			[
+				'event_type' => 'lockout',
+				'ip'         => '203.0.113.88',
+			],
+			1,
+			25
+		);
+		$this->assertSame( 1, $lockouts_after['total'], 'Blocked attempts must not add lockout rows.' );
+		$this->assertSame( 2, (int) get_transient( $count_ip_key ), 'Blocked attempts must not bump the counter.' );
+		$this->assertSame( $lock_timeout_before, get_option( $timeout_key ), 'The lock TTL must not be extended.' );
+	}
+
+	public function test_escalation_arms_each_higher_tier_exactly_once_across_windows(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.99';
+		$this->make_limiter(
+			[
+				[
+					'threshold'       => 2,
+					'lockout_minutes' => 15,
+				],
+				[
+					'threshold'       => 4,
+					'lockout_minutes' => 60,
+				],
+			]
+		);
+
+		$lock_ip_key   = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.99' );
+		$lock_user_key = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
+
+		// Reach the first tier (threshold 2): one IP lockout row.
+		do_action( 'wp_login_failed', 'victim' );
+		do_action( 'wp_login_failed', 'victim' );
+		$first = $this->log->query(
+			[
+				'event_type' => 'lockout',
+				'ip'         => '203.0.113.99',
+			],
+			1,
+			25
+		);
+		$this->assertSame( 1, $first['total'], 'First tier arms exactly one IP lockout row.' );
+
+		// Simulate the tier-1 lock window expiring (delete both lock markers).
+		delete_transient( $lock_ip_key );
+		delete_transient( $lock_user_key );
+
+		// A genuine failure that merely re-matches the current tier (count 3, still
+		// < threshold 4) must NOT re-arm or re-log.
+		do_action( 'wp_login_failed', 'victim' );
+		$same_tier = $this->log->query(
+			[
+				'event_type' => 'lockout',
+				'ip'         => '203.0.113.99',
+			],
+			1,
+			25
+		);
+		$this->assertSame( 1, $same_tier['total'], 'Re-matching the current tier must not add a lockout row.' );
+
+		// One more genuine failure reaches the higher tier (count 4 == threshold 4).
+		do_action( 'wp_login_failed', 'victim' );
+		$second = $this->log->query(
+			[
+				'event_type' => 'lockout',
+				'ip'         => '203.0.113.99',
+			],
+			1,
+			25
+		);
+		$this->assertSame( 2, $second['total'], 'The higher tier arms exactly once.' );
+
+		// The higher-tier lock is now active and the gate blocks again.
+		$result = apply_filters( 'authenticate', null, 'victim', 'wrong-password' );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'fanxie_login_locked', $result->get_error_code() );
+	}
+
 	public function test_allowlisted_ip_never_locks(): void {
 		$_SERVER['REMOTE_ADDR'] = '198.51.100.50';
 		$this->make_limiter(

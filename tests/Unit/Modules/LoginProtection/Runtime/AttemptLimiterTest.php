@@ -94,6 +94,46 @@ final class AttemptLimiterTest extends TestCase {
 		$this->assertSame( $user, $limiter->gate( $user, 'admin' ) );
 	}
 
+	public function test_on_failed_is_suppressed_while_subject_is_locked(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.9';
+
+		// A present IP-lock transient marks this `wp_login_failed` as the echo of
+		// our own `gate()` block, not a genuine credential attempt.
+		Functions\when( 'get_transient' )->alias(
+			static function ( $key ): bool {
+				return str_starts_with( (string) $key, 'fanxie_wp_core_lp_lock_ip_' );
+			}
+		);
+
+		$set = [];
+		Functions\when( 'set_transient' )->alias(
+			static function ( $key ) use ( &$set ): bool {
+				$set[] = $key;
+				return true;
+			}
+		);
+
+		// Neither a `failed_login` nor a `lockout` row may be written.
+		$log = Mockery::mock( LoginLogRecorder::class );
+		$log->shouldNotReceive( 'record' );
+
+		// A present lock short-circuits before any ban lookup.
+		$bans = Mockery::mock( BanStore::class );
+		$bans->shouldNotReceive( 'is_banned' );
+
+		$limiter = new AttemptLimiter(
+			$this->config(),
+			new IpResolver( false, '' ),
+			$log,
+			$bans
+		);
+
+		$limiter->on_failed( 'victim' );
+
+		// No counter bump and no lock re-arm: the counter TTL is never touched.
+		$this->assertSame( [], $set, 'A locked subject must not write any transient.' );
+	}
+
 	public function test_on_success_clears_failure_counters_for_ip_and_user(): void {
 		$_SERVER['REMOTE_ADDR'] = '203.0.113.1';
 

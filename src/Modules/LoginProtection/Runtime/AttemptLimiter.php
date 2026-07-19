@@ -76,12 +76,7 @@ final class AttemptLimiter {
 		}
 		$username = is_string( $username ) ? $username : '';
 
-		$locked = ( '' !== $ip && false !== get_transient( $this->lock_key( 'ip', $ip ) ) )
-			|| ( '' !== $username && false !== get_transient( $this->lock_key( 'user', $username ) ) )
-			|| ( '' !== $ip && $this->bans->is_banned( 'ip', $ip ) )
-			|| ( '' !== $username && $this->bans->is_banned( 'username', $username ) );
-
-		if ( ! $locked ) {
+		if ( ! $this->is_locked_or_banned( $ip, $username ) ) {
 			return $user;
 		}
 
@@ -104,17 +99,29 @@ final class AttemptLimiter {
 		if ( $this->is_allowlisted( $ip ) ) {
 			return;
 		}
+		// Echo suppression: while a subject is locked or banned, `gate()` blocks at
+		// `authenticate` before any credential check, so the `wp_login_failed` that
+		// fired is the echo of our own block — not a genuine credential attempt.
+		// Counting or logging it would let an attacker who keeps hammering a locked
+		// subject perpetually renew the lock (a DoS lever against the victim) and
+		// flood the log with duplicate rows. Suppressing it also stops the counter
+		// from auto-escalating on traffic that never reaches a real credential check.
+		if ( $this->is_locked_or_banned( $ip, $username ) ) {
+			return;
+		}
 		$this->log->record( 'failed_login', $ip, $username, null, [] );
 		$this->bump( 'ip', $ip );
 		$this->bump( 'user', $username );
 	}
 
 	/**
-	 * Clear the failure counters for the subject on a successful login.
+	 * Clear the failure counters and applied-tier markers on a successful login.
 	 *
-	 * Lockout markers are intentionally left untouched: a locked subject can
+	 * The rolling counters and their companion `applied_*` markers are reset so a
+	 * fresh sequence of failures starts clean and can re-enter every tier. The
+	 * active lockout markers are intentionally left untouched: a locked subject can
 	 * never reach `wp_login` (the gate returns a WP_Error first), so only the
-	 * running counters need resetting to avoid a stale count re-triggering.
+	 * counting state needs resetting to avoid a stale count re-triggering.
 	 *
 	 * @param mixed $user_login The user's login name.
 	 * @param mixed $user       The authenticated user object (unused).
@@ -124,9 +131,11 @@ final class AttemptLimiter {
 		$ip = $this->ip->resolve();
 		if ( '' !== $ip ) {
 			delete_transient( $this->count_key( 'ip', $ip ) );
+			delete_transient( $this->applied_key( 'ip', $ip ) );
 		}
 		if ( is_string( $user_login ) && '' !== $user_login ) {
 			delete_transient( $this->count_key( 'user', $user_login ) );
+			delete_transient( $this->applied_key( 'user', $user_login ) );
 		}
 	}
 
@@ -169,6 +178,20 @@ final class AttemptLimiter {
 			return;
 		}
 
+		// Only (re-)arm the lock and log a `lockout` when this failure enters a
+		// tier STRICTLY higher than the last one already applied to this subject.
+		// The `applied_*` marker persists across expired lock windows (it lives as
+		// long as the counter), so the counter can keep climbing and cross into each
+		// higher tier exactly once. A count that merely re-matches the current tier
+		// — e.g. a genuine failure after a lower-tier lock window has expired — will
+		// not renew the lock or write a duplicate `lockout` row.
+		$applied_key  = $this->applied_key( $type, $value );
+		$applied_tier = (int) get_transient( $applied_key );
+		if ( $tier['threshold'] <= $applied_tier ) {
+			return;
+		}
+
+		set_transient( $applied_key, $tier['threshold'], DAY_IN_SECONDS );
 		set_transient( $this->lock_key( $type, $value ), $count, $tier['lockout_minutes'] * MINUTE_IN_SECONDS );
 		$this->log->record(
 			'lockout',
@@ -177,6 +200,23 @@ final class AttemptLimiter {
 			null,
 			[ 'tier' => $tier ]
 		);
+	}
+
+	/**
+	 * Whether either dimension of the subject is currently locked or banned.
+	 *
+	 * Shared by `gate()` (to block the request) and `on_failed()` (to suppress the
+	 * echoed `wp_login_failed` a block triggers). Empty dimensions are skipped, and
+	 * the ban lookup is only reached when no lock transient already answers.
+	 *
+	 * @param string $ip       Client IP (may be empty).
+	 * @param string $username Attempted login name (may be empty).
+	 */
+	private function is_locked_or_banned( string $ip, string $username ): bool {
+		return ( '' !== $ip && false !== get_transient( $this->lock_key( 'ip', $ip ) ) )
+			|| ( '' !== $username && false !== get_transient( $this->lock_key( 'user', $username ) ) )
+			|| ( '' !== $ip && $this->bans->is_banned( 'ip', $ip ) )
+			|| ( '' !== $username && $this->bans->is_banned( 'username', $username ) );
 	}
 
 	/**
@@ -232,5 +272,18 @@ final class AttemptLimiter {
 	 */
 	private function lock_key( string $type, string $value ): string {
 		return self::PREFIX . 'lock_' . $type . '_' . md5( $value );
+	}
+
+	/**
+	 * Transient key for a subject's highest-applied tier threshold.
+	 *
+	 * Outlives individual lock windows (kept for the counter's lifetime) so tiered
+	 * escalation crosses into each higher tier exactly once. See `bump()`.
+	 *
+	 * @param string $type  Counter dimension, `ip` or `user`.
+	 * @param string $value The subject value.
+	 */
+	private function applied_key( string $type, string $value ): string {
+		return self::PREFIX . 'applied_' . $type . '_' . md5( $value );
 	}
 }
