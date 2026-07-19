@@ -118,17 +118,31 @@ describe('<ChecklistItem>', () => {
         tooltip: 'Why this matters.',
       },
     });
-    expect(wrapper.find('button[aria-label="More information"]').exists()).toBe(
-      true,
-    );
+    // The trigger no longer uses the generic default name — it is scoped to the
+    // row (asserted below), so we locate it by the tooltip's own class instead.
+    expect(wrapper.find('.fx-tip__trigger').exists()).toBe(true);
+  });
+
+  it('gives the tooltip trigger a row-scoped accessible name that includes the label', () => {
+    const wrapper = mount(ChecklistItem, {
+      props: {
+        label: 'Block author archive',
+        status: 'active',
+        tooltip: 'Why this matters.',
+      },
+    });
+    const trigger = wrapper.get('.fx-tip__trigger');
+    const ariaLabel = trigger.attributes('aria-label');
+    expect(ariaLabel).toBeTruthy();
+    // Not the generic default — must carry the row context.
+    expect(ariaLabel).not.toBe('More information');
+    expect(ariaLabel).toContain('Block author archive');
   });
 
   it('renders no tooltip trigger when the tooltip prop is omitted', () => {
     const wrapper = mount(ChecklistItem, {
       props: { label: 'Block author archive', status: 'active' },
     });
-    expect(wrapper.find('button[aria-label="More information"]').exists()).toBe(
-      false,
-    );
+    expect(wrapper.find('.fx-tip__trigger').exists()).toBe(false);
   });
 });

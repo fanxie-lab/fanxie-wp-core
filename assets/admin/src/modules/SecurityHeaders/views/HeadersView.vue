@@ -61,6 +61,7 @@ const hstsMaxAge = computed<string>({
             X-Frame-Options
           </h3>
           <Tooltip
+            label="More information about X-Frame-Options"
             text="Stops other sites from embedding yours in a frame (clickjacking). SAMEORIGIN allows your own site to frame itself."
           />
         </div>
@@ -88,6 +89,7 @@ const hstsMaxAge = computed<string>({
             X-Content-Type-Options
           </h3>
           <Tooltip
+            label="More information about X-Content-Type-Options"
             text="Sends nosniff so browsers don't guess a file's type — blocks tricks that run an upload as script."
           />
         </div>
@@ -108,6 +110,7 @@ const hstsMaxAge = computed<string>({
             Referrer-Policy
           </h3>
           <Tooltip
+            label="More information about Referrer-Policy"
             text="Limits how much of the current URL is sent when users click outbound links."
           />
         </div>
@@ -140,6 +143,7 @@ const hstsMaxAge = computed<string>({
             Permissions-Policy
           </h3>
           <Tooltip
+            label="More information about Permissions-Policy"
             text="Turns off browser features (camera, mic, geolocation…) your site doesn't use."
           />
         </div>

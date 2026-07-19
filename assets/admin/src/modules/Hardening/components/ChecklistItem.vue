@@ -107,7 +107,11 @@ const srPrefix = computed<string>(() => {
           <span :id="labelId" class="fx-hardening-item__label">
             {{ label }}
           </span>
-          <Tooltip v-if="tooltip" :text="tooltip" />
+          <Tooltip
+            v-if="tooltip"
+            :text="tooltip"
+            :label="`More information about ${label}`"
+          />
         </div>
         <span
           v-if="description"
