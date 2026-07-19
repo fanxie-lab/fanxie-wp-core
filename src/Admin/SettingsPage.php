@@ -39,7 +39,7 @@ final class SettingsPage {
 	 * WordPress-registered hook suffix for the settings page.
 	 *
 	 * Populated inside `register_menu()` via the return value of
-	 * `add_options_page()` — used by `enqueue_assets()` to scope enqueues
+	 * `add_menu_page()` — used by `enqueue_assets()` to scope enqueues
 	 * to this screen only.
 	 *
 	 * @var string
@@ -60,6 +60,15 @@ final class SettingsPage {
 	 * @var string
 	 */
 	public const ASSET_HANDLE = 'fanxie-wp-core-admin';
+
+	/**
+	 * Monochrome shield used as the top-level menu icon. Emitted as a base64
+	 * `data:` URI so WordPress can recolor it via CSS mask to match the admin
+	 * color scheme (a colored glyph would not survive that masking).
+	 *
+	 * @var string
+	 */
+	private const MENU_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="#a7aaad" d="M10 1 3 3.6v5.2c0 4.2 2.9 7 7 9.2 4.1-2.2 7-5 7-9.2V3.6L10 1Zm0 2.1 5 1.9v3.8c0 3.2-2.1 5.5-5 7.2-2.9-1.7-5-4-5-7.2V5l5-1.9Z"/></svg>';
 
 	/**
 	 * Asset handle for Vite's HMR client (dev mode only).
@@ -104,12 +113,28 @@ final class SettingsPage {
 	}
 
 	/**
-	 * Register the settings page under **Settings → Fanxie WP Core**.
+	 * Register a top-level **FX Core** admin menu hosting the Vue SPA.
+	 *
+	 * The first submenu row is relabeled "Settings" (WordPress otherwise
+	 * duplicates the top-level title). Slug is unchanged, so the settings screen
+	 * lives at `admin.php?page=fanxie-wp-core`.
 	 */
 	public function register_menu(): void {
-		$hook = add_options_page(
+		$hook = add_menu_page(
 			esc_html__( 'Fanxie WP Core', 'fanxie-wp-core' ),
+			esc_html__( 'FX Core', 'fanxie-wp-core' ),
+			Plugin::CAPABILITY,
+			self::MENU_SLUG,
+			[ $this, 'render' ],
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- benign: encoding an inline SVG into a data: URI is the WP-recommended way to supply a maskable add_menu_page() icon, not code obfuscation.
+			'data:image/svg+xml;base64,' . base64_encode( self::MENU_ICON_SVG ),
+			58.9
+		);
+
+		add_submenu_page(
+			self::MENU_SLUG,
 			esc_html__( 'Fanxie WP Core', 'fanxie-wp-core' ),
+			esc_html__( 'Settings', 'fanxie-wp-core' ),
 			Plugin::CAPABILITY,
 			self::MENU_SLUG,
 			[ $this, 'render' ]
