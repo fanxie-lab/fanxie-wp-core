@@ -14,7 +14,6 @@ use FanxieLab\WPCore\Modules\LoginProtection\IpResolver;
 use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
 use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
 use WP_Error;
-use WP_UnitTestCase;
 
 /**
  * End-to-end round-trip through the real `authenticate` filter and
@@ -22,18 +21,18 @@ use WP_UnitTestCase;
  * table: failures accumulate, cross a tier, and the gate then blocks; an
  * allowlisted IP is never counted or locked.
  */
-final class AttemptLimiterIntegrationTest extends WP_UnitTestCase {
+final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 
 	private LoginLogRepository $log;
 
 	private BanRepository $bans;
 
 	protected function setUp(): void {
+		// The base case installs and truncates both custom tables before every
+		// test; here we only need local repository handles for the assertions.
 		parent::setUp();
-		$this->log = new LoginLogRepository();
-		$this->log->install();
+		$this->log  = new LoginLogRepository();
 		$this->bans = new BanRepository();
-		$this->bans->install();
 	}
 
 	protected function tearDown(): void {

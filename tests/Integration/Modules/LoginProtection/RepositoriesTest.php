@@ -11,12 +11,15 @@ namespace FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection;
 
 use FanxieLab\WPCore\Modules\LoginProtection\BanRepository;
 use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
-use WP_UnitTestCase;
 
 /**
  * Integration tests for LoginLogRepository and BanRepository.
+ *
+ * Extends {@see LoginProtectionTableTestCase} so both custom tables are
+ * truncated before each test, keeping the count assertions below
+ * order-independent within the combined integration suite.
  */
-final class RepositoriesTest extends WP_UnitTestCase {
+final class RepositoriesTest extends LoginProtectionTableTestCase {
 	public function test_log_install_record_query_prune(): void {
 		$repo = new LoginLogRepository();
 		$repo->install();
