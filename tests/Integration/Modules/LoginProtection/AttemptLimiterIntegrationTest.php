@@ -41,6 +41,23 @@ final class AttemptLimiterIntegrationTest extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
+	/**
+	 * Count `lockout` rows recorded for a given IP dimension.
+	 *
+	 * @param string $ip Client IP the lockout was recorded against.
+	 */
+	private function count_ip_lockouts( string $ip ): int {
+		$out = $this->log->query(
+			[
+				'event_type' => 'lockout',
+				'ip'         => $ip,
+			],
+			1,
+			25
+		);
+		return (int) $out['total'];
+	}
+
 	private function make_limiter( array $tiers, array $allowlist = [] ): AttemptLimiter {
 		$config  = [
 			'enabled'            => true,
@@ -197,6 +214,60 @@ final class AttemptLimiterIntegrationTest extends WP_UnitTestCase {
 		$result = apply_filters( 'authenticate', null, 'victim', 'wrong-password' );
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertSame( 'fanxie_login_locked', $result->get_error_code() );
+	}
+
+	public function test_low_and_slow_keeps_applied_marker_in_lockstep_with_counter(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.111';
+		$this->make_limiter(
+			[
+				[
+					'threshold'       => 2,
+					'lockout_minutes' => 15,
+				],
+				[
+					'threshold'       => 4,
+					'lockout_minutes' => 60,
+				],
+			]
+		);
+
+		$lock_ip_key         = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.111' );
+		$lock_user_key       = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
+		$count_ip_key        = 'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.111' );
+		$applied_ip_key      = 'fanxie_wp_core_lp_applied_ip_' . md5( '203.0.113.111' );
+		$applied_timeout_key = '_transient_timeout_' . $applied_ip_key;
+
+		// Cross tier 1: exactly one IP `lockout` row, applied marker records it.
+		do_action( 'wp_login_failed', 'victim' );
+		do_action( 'wp_login_failed', 'victim' );
+		$this->assertSame( 1, $this->count_ip_lockouts( '203.0.113.111' ), 'One lockout after crossing tier 1.' );
+		$this->assertSame( 2, (int) get_transient( $applied_ip_key ), 'Applied marker records the tier-1 threshold.' );
+
+		// Low-and-slow: the tier-1 window has expired (lock gone) but the rolling
+		// counter survives. Simulate the applied marker being on the verge of
+		// expiry — as it would be ~24h after the last tier crossing while the
+		// counter keeps getting refreshed by fresh failures.
+		delete_transient( $lock_ip_key );
+		delete_transient( $lock_user_key );
+		update_option( $applied_timeout_key, time() + 5 );
+
+		// A patient genuine failure re-matching tier 1 (count 3, still < threshold 4).
+		do_action( 'wp_login_failed', 'victim' );
+
+		// The counter is still alive, and the fix refreshes the applied marker's
+		// TTL to a full day in lockstep so it can never expire out from under a
+		// still-alive counter and reset `applied_tier` to 0.
+		$this->assertSame( 3, (int) get_transient( $count_ip_key ), 'The rolling counter survived the low-and-slow gap.' );
+		$this->assertSame( 2, (int) get_transient( $applied_ip_key ), 'Applied marker is still present after the bump.' );
+		$this->assertGreaterThan(
+			time() + DAY_IN_SECONDS - 60,
+			(int) get_option( $applied_timeout_key ),
+			'Applied marker TTL was refreshed to ~a day in lockstep with the counter.'
+		);
+
+		// No same-tier re-arm or duplicate `lockout` row.
+		$this->assertSame( 1, $this->count_ip_lockouts( '203.0.113.111' ), 'Re-matching the current tier must not add a lockout row.' );
+		$this->assertFalse( get_transient( $lock_ip_key ), 'The lock must not be re-armed within the same tier.' );
 	}
 
 	public function test_allowlisted_ip_never_locks(): void {

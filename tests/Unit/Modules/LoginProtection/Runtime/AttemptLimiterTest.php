@@ -33,6 +33,15 @@ final class AttemptLimiterTest extends TestCase {
 		parent::setUp();
 		Monkey\setUp();
 		Functions\when( '__' )->returnArg( 1 );
+
+		// WordPress defines these time constants; unit mode has no WP runtime, so
+		// the `bump()` path (which passes them to `set_transient`) needs them faked.
+		if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+			define( 'DAY_IN_SECONDS', 86400 );
+		}
+		if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
+			define( 'MINUTE_IN_SECONDS', 60 );
+		}
 	}
 
 	protected function tearDown(): void {
@@ -156,5 +165,115 @@ final class AttemptLimiterTest extends TestCase {
 
 		$this->assertContains( 'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.1' ), $deleted );
 		$this->assertContains( 'fanxie_wp_core_lp_cnt_user_' . md5( 'bob' ), $deleted );
+	}
+
+	/**
+	 * Threshold gating: a failure whose count merely re-matches the already-applied
+	 * tier must not re-arm the lock or write another `lockout` row — but it MUST
+	 * still refresh the `applied_*` marker's TTL so it stays in lockstep with the
+	 * rolling counter (the low-and-slow lockstep fix).
+	 */
+	public function test_bump_re_matching_applied_tier_refreshes_marker_without_relogging(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.20';
+
+		// Counter at 2 (bumps to 3 == the already-applied threshold-3 tier); the
+		// applied marker already records 3; no lock is present.
+		Functions\when( 'get_transient' )->alias(
+			static function ( $key ): mixed {
+				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_lock_' ) ) {
+					return false;
+				}
+				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_applied_' ) ) {
+					return 3;
+				}
+				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_cnt_' ) ) {
+					return 2;
+				}
+				return false;
+			}
+		);
+
+		$sets = [];
+		Functions\when( 'set_transient' )->alias(
+			static function ( $key, $value, $ttl ) use ( &$sets ): bool {
+				$sets[ (string) $key ] = [
+					'value' => $value,
+					'ttl'   => $ttl,
+				];
+				return true;
+			}
+		);
+
+		$events = [];
+		$log    = Mockery::mock( LoginLogRecorder::class );
+		$log->shouldReceive( 'record' )->andReturnUsing(
+			static function ( string $event_type ) use ( &$events ): void {
+				$events[] = $event_type;
+			}
+		);
+
+		$bans = Mockery::mock( BanStore::class );
+		$bans->shouldReceive( 'is_banned' )->andReturn( false );
+
+		$limiter = new AttemptLimiter( $this->config(), new IpResolver( false, '' ), $log, $bans );
+
+		// Empty username -> only the IP dimension bumps (the user bump short-circuits).
+		$limiter->on_failed( '' );
+
+		$applied_key = 'fanxie_wp_core_lp_applied_ip_' . md5( '203.0.113.20' );
+		$lock_key    = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.20' );
+
+		$this->assertNotContains( 'lockout', $events, 'Re-matching the applied tier must not re-log a lockout.' );
+		$this->assertContains( 'failed_login', $events, 'The genuine failure is still recorded.' );
+		$this->assertArrayNotHasKey( $lock_key, $sets, 'The lock must not be re-armed within the same tier.' );
+		$this->assertArrayHasKey( $applied_key, $sets, 'The applied marker TTL must be refreshed in lockstep with the counter.' );
+		$this->assertSame( 3, $sets[ $applied_key ]['value'], 'The refreshed applied marker keeps its existing tier value.' );
+		$this->assertSame( DAY_IN_SECONDS, $sets[ $applied_key ]['ttl'], 'The applied marker is refreshed to a full day.' );
+	}
+
+	/**
+	 * Threshold gating: a failure whose count crosses a strictly higher tier arms
+	 * the lock and writes exactly one `lockout` row.
+	 */
+	public function test_bump_crossing_a_strictly_higher_tier_logs_lockout_once(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.21';
+
+		// Counter at 5 (bumps to 6 == the strictly-higher threshold-6 tier); the
+		// applied marker still records the lower threshold 3; no lock is present.
+		Functions\when( 'get_transient' )->alias(
+			static function ( $key ): mixed {
+				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_lock_' ) ) {
+					return false;
+				}
+				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_applied_' ) ) {
+					return 3;
+				}
+				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_cnt_' ) ) {
+					return 5;
+				}
+				return false;
+			}
+		);
+		Functions\when( 'set_transient' )->justReturn( true );
+
+		$lockouts = 0;
+		$log      = Mockery::mock( LoginLogRecorder::class );
+		$log->shouldReceive( 'record' )->andReturnUsing(
+			static function ( string $event_type ) use ( &$lockouts ): void {
+				if ( 'lockout' === $event_type ) {
+					++$lockouts;
+				}
+			}
+		);
+
+		$bans = Mockery::mock( BanStore::class );
+		$bans->shouldReceive( 'is_banned' )->andReturn( false );
+
+		$limiter = new AttemptLimiter( $this->config(), new IpResolver( false, '' ), $log, $bans );
+
+		// Empty username -> only the IP dimension bumps, so exactly one lockout.
+		$limiter->on_failed( '' );
+
+		$this->assertSame( 1, $lockouts, 'Crossing a strictly higher tier arms exactly one lockout.' );
 	}
 }

@@ -188,6 +188,12 @@ final class AttemptLimiter {
 		$applied_key  = $this->applied_key( $type, $value );
 		$applied_tier = (int) get_transient( $applied_key );
 		if ( $tier['threshold'] <= $applied_tier ) {
+			// Keep the marker's TTL in lockstep with the counter (both rolling to a
+			// full day on every bump). Without this refresh, a low-and-slow attacker
+			// whose failures are >24h from the last tier crossing but <24h apart could
+			// let `applied_*` expire while the counter survives — resetting
+			// `applied_tier` to 0 and re-arming/re-logging the same tier ~once a day.
+			set_transient( $applied_key, $applied_tier, DAY_IN_SECONDS );
 			return;
 		}
 
