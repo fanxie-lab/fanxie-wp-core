@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue';
-import { StatusPill } from '@/components';
+import { StatusPill, Tooltip } from '@/components';
 import type { StatusPillVariant } from '@/components';
 import type { ChecklistStatus } from '../types';
 
@@ -42,12 +42,18 @@ interface Props {
    * a pill is rendered.
    */
   srStatusPrefix?: string;
+  /**
+   * Optional short "why" explanation. When set, an accessible info Tooltip
+   * renders next to the label. Plain text — no markup.
+   */
+  tooltip?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   description: undefined,
   statusLabel: undefined,
   srStatusPrefix: undefined,
+  tooltip: undefined,
 });
 
 const generatedId = useId();
@@ -97,9 +103,12 @@ const srPrefix = computed<string>(() => {
         <slot :label-id="labelId" />
       </div>
       <div class="fx-hardening-item__text">
-        <span :id="labelId" class="fx-hardening-item__label">
-          {{ label }}
-        </span>
+        <div class="fx-hardening-item__label-row">
+          <span :id="labelId" class="fx-hardening-item__label">
+            {{ label }}
+          </span>
+          <Tooltip v-if="tooltip" :text="tooltip" />
+        </div>
         <span
           v-if="description"
           class="fx-hardening-item__description"
@@ -154,6 +163,12 @@ const srPrefix = computed<string>(() => {
   display: flex;
   flex-direction: column;
   gap: var(--fx-space-1);
+}
+
+.fx-hardening-item__label-row {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-2);
 }
 
 .fx-hardening-item__label {

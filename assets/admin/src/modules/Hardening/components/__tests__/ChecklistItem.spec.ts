@@ -109,4 +109,26 @@ describe('<ChecklistItem>', () => {
       .attributes('data-label-id');
     expect(slotReceived).toBe(groupLabelId);
   });
+
+  it('renders a tooltip trigger when the tooltip prop is set', () => {
+    const wrapper = mount(ChecklistItem, {
+      props: {
+        label: 'Block author archive',
+        status: 'active',
+        tooltip: 'Why this matters.',
+      },
+    });
+    expect(wrapper.find('button[aria-label="More information"]').exists()).toBe(
+      true,
+    );
+  });
+
+  it('renders no tooltip trigger when the tooltip prop is omitted', () => {
+    const wrapper = mount(ChecklistItem, {
+      props: { label: 'Block author archive', status: 'active' },
+    });
+    expect(wrapper.find('button[aria-label="More information"]').exists()).toBe(
+      false,
+    );
+  });
 });

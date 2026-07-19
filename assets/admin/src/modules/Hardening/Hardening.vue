@@ -406,6 +406,7 @@ onMounted(() => {
           <ChecklistItem
             label="Block author archive (?author=N)"
             description="Returns 404 for unauthenticated requests to author URLs."
+            tooltip="Author URLs like /?author=1 redirect to /author/username, leaking valid usernames to attackers. This 404s them for logged-out visitors."
             :status="statusBlockAuthor"
           >
             <template #default="{ labelId }">
@@ -420,6 +421,7 @@ onMounted(() => {
           <ChecklistItem
             label="Block REST /wp/v2/users for anonymous requests"
             description="Returns 401 to unauthenticated GETs of the users endpoint."
+            tooltip="The REST users endpoint lists every account's slug. Blocking anonymous access hides that list."
             :status="statusBlockRestUsers"
           >
             <template #default="{ labelId }">
@@ -453,6 +455,7 @@ onMounted(() => {
         <ChecklistItem
           label="XML-RPC mode"
           description="Choose how the /xmlrpc.php endpoint is handled."
+          tooltip="xmlrpc.php enables remote publishing but is a common brute-force and pingback-DDoS vector. Disable it unless a legacy client needs it."
           :status="statusXmlRpc"
         >
           <template #default="{ labelId }">
@@ -485,6 +488,7 @@ onMounted(() => {
           <ChecklistItem
             label="Remove X-Powered-By header"
             description="Calls header_remove('X-Powered-By'). Some servers re-inject it at a lower layer; we flag when that happens."
+            tooltip="Hides the PHP version so scanners can't match your stack to known CVEs."
             :status="statusRemovePoweredBy"
             :status-label="
               statusRemovePoweredBy === 'warning' ? 'Still present' : undefined
@@ -502,6 +506,7 @@ onMounted(() => {
           <ChecklistItem
             label="Remove WordPress generator tag"
             description="Removes the <meta name=generator> tag from the head."
+            tooltip="Removes the <meta name=generator> WordPress version hint from your page source."
             :status="statusRemoveWpGenerator"
           >
             <template #default="{ labelId }">
@@ -516,6 +521,7 @@ onMounted(() => {
           <ChecklistItem
             label="Remove generator from RSS feeds"
             description="Strips the <generator> element from RSS / Atom feeds."
+            tooltip="Feeds also expose the WP version in a <generator> element — this strips it."
             :status="statusRemoveRssGenerator"
           >
             <template #default="{ labelId }">
@@ -530,6 +536,7 @@ onMounted(() => {
           <ChecklistItem
             label="Strip ?ver= query from scripts and styles"
             description="Removes the version query string from enqueued asset URLs."
+            tooltip="The ?ver= on asset URLs reveals WP/plugin versions. Stripping it hides them but also weakens cache-busting across upgrades."
             :status="statusStripVersionQuery"
           >
             <template #default="{ labelId }">
@@ -552,6 +559,7 @@ onMounted(() => {
           <ChecklistItem
             label="Block access to readme.html and license.txt"
             description="Returns 404 for both files — they leak the exact WP version."
+            tooltip="Both files state the exact WordPress version. Blocking them removes an easy version fingerprint."
             :status="statusBlockReadmeLicense"
             :status-label="
               statusBlockReadmeLicense === 'warning'
@@ -671,6 +679,7 @@ onMounted(() => {
           <ChecklistItem
             label="Obfuscate login errors"
             description="Hides whether the username or the password was wrong."
+            tooltip="Generic 'invalid username or password' stops attackers learning which half was right."
             :status="statusLoginErrors"
           >
             <template #default="{ labelId }">
@@ -708,6 +717,7 @@ onMounted(() => {
           <ChecklistItem
             label="Runtime-enforce file editing lockdown"
             description="Fallback for sites that cannot edit wp-config.php. Less robust than the DISALLOW_FILE_EDIT constant."
+            tooltip="Disables the dashboard theme/plugin code editors. The DISALLOW_FILE_EDIT constant is stronger — use it when you can edit wp-config.php."
             :status="statusFileEditing"
             :status-label="
               statusFileEditing === 'warning'
@@ -790,6 +800,7 @@ onMounted(() => {
           <ChecklistItem
             label="Disable Application Passwords"
             description="Makes wp_is_application_passwords_available return false. Existing app passwords stop working but are not deleted."
+            tooltip="App Passwords authenticate REST/XML-RPC clients. Turn off if nothing external connects to this site."
             :status="statusApplicationPasswords"
           >
             <template #default="{ labelId }">
