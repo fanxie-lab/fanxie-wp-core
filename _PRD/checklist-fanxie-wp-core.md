@@ -216,4 +216,5 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 - [ ] Every destructive op has a `--dry-run` and a UI confirmation
 - [ ] Every AJAX action: nonce + capability, documented in `docs/hooks.md`
 - [ ] Every module: enabled/disabled cost benchmark recorded
+- [ ] Every setting has an accessible explanation (ⓘ Tooltip or inline HelpText)
 - [ ] CHANGELOG updated per phase

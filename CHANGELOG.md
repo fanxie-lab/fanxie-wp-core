@@ -58,6 +58,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `StatusInspector` transient after `update_config()` (mirroring
   `apply-fix`) so the next `get-config` re-probes against the new
   settings.
+- Hardening file-editor lockdown now actually hides the Theme and Plugin
+  File Editors. The runtime guard matched `edit_themes` / `edit_plugins`,
+  but WordPress gates both editors through
+  `wp_is_file_mod_allowed( 'capability_edit_themes' )`; it now matches the
+  real contexts and still leaves plugin/theme installs and updates alone.
+- Hardening uploads/readme protection no longer reports a misleading
+  ".htaccess write failed": the uploads `.htaccess` is written only on
+  Apache/LiteSpeed, the `readme.html` / `license.txt` probe is now
+  tri-state (blocked / served / inconclusive — so a dev host that cannot
+  reach its own URL no longer shows a false "still accessible" warning),
+  and the messaging is server-aware.
+- Hardening Application Passwords status is now site-wide-aware and names
+  the holder(s) instead of a dead-end "revoke them" note. The disable
+  toggle stays visible and reversible even when app passwords exist, with
+  a warning that disabling does not delete them and hides the profile
+  revoke UI.
 
 ### Security
 - Security Headers: HSTS and its `includeSubDomains` flag are now **off**
@@ -65,6 +81,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   prior defaults could brick a site that wasn't fully on HTTPS.
 
 ### Changed
+- Admin settings now live under a top-level **FX Core** menu (was
+  *Settings → Fanxie WP Core*).
+- Security Headers consolidated to two tabs — Response Headers and Content
+  Security Policy — with the CSP violation log folded into the CSP tab, and
+  HSTS moved into a collapsed "Advanced" section.
+- Every admin setting now carries an accessible explanation — a keyboard-
+  focusable ⓘ tooltip for simple toggles, inline help text for complex or
+  risky ones (Cache-Control gained a full description). Shared `Tooltip` /
+  `HelpText` primitives establish this as the standard across all modules.
 - Security Headers admin polish: smooth scroll between sub-tabs, refresh
   button on the CSP violations log, HSTS controls re-laid out so
   `includeSubDomains` sits below `max-age`, and the duplicate page

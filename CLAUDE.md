@@ -95,6 +95,7 @@ The user has set explicit agent ownership. When the scope is clear, delegate; do
 - **Bridging to PHP:** hydrate initial state via `wp_add_inline_script( 'fanxie-admin', 'window.fanxieWPCore = ' . wp_json_encode( $bootstrap ), 'before' )`. Do not echo JSON into the DOM.
 - **AJAX over REST for the admin UI**, per user direction. Each action = one `admin-ajax.php` action registered as `fanxie_wp_core_<action>`. REST routes reserved for external integrations (Turnstile report endpoint, future webhooks).
 - **Accessibility:** WCAG 2.1 AA. Every interactive element keyboard-reachable, labelled, and screen-reader tested. Settings forms use native labels, not placeholder-as-label.
+- **Setting help is a standard, not a one-off.** Every setting exposes an explanation: simple toggles via the accessible `Tooltip` primitive (keyboard-focusable ⓘ), complex or risky settings via inline `HelpText`. To wire `HelpText` to a `Toggle` for screen readers, pass the help element's id through the Toggle's `describedby` prop (a raw `aria-describedby` on `<Toggle>` falls through to its wrapper `<div>`, not the switch). All current and future modules follow this pattern.
 
 ---
 
