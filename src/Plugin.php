@@ -110,6 +110,8 @@ final class Plugin {
 
 		// Ensure module-owned tables exist before any hooks fire.
 		( new ViolationRepository() )->install();
+		( new \FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository() )->install();
+		( new \FanxieLab\WPCore\Modules\LoginProtection\BanRepository() )->install();
 
 		// Hardening: drop protection files into uploads (idempotent).
 		// Uses the current option value so a user who's toggled either uploads
