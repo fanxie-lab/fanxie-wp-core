@@ -1,0 +1,236 @@
+<?php
+/**
+ * Tiered brute-force attempt limiter.
+ *
+ * @package FanxieLab\WPCore\Modules\LoginProtection\Runtime
+ */
+
+declare( strict_types=1 );
+
+namespace FanxieLab\WPCore\Modules\LoginProtection\Runtime;
+
+use FanxieLab\WPCore\Modules\LoginProtection\BanStore;
+use FanxieLab\WPCore\Modules\LoginProtection\IpResolver;
+use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRecorder;
+use WP_Error;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Brute-force limiter: counts failures per IP + username in transients, applies
+ * tiered lockouts, and blocks locked/banned subjects at `authenticate`.
+ *
+ * Failure counters (`cnt_*`) live for a day; lockout markers (`lock_*`) live
+ * for the crossed tier's window. The gate runs at `authenticate` priority 30 —
+ * after WordPress's own credential check — so a WP_Error here reads as the
+ * final auth verdict for the request.
+ */
+final class AttemptLimiter {
+
+	/**
+	 * Shared transient key prefix for this module's counters + lockouts.
+	 *
+	 * @var string
+	 */
+	private const PREFIX = 'fanxie_wp_core_lp_';
+
+	/**
+	 * Constructor.
+	 *
+	 * @param array<string, mixed> $config `attempts` sub-config snapshot.
+	 * @param IpResolver           $ip     Client-IP resolver.
+	 * @param LoginLogRecorder     $log    Login event log writer.
+	 * @param BanStore             $bans   Persistent ban lookup.
+	 */
+	public function __construct(
+		private readonly array $config,
+		private readonly IpResolver $ip,
+		private readonly LoginLogRecorder $log,
+		private readonly BanStore $bans,
+	) {}
+
+	/**
+	 * Wire the limiter's hooks when attempt limiting is enabled.
+	 */
+	public function register_hooks(): void {
+		if ( empty( $this->config['enabled'] ) ) {
+			return;
+		}
+		// Priority 30 runs after WordPress's own `wp_authenticate_username_password`.
+		add_filter( 'authenticate', [ $this, 'gate' ], 30, 2 );
+		add_action( 'wp_login_failed', [ $this, 'on_failed' ] );
+		add_action( 'wp_login', [ $this, 'on_success' ], 10, 2 );
+	}
+
+	/**
+	 * Block the request when the IP or username is currently locked or banned.
+	 *
+	 * @param mixed $user     Auth result so far (WP_User, WP_Error, or null).
+	 * @param mixed $username Attempted login name.
+	 * @return mixed WP_Error when blocked, else the incoming `$user` untouched.
+	 */
+	public function gate( mixed $user, mixed $username ): mixed {
+		$ip = $this->ip->resolve();
+		if ( $this->is_allowlisted( $ip ) ) {
+			return $user;
+		}
+		$username = is_string( $username ) ? $username : '';
+
+		$locked = ( '' !== $ip && false !== get_transient( $this->lock_key( 'ip', $ip ) ) )
+			|| ( '' !== $username && false !== get_transient( $this->lock_key( 'user', $username ) ) )
+			|| ( '' !== $ip && $this->bans->is_banned( 'ip', $ip ) )
+			|| ( '' !== $username && $this->bans->is_banned( 'username', $username ) );
+
+		if ( ! $locked ) {
+			return $user;
+		}
+
+		$this->log->record( 'blocked_attempt', $ip, $username, null, [] );
+
+		return new WP_Error(
+			'fanxie_login_locked',
+			__( 'Too many failed attempts. Try again later.', 'fanxie-wp-core' )
+		);
+	}
+
+	/**
+	 * Count a failed login against both the IP and the username.
+	 *
+	 * @param mixed $username Attempted login name.
+	 */
+	public function on_failed( mixed $username ): void {
+		$ip       = $this->ip->resolve();
+		$username = is_string( $username ) ? $username : '';
+		if ( $this->is_allowlisted( $ip ) ) {
+			return;
+		}
+		$this->log->record( 'failed_login', $ip, $username, null, [] );
+		$this->bump( 'ip', $ip );
+		$this->bump( 'user', $username );
+	}
+
+	/**
+	 * Clear the failure counters for the subject on a successful login.
+	 *
+	 * Lockout markers are intentionally left untouched: a locked subject can
+	 * never reach `wp_login` (the gate returns a WP_Error first), so only the
+	 * running counters need resetting to avoid a stale count re-triggering.
+	 *
+	 * @param mixed $user_login The user's login name.
+	 * @param mixed $user       The authenticated user object (unused).
+	 */
+	public function on_success( mixed $user_login, mixed $user = null ): void {
+		unset( $user );
+		$ip = $this->ip->resolve();
+		if ( '' !== $ip ) {
+			delete_transient( $this->count_key( 'ip', $ip ) );
+		}
+		if ( is_string( $user_login ) && '' !== $user_login ) {
+			delete_transient( $this->count_key( 'user', $user_login ) );
+		}
+	}
+
+	/**
+	 * Resolve the strongest applicable tier for a failure count.
+	 *
+	 * Returns the tier with the highest `threshold` that is still `<=` the
+	 * failure count, or `null` when the count is below every threshold. Order
+	 * of the configured tiers does not matter.
+	 *
+	 * @param int $failures Current failure count.
+	 * @return array{threshold: int, lockout_minutes: int}|null
+	 */
+	public function tier_for( int $failures ): ?array {
+		$match = null;
+		foreach ( $this->tiers() as $tier ) {
+			if ( $failures >= $tier['threshold'] && ( null === $match || $tier['threshold'] > $match['threshold'] ) ) {
+				$match = $tier;
+			}
+		}
+		return $match;
+	}
+
+	/**
+	 * Increment a subject's failure counter and lock it when a tier is crossed.
+	 *
+	 * @param string $type  Counter dimension, `ip` or `user`.
+	 * @param string $value The subject value.
+	 */
+	private function bump( string $type, string $value ): void {
+		if ( '' === $value ) {
+			return;
+		}
+		$key   = $this->count_key( $type, $value );
+		$count = (int) get_transient( $key ) + 1;
+		set_transient( $key, $count, DAY_IN_SECONDS );
+
+		$tier = $this->tier_for( $count );
+		if ( null === $tier ) {
+			return;
+		}
+
+		set_transient( $this->lock_key( $type, $value ), $count, $tier['lockout_minutes'] * MINUTE_IN_SECONDS );
+		$this->log->record(
+			'lockout',
+			'ip' === $type ? $value : '',
+			'user' === $type ? $value : '',
+			null,
+			[ 'tier' => $tier ]
+		);
+	}
+
+	/**
+	 * Whether the resolved IP is on the trusted allowlist.
+	 *
+	 * @param string $ip Client IP.
+	 */
+	private function is_allowlisted( string $ip ): bool {
+		if ( '' === $ip ) {
+			return false;
+		}
+		$allowlist = isset( $this->config['allowlist'] ) && is_array( $this->config['allowlist'] )
+			? $this->config['allowlist']
+			: [];
+		return in_array( $ip, $allowlist, true );
+	}
+
+	/**
+	 * Normalised lockout tiers from config.
+	 *
+	 * @return array<int, array{threshold: int, lockout_minutes: int}>
+	 */
+	private function tiers(): array {
+		$raw = isset( $this->config['tiers'] ) && is_array( $this->config['tiers'] ) ? $this->config['tiers'] : [];
+
+		$tiers = [];
+		foreach ( $raw as $tier ) {
+			if ( is_array( $tier ) && isset( $tier['threshold'], $tier['lockout_minutes'] ) ) {
+				$tiers[] = [
+					'threshold'       => (int) $tier['threshold'],
+					'lockout_minutes' => (int) $tier['lockout_minutes'],
+				];
+			}
+		}
+		return $tiers;
+	}
+
+	/**
+	 * Transient key for a subject's rolling failure counter.
+	 *
+	 * @param string $type  Counter dimension, `ip` or `user`.
+	 * @param string $value The subject value.
+	 */
+	private function count_key( string $type, string $value ): string {
+		return self::PREFIX . 'cnt_' . $type . '_' . md5( $value );
+	}
+
+	/**
+	 * Transient key for a subject's active lockout marker.
+	 *
+	 * @param string $type  Counter dimension, `ip` or `user`.
+	 * @param string $value The subject value.
+	 */
+	private function lock_key( string $type, string $value ): string {
+		return self::PREFIX . 'lock_' . $type . '_' . md5( $value );
+	}
+}

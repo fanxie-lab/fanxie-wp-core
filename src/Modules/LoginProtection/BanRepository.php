@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * time-boxed. Mirrors the conventions of
  * {@see \FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository}.
  */
-final class BanRepository {
+final class BanRepository implements BanStore {
 
 	/**
 	 * Option key holding the installed schema version.

@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
  *   - `query()`   — paginated list with simple column + date filters.
  *   - `prune()`   — delete rows older than a given number of days.
  */
-final class LoginLogRepository {
+final class LoginLogRepository implements LoginLogRecorder {
 
 	/**
 	 * Option key holding the installed schema version.
