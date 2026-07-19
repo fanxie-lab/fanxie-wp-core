@@ -38,15 +38,20 @@ function onKeydown(event: KeyboardEvent): void {
 </script>
 
 <template>
-  <span class="fx-tip">
+  <!--
+    Hover show/hide live on the wrapping container (not the button) so the
+    pointer can travel trigger → bubble without the tooltip vanishing
+    (WCAG 2.1 SC 1.4.13 "Hoverable"). The bubble's transparent bridge
+    (see .fx-tip__bubble::after) keeps the 6px gap part of the container's
+    hit area, so mouseleave only fires when the pointer truly exits both.
+    Focus/blur/Escape stay on the button for keyboard + screen-reader users.
+  -->
+  <span class="fx-tip" @mouseenter="show" @mouseleave="hide">
     <button
       type="button"
       class="fx-tip__trigger"
       :aria-label="props.label"
       :aria-describedby="describedBy"
-      :aria-expanded="open"
-      @mouseenter="show"
-      @mouseleave="hide"
       @focus="show"
       @blur="hide"
       @keydown="onKeydown"
@@ -133,5 +138,20 @@ function onKeydown(event: KeyboardEvent): void {
   line-height: var(--fx-line-height-snug);
   box-shadow: var(--fx-shadow-md);
   white-space: normal;
+}
+
+/*
+ * Transparent bridge spanning the 6px gap between the bubble and the trigger.
+ * It makes the gap part of the bubble's hit area so a pointer travelling from
+ * the trigger up to the bubble never leaves the container — keeping the
+ * tooltip hoverable (WCAG 2.1 SC 1.4.13). Non-interactive and invisible.
+ */
+.fx-tip__bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 6px;
 }
 </style>

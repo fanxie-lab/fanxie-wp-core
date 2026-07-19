@@ -24,4 +24,28 @@ describe('Tooltip', () => {
     await button.trigger('keydown', { key: 'Escape' });
     expect(wrapper.find('[role="tooltip"]').exists()).toBe(false);
   });
+
+  it('reveals on hover and stays visible when the pointer moves onto the bubble', async () => {
+    // WCAG 2.1 SC 1.4.13 "Hoverable": a pointer user must be able to travel
+    // from the trigger onto the bubble without the tooltip vanishing.
+    const wrapper = mount(Tooltip, { props: { text: 'Explains it.' } });
+    const container = wrapper.get('.fx-tip');
+    const button = wrapper.get('button');
+
+    // (a) Hovering the trigger reveals the bubble.
+    await container.trigger('mouseenter');
+    expect(wrapper.get('[role="tooltip"]').isVisible()).toBe(true);
+
+    // (b) Moving the pointer off the trigger toward the bubble must NOT hide
+    // it. Hide is bound to the wrapping container, not the button, so leaving
+    // the button (an inner element) does not fire the container's mouseleave
+    // — the bubble stays reachable/hoverable.
+    await button.trigger('mouseleave');
+    expect(wrapper.find('[role="tooltip"]').exists()).toBe(true);
+    expect(wrapper.get('[role="tooltip"]').isVisible()).toBe(true);
+
+    // Leaving the whole container (pointer exits trigger + bubble) hides it.
+    await container.trigger('mouseleave');
+    expect(wrapper.find('[role="tooltip"]').exists()).toBe(false);
+  });
 });
