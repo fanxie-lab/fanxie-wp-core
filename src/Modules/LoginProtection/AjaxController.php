@@ -70,6 +70,7 @@ final class AjaxController {
 		$router->register( 'login_protection/get-config', [ $this, 'handle_get_config' ] );
 		$router->register( 'login_protection/save-config', [ $this, 'handle_save_config' ] );
 		$router->register( 'login_protection/get-log', [ $this, 'handle_get_log' ] );
+		$router->register( 'login_protection/get-bans', [ $this, 'handle_get_bans' ] );
 		$router->register( 'login_protection/add-ban', [ $this, 'handle_add_ban' ] );
 		$router->register( 'login_protection/remove-ban', [ $this, 'handle_remove_ban' ] );
 		$router->register( 'login_protection/clear-lockout', [ $this, 'handle_clear_lockout' ] );
@@ -163,6 +164,25 @@ final class AjaxController {
 			'page'     => $page,
 			'per_page' => $per_page,
 		];
+	}
+
+	/**
+	 * Handler: `login_protection/get-bans`.
+	 *
+	 * Read-only fetch of the current ban list so the admin UI can hydrate the
+	 * bans table on page load without first mutating a ban. The repository owns
+	 * the page / per-page clamping (page ≥ 1, per-page 1..200), so this handler
+	 * only coerces the raw payload and defaults an absent / zero page size to 25.
+	 *
+	 * @param array<string, mixed> $payload Optional `page` / `per_page`.
+	 * @return array<string, mixed> Shape `{ rows, total }` from {@see BanRepository::query()}.
+	 */
+	public function handle_get_bans( array $payload ): array {
+		$page     = isset( $payload['page'] ) ? max( 1, absint( $payload['page'] ) ) : 1;
+		$per_page = isset( $payload['per_page'] ) ? absint( $payload['per_page'] ) : 25;
+		$per_page = 0 === $per_page ? 25 : $per_page;
+
+		return $this->bans->query( $page, $per_page );
 	}
 
 	/**

@@ -274,6 +274,25 @@ final class LoginProtectionAjaxControllerTest extends LoginProtectionTableTestCa
 		$this->assertSame( 1, $result['total'] );
 	}
 
+	public function test_get_bans_returns_seeded_rows(): void {
+		$this->bans->add( 'ip', '198.51.100.30', 'brute force', null );
+		$this->bans->add( 'username', 'mallory', null, 60 );
+
+		$result = $this->controller->handle_get_bans( [] );
+
+		$this->assertArrayHasKey( 'rows', $result );
+		$this->assertArrayHasKey( 'total', $result );
+		$this->assertSame( 2, $result['total'] );
+		$this->assertCount( 2, $result['rows'] );
+
+		// Repository returns rows newest-first (id DESC) and casts `id` to int.
+		$this->assertIsInt( $result['rows'][0]['id'] );
+		$this->assertSame( 'username', $result['rows'][0]['subject_type'] );
+		$this->assertSame( 'mallory', $result['rows'][0]['subject_value'] );
+		$this->assertSame( 'ip', $result['rows'][1]['subject_type'] );
+		$this->assertSame( '198.51.100.30', $result['rows'][1]['subject_value'] );
+	}
+
 	public function test_add_ban_round_trips_and_logs(): void {
 		$result = $this->controller->handle_add_ban(
 			[
