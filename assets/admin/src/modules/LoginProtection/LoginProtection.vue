@@ -117,6 +117,7 @@ function onReset(): void {
 // Static ids wiring HelpText blocks to the controls they describe (single
 // instance per screen, so plain string ids are safe).
 const attemptsEnabledHelpId = 'fx-lp-attempts-enabled-help';
+const lockByUsernameHelpId = 'fx-lp-attempts-lock-username-help';
 const proxyHelpId = 'fx-lp-attempts-proxy-help';
 const hideLoginHelpId = 'fx-lp-hide-login-help';
 const passwordEnforceHelpId = 'fx-lp-password-enforce-help';
@@ -340,6 +341,22 @@ onMounted(() => {
               When on, repeated failed logins from the same IP or username
               trigger an escalating lockout — slowing brute-force and
               credential-stuffing attacks without affecting legitimate users.
+            </HelpText>
+          </div>
+
+          <!-- Also lock by username -->
+          <div class="fx-login-protection__field">
+            <Toggle
+              v-model="store.config.attempts.lock_by_username"
+              label="Also lock the targeted username"
+              :describedby="lockByUsernameHelpId"
+            />
+            <HelpText :id="lockByUsernameHelpId" tone="warn">
+              By default, lockouts apply per IP address. Enabling this also
+              locks the specific username after repeated failures — stronger
+              against targeted brute force, but it lets someone who knows a
+              username (e.g. an admin login) lock that account out from many
+              IPs.
             </HelpText>
           </div>
 

@@ -23,6 +23,7 @@ function makeConfig(): LoginProtectionConfig {
       trust_proxy: false,
       proxy_header: 'HTTP_X_FORWARDED_FOR',
       allowlist: [],
+      lock_by_username: false,
       tiers: [
         { threshold: 5, lockout_minutes: 15 },
         { threshold: 10, lockout_minutes: 60 },

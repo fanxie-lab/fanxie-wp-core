@@ -12,6 +12,7 @@ function makeConfig(): LoginProtectionConfig {
       trust_proxy: false,
       proxy_header: 'HTTP_X_FORWARDED_FOR',
       allowlist: ['10.0.0.1', '10.0.0.2'],
+      lock_by_username: false,
       tiers: [
         { threshold: 5, lockout_minutes: 15 },
         { threshold: 10, lockout_minutes: 60 },
@@ -100,6 +101,34 @@ describe('<LoginProtection> — Attempt Limiting', () => {
       .trigger('click');
 
     expect(store.config?.attempts.enabled).toBe(false);
+    expect(store.isDirty).toBe(true);
+  });
+
+  it('wires the lock-by-username toggle to a HelpText via aria-describedby', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+    });
+
+    const toggle = wrapper.get(
+      '[role="switch"][aria-label="Also lock the targeted username"]',
+    );
+    const describedby = toggle.attributes('aria-describedby');
+    expect(describedby).toBeTruthy();
+    expect(wrapper.find(`#${describedby!}`).exists()).toBe(true);
+  });
+
+  it('toggles lock-by-username and marks the store dirty', async () => {
+    const { store, wrapper } = await mountWithStore((s) => {
+      seedLoaded(s);
+    });
+    expect(store.isDirty).toBe(false);
+    expect(store.config?.attempts.lock_by_username).toBe(false);
+
+    await wrapper
+      .get('[role="switch"][aria-label="Also lock the targeted username"]')
+      .trigger('click');
+
+    expect(store.config?.attempts.lock_by_username).toBe(true);
     expect(store.isDirty).toBe(true);
   });
 

@@ -21,6 +21,12 @@ export interface LoginProtectionConfig {
     trust_proxy: boolean;
     proxy_header: string;
     allowlist: string[];
+    /**
+     * When true, the limiter locks the offending *username* in addition to the
+     * IP (default locks by IP only). Stronger against targeted brute force, but
+     * enables targeted account lockout by anyone who knows a valid username.
+     */
+    lock_by_username: boolean;
     tiers: LockoutTier[];
     log_retention_days: number;
   };
