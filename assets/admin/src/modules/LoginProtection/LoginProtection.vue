@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { KeyRound, Plus, Trash2 } from 'lucide-vue-next';
 import {
+  ConfirmDialog,
   HelpText,
   SaveBar,
   StatusPill,
@@ -12,7 +13,6 @@ import {
 import type { StatusPillVariant, ToastVariant, SaveStatus } from '@/components';
 import { useLoginProtectionStore } from './stores/loginProtection';
 import LockoutLog from './components/LockoutLog.vue';
-import ConfirmDialog from './components/ConfirmDialog.vue';
 
 /**
  * Login Protection module root.
@@ -194,13 +194,12 @@ function onHideLoginToggle(next: boolean): void {
   store.config.hide_login.enabled = false;
 }
 
+/**
+ * Accept the confirmation: enable Hide Login. The dialog closes itself via
+ * `v-model:open`, so we only flip the config here.
+ */
 function confirmHideLogin(): void {
   if (store.config) store.config.hide_login.enabled = true;
-  showHideLoginConfirm.value = false;
-}
-
-function cancelHideLogin(): void {
-  showHideLoginConfirm.value = false;
 }
 
 // --- Passwords --------------------------------------------------------------
@@ -588,12 +587,11 @@ onMounted(() => {
       </section>
 
       <ConfirmDialog
-        v-if="showHideLoginConfirm"
+        v-model:open="showHideLoginConfirm"
         title="Hide the login screen?"
         confirm-label="Hide login"
         cancel-label="Cancel"
         @confirm="confirmHideLogin"
-        @cancel="cancelHideLogin"
       >
         Hiding <code>wp-login.php</code> can lock you out if the new slug is
         forgotten or a plugin conflicts. Note the recovery options first: the

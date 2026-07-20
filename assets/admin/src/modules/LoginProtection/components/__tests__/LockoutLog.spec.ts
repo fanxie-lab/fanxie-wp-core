@@ -103,14 +103,19 @@ describe('<LockoutLog>', () => {
     expect(wrapper.text().toLowerCase()).toContain('no login events');
   });
 
-  it("bans a row's IP directly (additive) via store.addBan", async () => {
+  it("confirms before banning a row's IP then calls store.addBan", async () => {
     const { spies, wrapper } = await mountWithStore((s) => {
       s.log.rows = [makeLogRow()];
       s.log.total = 1;
     });
 
-    const banIp = wrapper.get('[aria-label="Ban IP 203.0.113.9"]');
-    await banIp.trigger('click');
+    await wrapper.get('[aria-label="Ban IP 203.0.113.9"]').trigger('click');
+
+    // The confirm modal appears; the mutation has NOT fired yet.
+    expect(spies.addBan).not.toHaveBeenCalled();
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(true);
+
+    await wrapper.get('.fx-confirm__confirm').trigger('click');
 
     expect(spies.addBan).toHaveBeenCalledWith({
       subject_type: 'ip',
@@ -118,19 +123,37 @@ describe('<LockoutLog>', () => {
     });
   });
 
-  it("bans a row's username via store.addBan", async () => {
+  it("confirms before banning a row's username then calls store.addBan", async () => {
     const { spies, wrapper } = await mountWithStore((s) => {
       s.log.rows = [makeLogRow()];
       s.log.total = 1;
     });
 
-    const banUser = wrapper.get('[aria-label="Ban username bob"]');
-    await banUser.trigger('click');
+    await wrapper.get('[aria-label="Ban username bob"]').trigger('click');
+
+    expect(spies.addBan).not.toHaveBeenCalled();
+    await wrapper.get('.fx-confirm__confirm').trigger('click');
 
     expect(spies.addBan).toHaveBeenCalledWith({
       subject_type: 'username',
       subject_value: 'bob',
     });
+  });
+
+  it('does NOT mutate when the confirm modal is cancelled', async () => {
+    const { spies, wrapper } = await mountWithStore((s) => {
+      s.log.rows = [makeLogRow()];
+      s.log.total = 1;
+    });
+
+    await wrapper.get('[aria-label="Ban IP 203.0.113.9"]').trigger('click');
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(true);
+
+    await wrapper.get('.fx-confirm__cancel').trigger('click');
+
+    // Dialog dismissed and the ban never dispatched.
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(false);
+    expect(spies.addBan).not.toHaveBeenCalled();
   });
 
   it('applies filters through store.fetchLog(1, filters)', async () => {
@@ -188,12 +211,12 @@ describe('<LockoutLog>', () => {
 
     await wrapper.get('[aria-label="Unban IP 198.51.100.7"]').trigger('click');
 
-    // A confirm dialog appears; the mutation has NOT fired yet.
+    // The confirm modal appears; the mutation has NOT fired yet.
     expect(spies.removeBan).not.toHaveBeenCalled();
     const dialog = wrapper.find('[role="alertdialog"]');
     expect(dialog.exists()).toBe(true);
 
-    await wrapper.get('.fx-lockout__confirm-accept').trigger('click');
+    await wrapper.get('.fx-confirm__confirm').trigger('click');
 
     expect(spies.removeBan).toHaveBeenCalledWith({
       subject_type: 'ip',
@@ -212,7 +235,7 @@ describe('<LockoutLog>', () => {
       .trigger('click');
 
     expect(spies.clearLockout).not.toHaveBeenCalled();
-    await wrapper.get('.fx-lockout__confirm-accept').trigger('click');
+    await wrapper.get('.fx-confirm__confirm').trigger('click');
 
     expect(spies.clearLockout).toHaveBeenCalledWith({
       subject_type: 'ip',

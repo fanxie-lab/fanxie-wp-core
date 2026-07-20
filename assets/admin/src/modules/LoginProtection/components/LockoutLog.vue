@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
-import { Select, TextField } from '@/components';
-import type { SelectOption } from '@/components';
+import { ConfirmDialog, Select, TextField } from '@/components';
+import type { ConfirmTone, SelectOption } from '@/components';
 import { useLoginProtectionStore } from '../stores/loginProtection';
 import type { AddBanPayload, BanSubjectType } from '../types';
 
@@ -14,11 +14,12 @@ import type { AddBanPayload, BanSubjectType } from '../types';
  * username, unban a currently-banned subject, or clear an active lockout. A
  * manual "add ban" form and the live ban list round out the surface.
  *
- * Follows ViolationsView's paginated-table + filter conventions. Destructive
- * operations (unban, clear-lockout) route through a single inline
- * role="alertdialog" confirm (mirroring ViolationsView's purge confirm) so a
- * misclick can't silently weaken protection. Banning is additive and reversible
- * so it dispatches directly.
+ * Follows ViolationsView's paginated-table + filter conventions. The per-row
+ * consequential actions (ban, unban, clear-lockout) route through the shared
+ * <ConfirmDialog> modal so a misclick can't silently ban a subject or weaken
+ * protection; the mutation fires only once the operator confirms. The manual
+ * "add ban" form below is a deliberate, multi-field submission, so it dispatches
+ * directly.
  *
  * The ban list is hydrated on mount via `store.fetchBans` (alongside the log
  * fetch) and refreshed as a side effect of add/remove responses, so every log
@@ -46,17 +47,23 @@ const subjectTypeOptions: SelectOption[] = [
   { value: 'username', label: 'Username' },
 ];
 
-// --- Inline confirm for destructive ops ------------------------------------
-type ConfirmKind = 'unban' | 'clear';
+// --- Confirmation modal for consequential per-row ops ----------------------
+type ConfirmKind = 'ban' | 'unban' | 'clear';
 
 interface PendingConfirm {
   kind: ConfirmKind;
   subjectType: BanSubjectType;
   subjectValue: string;
+  title: string;
   message: string;
+  confirmLabel: string;
+  tone: ConfirmTone;
 }
 
+/** The action awaiting confirmation, or null when the modal is closed. */
 const pendingConfirm = ref<PendingConfirm | null>(null);
+/** Drives the shared <ConfirmDialog>'s `v-model:open`. */
+const confirmOpen = ref<boolean>(false);
 
 /**
  * Narrow the server's free-form `subject_type` string down to the two-member
@@ -178,43 +185,75 @@ async function nextPage(): Promise<void> {
   await store.fetchLog(currentPage.value + 1);
 }
 
-/** Banning is additive + reversible, so it dispatches without a confirm. */
-async function banSubject(type: BanSubjectType, value: string): Promise<void> {
+/** Open the confirm modal for a pending action; the mutation waits for accept. */
+function openConfirm(pending: PendingConfirm): void {
+  pendingConfirm.value = pending;
+  confirmOpen.value = true;
+}
+
+/**
+ * Banning blocks a subject from signing in, so — like unban/clear — it is
+ * confirmed first. It is additive rather than protection-weakening, so it keeps
+ * the neutral (default) tone.
+ */
+function requestBan(type: BanSubjectType, value: string): void {
   if (!value) return;
-  await store.addBan({ subject_type: type, subject_value: value });
+  openConfirm({
+    kind: 'ban',
+    subjectType: type,
+    subjectValue: value,
+    title: `Ban ${subjectNoun(type)} ${value}?`,
+    message: `${value} will be blocked from signing in until you lift the ban.`,
+    confirmLabel: `Ban ${subjectNoun(type)}`,
+    tone: 'default',
+  });
 }
 
 function requestUnban(type: BanSubjectType, value: string): void {
-  pendingConfirm.value = {
+  openConfirm({
     kind: 'unban',
     subjectType: type,
     subjectValue: value,
-    message: `Remove the ban on ${subjectNoun(type)} ${value}? This subject will be able to sign in again.`,
-  };
+    title: `Remove the ban on ${subjectNoun(type)} ${value}?`,
+    message: 'This subject will be able to sign in again.',
+    confirmLabel: 'Remove ban',
+    tone: 'danger',
+  });
 }
 
 function requestClearLockout(type: BanSubjectType, value: string): void {
-  pendingConfirm.value = {
+  openConfirm({
     kind: 'clear',
     subjectType: type,
     subjectValue: value,
-    message: `Clear the active lockout for ${subjectNoun(type)} ${value}? The failed-attempt counter resets and the subject may retry immediately.`,
-  };
+    title: `Clear the active lockout for ${subjectNoun(type)} ${value}?`,
+    message:
+      'The failed-attempt counter resets and the subject may retry immediately.',
+    confirmLabel: 'Clear lockout',
+    tone: 'danger',
+  });
 }
 
+/** Dismiss the modal without acting. */
 function cancelConfirm(): void {
   pendingConfirm.value = null;
 }
 
+/**
+ * Accept the pending action and fire its store mutation. The dialog closes
+ * itself via `v-model:open`; we clear the pending record and dispatch here.
+ */
 async function acceptConfirm(): Promise<void> {
   const pending = pendingConfirm.value;
+  pendingConfirm.value = null;
   if (!pending) return;
   const subject = {
     subject_type: pending.subjectType,
     subject_value: pending.subjectValue,
   };
-  pendingConfirm.value = null;
-  if (pending.kind === 'unban') {
+  if (pending.kind === 'ban') {
+    await store.addBan(subject);
+  } else if (pending.kind === 'unban') {
     await store.removeBan(subject);
   } else {
     await store.clearLockout(subject);
@@ -265,35 +304,16 @@ onMounted(() => {
         </div>
       </header>
 
-      <!-- Shared confirm for destructive moderation ops. -->
-      <div
-        v-if="pendingConfirm"
-        class="fx-lockout__confirm"
-        role="alertdialog"
-        aria-labelledby="fx-lockout-confirm-title"
-      >
-        <p id="fx-lockout-confirm-title" class="fx-lockout__confirm-text">
-          {{ pendingConfirm.message }}
-        </p>
-        <div class="fx-lockout__confirm-actions">
-          <button
-            type="button"
-            class="fx-lockout__button"
-            @click="cancelConfirm"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="fx-lockout__button fx-lockout__button--danger fx-lockout__confirm-accept"
-            @click="acceptConfirm"
-          >
-            {{
-              pendingConfirm.kind === 'unban' ? 'Remove ban' : 'Clear lockout'
-            }}
-          </button>
-        </div>
-      </div>
+      <!-- Shared modal confirm for consequential per-row moderation ops. -->
+      <ConfirmDialog
+        v-model:open="confirmOpen"
+        :title="pendingConfirm?.title ?? ''"
+        :message="pendingConfirm?.message ?? ''"
+        :confirm-label="pendingConfirm?.confirmLabel ?? 'Confirm'"
+        :tone="pendingConfirm?.tone ?? 'default'"
+        @confirm="acceptConfirm"
+        @cancel="cancelConfirm"
+      />
 
       <!-- Filters -->
       <div class="fx-lockout__filters">
@@ -399,7 +419,7 @@ onMounted(() => {
                       class="fx-lockout__button fx-lockout__button--sm"
                       :aria-label="`Ban IP ${row.ip}`"
                       :disabled="store.loading.bans"
-                      @click="banSubject('ip', row.ip)"
+                      @click="requestBan('ip', row.ip)"
                     >
                       Ban IP
                     </button>
@@ -430,7 +450,7 @@ onMounted(() => {
                       class="fx-lockout__button fx-lockout__button--sm"
                       :aria-label="`Ban username ${row.username}`"
                       :disabled="store.loading.bans"
-                      @click="banSubject('username', row.username)"
+                      @click="requestBan('username', row.username)"
                     >
                       Ban user
                     </button>
@@ -649,7 +669,6 @@ onMounted(() => {
 }
 
 .fx-lockout__filter-actions,
-.fx-lockout__confirm-actions,
 .fx-lockout__add-actions {
   display: flex;
   gap: var(--fx-space-2);
@@ -706,33 +725,6 @@ onMounted(() => {
 .fx-lockout__button--primary:hover:not(:disabled) {
   background: var(--fx-color-button-primary-hover);
   border-color: var(--fx-color-button-primary-hover);
-}
-
-.fx-lockout__button--danger {
-  border-color: var(--fx-color-critical);
-  color: var(--fx-color-critical);
-}
-
-.fx-lockout__button--danger:hover:not(:disabled) {
-  background: var(--fx-color-critical);
-  color: var(--fx-color-text-inverse);
-}
-
-.fx-lockout__confirm {
-  display: flex;
-  flex-direction: column;
-  gap: var(--fx-space-2);
-  padding: var(--fx-space-3);
-  background: var(--fx-color-critical-bg);
-  border: 1px solid var(--fx-color-critical);
-  border-radius: var(--fx-radius-md);
-}
-
-.fx-lockout__confirm-text {
-  margin: 0;
-  color: var(--fx-color-critical);
-  font-size: var(--fx-font-size-sm);
-  font-weight: var(--fx-font-weight-medium);
 }
 
 .fx-lockout__add {
