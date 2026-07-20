@@ -466,7 +466,14 @@ final class LoginSlugGuard {
 		// are the ones `wp-login.php` reads/writes at file scope.
 		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- deliberately routing this request to the login handler.
 		$GLOBALS['pagenow'] = 'wp-login.php';
-		global $error, $interim_login, $action, $user_login;
+
+		// wp-login.php assigns these at file scope; because the require runs
+		// inside this method they must be declared `global` or they become
+		// method-local and the values other hooks read (notably `$errors`, the
+		// login WP_Error bag the Hardening error-obfuscator inspects) never reach
+		// the global scope. Declaring the full set mirrors the native page so
+		// slug-served logins behave identically.
+		global $error, $errors, $interim_login, $action, $user_login, $redirect_to, $rp_key, $rp_login, $user, $wp_error;
 
 		require_once ABSPATH . 'wp-login.php';
 		exit;
