@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Login Protection module (PRD §5): brute-force attempt limiting with tiered
-  lockouts (default on; IP + username, transient-backed, echo-suppressed so a
+  lockouts (default on; per-IP by default with an opt-in username dimension,
+  transient-backed, echo-suppressed so a
   locked subject can't renew its own lockout), a trusted-IP allowlist and
   `REMOTE_ADDR`-only IP resolution (opt-in reverse-proxy header), hide-`wp-login`
   behind a custom slug (`/wp-admin` redirect, `action=` variants, admin-ajax/
