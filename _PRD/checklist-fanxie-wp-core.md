@@ -85,15 +85,18 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 - [x] Tests: each toggle round-trips, Apache/nginx branches, REST 401 behaviour
 
 ### 1.3 Login Protection (PRD §5)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] Failed-attempt tracker (IP + username) with tiered lockouts
-- [ ] IP allowlist
-- [ ] Transient + options storage layering
-- [ ] Hide `wp-login.php` behind custom slug, `/wp-admin` redirect, `wp-login.php?action=` variants
-- [ ] Email owner on slug change; WP-CLI `wp fanxie login reveal` recovery command
-- [ ] Strong password enforcement (length, case, digit, symbol; configurable)
-- [ ] Role-based session timeout via `auth_cookie_expiration` + heartbeat JS
-- [ ] Vue tab: lockout log table, slug changer with confirmation, password policy builder
-- [ ] Tests: lockout thresholds, slug routing, password validator edge cases
+- [x] Failed-attempt tracker (IP + username) with tiered lockouts (echo-suppressed; strictly-higher-tier re-arm — no renewal DoS)
+- [x] IP allowlist + trusted-proxy toggle (`REMOTE_ADDR`-only by default)
+- [x] Storage: transients (short lockouts) + custom tables `fanxie_core_login_log` (history) & `fanxie_core_login_bans` (persistent bans)
+- [x] Hide `wp-login.php` behind custom slug, `/wp-admin` redirect, `wp-login.php?action=` variants (admin-ajax/REST/cron carve-outs)
+- [x] Email owner on slug change; `FX_CORE_LOGIN_SLUG` constant + WP-CLI `wp fx-core login reveal` / `unlock` recovery commands
+- [x] Strong password enforcement (length, case, digit, symbol; configurable) on new/changed passwords only
+- [x] Role-based session timeout via `auth_cookie_expiration` (shorten-only) + admin idle-logout JS
+- [x] Vue tab: attempt config, lockout log table + ban/unban, slug changer with confirmation, password policy builder, per-role timeouts
+- [x] Tests: lockout thresholds/escalation, slug routing + carve-outs, password validator, IP resolver, repositories, AJAX, CLI
+
+### 1.3b Login Protection — 2FA enforcement (follow-on)  *(→ wordpress-development-expert + frontend-expert)*
+- [ ] Enforce 2FA on top of WordPress's official Two-Factor plugin (detect/offer install, per-role enrollment enforcement + grace window). Pulled forward from v2; separate spec/plan.
 
 ---
 

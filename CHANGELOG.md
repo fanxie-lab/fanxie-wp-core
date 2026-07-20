@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Login Protection module (PRD §5): brute-force attempt limiting with tiered
+  lockouts (default on; IP + username, transient-backed, echo-suppressed so a
+  locked subject can't renew its own lockout), a trusted-IP allowlist and
+  `REMOTE_ADDR`-only IP resolution (opt-in reverse-proxy header), hide-`wp-login`
+  behind a custom slug (`/wp-admin` redirect, `action=` variants, admin-ajax/
+  REST/cron carve-outs, `FX_CORE_LOGIN_SLUG` override + admin email on change),
+  strong-password enforcement on new/changed passwords, and role-based session
+  timeout (`auth_cookie_expiration`, shorten-only, + an admin idle-logout script).
+  Two custom tables (`fanxie_core_login_log`, `fanxie_core_login_bans`, `dbDelta`
+  version-tracked), a daily retention prune, a Vue admin tab (attempt config,
+  lockout log with ban/unban, slug changer, password-policy builder, per-role
+  timeouts), and WP-CLI recovery commands `wp fx-core login reveal` / `unlock`.
+- Naming convention: user-facing wp-config override constants use the `FX_CORE_*`
+  prefix and the WP-CLI root command is `fx-core` (project-wide).
 - Hardening module (PRD §4): information-leakage and attack-surface
   reduction across user enumeration (`?author=N`, REST `/users`),
   XML-RPC (disable / restrict methods / IP allowlist with `X-Pingback`
