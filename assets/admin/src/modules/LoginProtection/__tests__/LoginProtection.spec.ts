@@ -176,3 +176,258 @@ describe('<LoginProtection> — Attempt Limiting', () => {
     expect(spies.fetchLog).toHaveBeenCalledWith(1);
   });
 });
+
+describe('<LoginProtection> — Hide Login', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it('renders the slug field editable when the slug is stored', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+      store.slugSource = 'stored';
+      store.effectiveSlug = 'secret-door';
+    });
+
+    const slug = wrapper.get('#fx-lp-slug');
+    expect(slug.attributes('disabled')).toBeUndefined();
+    expect(slug.attributes('readonly')).toBeUndefined();
+  });
+
+  it('disables the slug field and shows the constant value when constant-sourced', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+      store.slugSource = 'constant';
+      store.effectiveSlug = 'locked-slug';
+    });
+
+    const slug = wrapper.get('#fx-lp-slug');
+    expect(slug.attributes('disabled')).toBeDefined();
+    expect((slug.element as HTMLInputElement).value).toBe('locked-slug');
+    // The constant is named in an accessible explanation on screen.
+    expect(wrapper.text()).toContain('FX_CORE_LOGIN_SLUG');
+  });
+
+  it('surfaces the recovery note (wp-config constant + CLI reveal)', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+      store.slugSource = 'stored';
+    });
+
+    const text = wrapper.text();
+    expect(text).toContain('FX_CORE_LOGIN_SLUG');
+    expect(text).toContain('wp fx-core login reveal');
+  });
+
+  it('wires the enable toggle to a HelpText via aria-describedby', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+      store.slugSource = 'stored';
+    });
+
+    const toggle = wrapper.get(
+      '[role="switch"][aria-label="Hide the login screen"]',
+    );
+    const describedby = toggle.attributes('aria-describedby');
+    expect(describedby).toBeTruthy();
+    expect(wrapper.find(`#${describedby!}`).exists()).toBe(true);
+  });
+
+  it('does NOT enable hide-login until the confirm modal is accepted', async () => {
+    const { store, wrapper } = await mountWithStore((s) => {
+      seedLoaded(s);
+      s.slugSource = 'stored';
+    });
+    expect(store.config?.hide_login.enabled).toBe(false);
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(false);
+
+    await wrapper
+      .get('[role="switch"][aria-label="Hide the login screen"]')
+      .trigger('click');
+
+    // Modal is shown; config is untouched until confirmation.
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(true);
+    expect(store.config?.hide_login.enabled).toBe(false);
+
+    await wrapper.get('.fx-confirm__confirm').trigger('click');
+
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(false);
+    expect(store.config?.hide_login.enabled).toBe(true);
+  });
+
+  it('reverts the toggle when the confirm modal is cancelled', async () => {
+    const { store, wrapper } = await mountWithStore((s) => {
+      seedLoaded(s);
+      s.slugSource = 'stored';
+    });
+
+    await wrapper
+      .get('[role="switch"][aria-label="Hide the login screen"]')
+      .trigger('click');
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(true);
+
+    await wrapper.get('.fx-confirm__cancel').trigger('click');
+
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(false);
+    expect(store.config?.hide_login.enabled).toBe(false);
+    expect(store.isDirty).toBe(false);
+  });
+
+  it('disables hide-login immediately without a confirm', async () => {
+    const config = makeConfig();
+    config.hide_login.enabled = true;
+    const { store, wrapper } = await mountWithStore((s) => {
+      s.config = config;
+      s.pristine = makeConfig();
+      s.pristine.hide_login.enabled = true;
+      s.slugSource = 'stored';
+    });
+
+    await wrapper
+      .get('[role="switch"][aria-label="Hide the login screen"]')
+      .trigger('click');
+
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(false);
+    expect(store.config?.hide_login.enabled).toBe(false);
+  });
+});
+
+describe('<LoginProtection> — Passwords', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it('renders the policy controls', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+    });
+
+    const text = wrapper.text();
+    expect(text).toContain('Enforce a strong password policy');
+    expect(text).toContain('Require mixed-case letters');
+    expect(text).toContain('Require a number');
+    expect(text).toContain('Require a symbol');
+    expect(wrapper.find('#fx-lp-min-length').exists()).toBe(true);
+  });
+
+  it('previews every requirement when all rules are on', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+    });
+
+    const preview = wrapper
+      .get('.fx-login-protection__password-preview')
+      .text();
+    expect(preview).toContain('12 characters');
+    expect(preview).toContain('uppercase and lowercase letters');
+    expect(preview).toContain('a number');
+    expect(preview).toContain('a symbol');
+  });
+
+  it('drops a requirement from the preview when its toggle is turned off', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+    });
+
+    await wrapper
+      .get('[role="switch"][aria-label="Require a symbol"]')
+      .trigger('click');
+
+    const preview = wrapper
+      .get('.fx-login-protection__password-preview')
+      .text();
+    expect(preview).not.toContain('a symbol');
+    expect(preview).toContain('a number');
+  });
+
+  it('reflects the minimum length in the preview reactively', async () => {
+    const { store, wrapper } = await mountWithStore((s) => {
+      seedLoaded(s);
+    });
+
+    store.config!.passwords.min_length = 8;
+    await flushPromises();
+
+    expect(
+      wrapper.get('.fx-login-protection__password-preview').text(),
+    ).toContain('8 characters');
+  });
+
+  it('previews only the length rule when every extra rule is off', async () => {
+    const config = makeConfig();
+    config.passwords = {
+      enforce: true,
+      min_length: 10,
+      require_mixed_case: false,
+      require_number: false,
+      require_symbol: false,
+    };
+    const { wrapper } = await mountWithStore((s) => {
+      seedLoaded(s, config);
+    });
+
+    const preview = wrapper
+      .get('.fx-login-protection__password-preview')
+      .text();
+    expect(preview).toContain('10 characters');
+    expect(preview).not.toContain('uppercase and lowercase letters');
+    expect(preview).not.toContain('a number');
+    expect(preview).not.toContain('a symbol');
+  });
+
+  it('marks the store dirty when a password rule changes', async () => {
+    const { store, wrapper } = await mountWithStore((s) => {
+      seedLoaded(s);
+    });
+    expect(store.isDirty).toBe(false);
+
+    await wrapper
+      .get('[role="switch"][aria-label="Require a number"]')
+      .trigger('click');
+
+    expect(store.config?.passwords.require_number).toBe(false);
+    expect(store.isDirty).toBe(true);
+  });
+});
+
+describe('<LoginProtection> — Sessions', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it('renders one timeout input per seeded role', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+    });
+
+    const admin = wrapper.get('#fx-lp-session-administrator');
+    const fallback = wrapper.get('#fx-lp-session-default');
+    expect((admin.element as HTMLInputElement).value).toBe('30');
+    expect((fallback.element as HTMLInputElement).value).toBe('120');
+  });
+
+  it('updates the timeout map and marks the store dirty on edit', async () => {
+    const { store, wrapper } = await mountWithStore((s) => {
+      seedLoaded(s);
+    });
+    expect(store.isDirty).toBe(false);
+
+    await wrapper.get('#fx-lp-session-administrator').setValue('15');
+
+    expect(store.config?.sessions.timeouts.administrator).toBe(15);
+    expect(store.isDirty).toBe(true);
+  });
+
+  it('wires the enable toggle to a HelpText via aria-describedby', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+    });
+
+    const toggle = wrapper.get(
+      '[role="switch"][aria-label="Expire idle sessions"]',
+    );
+    const describedby = toggle.attributes('aria-describedby');
+    expect(describedby).toBeTruthy();
+    expect(wrapper.find(`#${describedby!}`).exists()).toBe(true);
+  });
+});

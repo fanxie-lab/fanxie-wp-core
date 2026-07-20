@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { KeyRound, Plus, Trash2 } from 'lucide-vue-next';
 import {
   HelpText,
@@ -12,6 +12,7 @@ import {
 import type { StatusPillVariant, ToastVariant, SaveStatus } from '@/components';
 import { useLoginProtectionStore } from './stores/loginProtection';
 import LockoutLog from './components/LockoutLog.vue';
+import ConfirmDialog from './components/ConfirmDialog.vue';
 
 /**
  * Login Protection module root.
@@ -114,6 +115,9 @@ function onReset(): void {
 // instance per screen, so plain string ids are safe).
 const attemptsEnabledHelpId = 'fx-lp-attempts-enabled-help';
 const proxyHelpId = 'fx-lp-attempts-proxy-help';
+const hideLoginHelpId = 'fx-lp-hide-login-help';
+const passwordEnforceHelpId = 'fx-lp-password-enforce-help';
+const sessionsEnabledHelpId = 'fx-lp-sessions-enabled-help';
 
 /**
  * Trusted-IP allowlist presented as newline-joined text ⇄ string[]. The split
@@ -141,6 +145,120 @@ function removeTier(index: number): void {
   const tiers = store.config.attempts.tiers;
   if (tiers.length <= 1) return;
   tiers.splice(index, 1);
+}
+
+// --- Hide Login -------------------------------------------------------------
+
+/** True when the login slug is pinned by the `FX_CORE_LOGIN_SLUG` constant. */
+const isSlugLocked = computed<boolean>(() => store.slugSource === 'constant');
+
+/**
+ * Whether the confirm modal that guards *enabling* Hide Login is open. Enabling
+ * moves wp-login.php behind a secret slug — a misconfiguration can lock the
+ * operator out, so we require an explicit confirmation and do not touch the
+ * config until it lands.
+ */
+const showHideLoginConfirm = ref<boolean>(false);
+
+/**
+ * Slug field proxy. When the constant is in force, it surfaces the effective
+ * (read-only) slug and swallows edits; otherwise it is a plain two-way binding
+ * onto the stored slug.
+ */
+const slugFieldValue = computed<string>({
+  get() {
+    if (isSlugLocked.value) return store.effectiveSlug;
+    return store.config?.hide_login.slug ?? '';
+  },
+  set(value: string) {
+    if (isSlugLocked.value || !store.config) return;
+    store.config.hide_login.slug = value;
+  },
+});
+
+/**
+ * Intercept the enable toggle. Turning Hide Login ON opens the confirm modal
+ * and leaves the config untouched until the operator accepts. Turning it OFF is
+ * low-risk (restores the default login URL), so it applies immediately.
+ */
+function onHideLoginToggle(next: boolean): void {
+  if (!store.config) return;
+  if (next) {
+    showHideLoginConfirm.value = true;
+    return;
+  }
+  store.config.hide_login.enabled = false;
+}
+
+function confirmHideLogin(): void {
+  if (store.config) store.config.hide_login.enabled = true;
+  showHideLoginConfirm.value = false;
+}
+
+function cancelHideLogin(): void {
+  showHideLoginConfirm.value = false;
+}
+
+// --- Passwords --------------------------------------------------------------
+
+/**
+ * Oxford-comma conjunction joiner: ["a"] → "a", ["a","b"] → "a and b",
+ * ["a","b","c"] → "a, b, and c". Hand-rolled (rather than `Intl.ListFormat`,
+ * which this project's TS `lib` does not type) and pinned to English while SPA
+ * i18n is deferred.
+ */
+function joinWithAnd(parts: string[]): string {
+  if (parts.length <= 1) return parts.join('');
+  const last = parts[parts.length - 1] ?? '';
+  const head = parts.slice(0, -1);
+  if (head.length === 1) return `${head[0] ?? ''} and ${last}`;
+  return `${head.join(', ')}, and ${last}`;
+}
+
+/**
+ * Client-side mirror of the server password policy, purely presentational — the
+ * PHP validator remains authoritative. Reflects `min_length` plus whichever
+ * character-class rules are switched on, updating live as the toggles change.
+ */
+const passwordPreview = computed<string>(() => {
+  const rules = store.config?.passwords;
+  if (!rules) return '';
+  const length = Math.max(0, Math.trunc(rules.min_length));
+  const lengthClause = `at least ${String(length)} character${
+    length === 1 ? '' : 's'
+  }`;
+  const extras: string[] = [];
+  if (rules.require_mixed_case) extras.push('uppercase and lowercase letters');
+  if (rules.require_number) extras.push('a number');
+  if (rules.require_symbol) extras.push('a symbol');
+
+  if (extras.length === 0) {
+    return `New passwords must be ${lengthClause} long.`;
+  }
+  return `New passwords must be ${lengthClause} long and include ${joinWithAnd(
+    extras,
+  )}.`;
+});
+
+// --- Sessions ---------------------------------------------------------------
+
+/** Role slugs paired with the input id + human label for their timeout field. */
+const sessionRoles = computed<
+  { role: string; inputId: string; label: string }[]
+>(() => {
+  const timeouts = store.config?.sessions.timeouts ?? {};
+  return Object.keys(timeouts).map((role) => ({
+    role,
+    inputId: `fx-lp-session-${role}`,
+    label:
+      role === 'default' ? 'Default (all other roles)' : humanizeRole(role),
+  }));
+});
+
+/** Turn a role slug (`administrator`, `shop_manager`) into a readable label. */
+function humanizeRole(role: string): string {
+  const spaced = role.replace(/[_-]+/g, ' ');
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
 onMounted(() => {
@@ -397,10 +515,66 @@ onMounted(() => {
         <p class="fx-login-protection__slug-readout" role="note">
           {{ effectiveLoginSummary }}
         </p>
-        <p class="fx-login-protection__placeholder" role="note">
-          The custom-slug editor arrives in a later step.
-        </p>
+        <div class="fx-login-protection__fields">
+          <!-- Master enable (guarded by a confirm modal when switching on) -->
+          <div class="fx-login-protection__field">
+            <Toggle
+              :model-value="store.config.hide_login.enabled"
+              label="Hide the login screen"
+              :describedby="hideLoginHelpId"
+              @update:model-value="onHideLoginToggle"
+            />
+            <HelpText :id="hideLoginHelpId">
+              Serves <code>wp-login.php</code> and <code>wp-admin</code>
+              sign-in only from your secret slug; every other request to the
+              default login URL gets a 404, so bots and scanners can't find the
+              form.
+            </HelpText>
+          </div>
+
+          <!-- Custom slug -->
+          <div
+            class="fx-login-protection__field fx-login-protection__field--narrow"
+          >
+            <TextField
+              id="fx-lp-slug"
+              v-model="slugFieldValue"
+              label="Login slug"
+              :disabled="isSlugLocked"
+              :help="
+                isSlugLocked
+                  ? 'Set by the FX_CORE_LOGIN_SLUG constant in wp-config.php and cannot be changed here.'
+                  : 'The path your login form lives at, e.g. my-secret-door.'
+              "
+              placeholder="my-secret-door"
+              autocomplete="off"
+            />
+          </div>
+
+          <!-- Recovery guidance -->
+          <HelpText tone="warn">
+            Locked out? Define
+            <code>FX_CORE_LOGIN_SLUG</code> in <code>wp-config.php</code> to pin
+            a known slug, or run <code>wp fx-core login reveal</code> from the
+            server to print the current one. Changing the slug also emails the
+            site administrator the new address.
+          </HelpText>
+        </div>
       </section>
+
+      <ConfirmDialog
+        v-if="showHideLoginConfirm"
+        title="Hide the login screen?"
+        confirm-label="Hide login"
+        cancel-label="Cancel"
+        @confirm="confirmHideLogin"
+        @cancel="cancelHideLogin"
+      >
+        Hiding <code>wp-login.php</code> can lock you out if the new slug is
+        forgotten or a plugin conflicts. Note the recovery options first: the
+        <code>FX_CORE_LOGIN_SLUG</code> wp-config constant and the
+        <code>wp fx-core login reveal</code> CLI command. Continue?
+      </ConfirmDialog>
 
       <!-- 4. Passwords -->
       <section
@@ -419,9 +593,79 @@ onMounted(() => {
             when users set or reset a password.
           </p>
         </header>
-        <p class="fx-login-protection__placeholder" role="note">
-          The strong-password policy controls arrive in a later step.
-        </p>
+        <div class="fx-login-protection__fields">
+          <!-- Master enforce -->
+          <div class="fx-login-protection__field">
+            <Toggle
+              v-model="store.config.passwords.enforce"
+              label="Enforce a strong password policy"
+              :describedby="passwordEnforceHelpId"
+            />
+            <HelpText :id="passwordEnforceHelpId">
+              When on, users setting or resetting a password must satisfy the
+              rules below. When off, the rules are kept but not applied.
+            </HelpText>
+          </div>
+
+          <!-- Minimum length -->
+          <div class="fx-login-protection__field">
+            <label
+              for="fx-lp-min-length"
+              class="fx-login-protection__field-label"
+            >
+              Minimum length (characters)
+            </label>
+            <input
+              id="fx-lp-min-length"
+              v-model.number="store.config.passwords.min_length"
+              type="number"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              class="fx-login-protection__num-input fx-login-protection__num-input--wide"
+            />
+          </div>
+
+          <!-- Character-class rules -->
+          <div
+            class="fx-login-protection__field"
+            role="group"
+            aria-labelledby="fx-lp-password-rules-label"
+          >
+            <p
+              id="fx-lp-password-rules-label"
+              class="fx-login-protection__field-label"
+            >
+              Required character types
+            </p>
+            <div class="fx-login-protection__toggle-stack">
+              <Toggle
+                v-model="store.config.passwords.require_mixed_case"
+                label="Require mixed-case letters"
+              />
+              <Toggle
+                v-model="store.config.passwords.require_number"
+                label="Require a number"
+              />
+              <Toggle
+                v-model="store.config.passwords.require_symbol"
+                label="Require a symbol"
+              />
+            </div>
+          </div>
+
+          <!-- Live requirement preview -->
+          <div class="fx-login-protection__field">
+            <p class="fx-login-protection__field-label">Requirement preview</p>
+            <p
+              class="fx-login-protection__password-preview"
+              role="status"
+              aria-live="polite"
+            >
+              {{ passwordPreview }}
+            </p>
+          </div>
+        </div>
       </section>
 
       <!-- 5. Sessions -->
@@ -441,9 +685,58 @@ onMounted(() => {
             administrators expire sooner than everyone else.
           </p>
         </header>
-        <p class="fx-login-protection__placeholder" role="note">
-          The per-role session-timeout controls arrive in a later step.
-        </p>
+        <div class="fx-login-protection__fields">
+          <!-- Master enable -->
+          <div class="fx-login-protection__field">
+            <Toggle
+              v-model="store.config.sessions.enabled"
+              label="Expire idle sessions"
+              :describedby="sessionsEnabledHelpId"
+            />
+            <HelpText :id="sessionsEnabledHelpId">
+              Signs a user out after they have been inactive for the timeout set
+              for their role. The <em>Default</em> value applies to any role
+              without its own entry.
+            </HelpText>
+          </div>
+
+          <!-- Per-role timeouts -->
+          <div
+            class="fx-login-protection__field"
+            role="group"
+            aria-labelledby="fx-lp-session-timeouts-label"
+          >
+            <p
+              id="fx-lp-session-timeouts-label"
+              class="fx-login-protection__field-label"
+            >
+              Idle timeout by role (minutes)
+            </p>
+            <div class="fx-login-protection__session-grid">
+              <div
+                v-for="entry in sessionRoles"
+                :key="entry.role"
+                class="fx-login-protection__session-row"
+              >
+                <label
+                  :for="entry.inputId"
+                  class="fx-login-protection__session-label"
+                >
+                  {{ entry.label }}
+                </label>
+                <input
+                  :id="entry.inputId"
+                  v-model.number="store.config.sessions.timeouts[entry.role]"
+                  type="number"
+                  min="1"
+                  step="1"
+                  inputmode="numeric"
+                  class="fx-login-protection__num-input"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <SaveBar
@@ -595,17 +888,6 @@ onMounted(() => {
   line-height: var(--fx-line-height-snug);
 }
 
-.fx-login-protection__placeholder {
-  margin: 0;
-  padding: var(--fx-space-3) var(--fx-space-4);
-  color: var(--fx-color-text-muted);
-  font-size: var(--fx-font-size-sm);
-  line-height: var(--fx-line-height-snug);
-  background: var(--fx-color-elevated);
-  border: 1px dashed var(--fx-color-border);
-  border-radius: var(--fx-radius-md);
-}
-
 .fx-login-protection__fields {
   display: flex;
   flex-direction: column;
@@ -630,6 +912,47 @@ onMounted(() => {
   font-size: var(--fx-font-size-sm);
   line-height: var(--fx-line-height-snug);
   max-width: 62ch;
+}
+
+.fx-login-protection__field--narrow {
+  max-width: 24rem;
+}
+
+.fx-login-protection__toggle-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fx-space-3);
+}
+
+.fx-login-protection__password-preview {
+  margin: 0;
+  padding: var(--fx-space-3) var(--fx-space-4);
+  background: var(--fx-color-info-bg);
+  border: 1px solid var(--fx-color-info);
+  border-radius: var(--fx-radius-md);
+  color: var(--fx-color-info);
+  font-size: var(--fx-font-size-sm);
+  line-height: var(--fx-line-height-snug);
+  max-width: 62ch;
+}
+
+.fx-login-protection__session-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--fx-space-3);
+  max-width: 44rem;
+}
+
+.fx-login-protection__session-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fx-space-1);
+}
+
+.fx-login-protection__session-label {
+  font-size: var(--fx-font-size-sm);
+  font-weight: var(--fx-font-weight-medium);
+  color: var(--fx-color-text);
 }
 
 .fx-login-protection__tiers {
