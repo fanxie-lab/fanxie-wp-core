@@ -51,9 +51,10 @@ final class AttemptLimiterTest extends TestCase {
 		parent::tearDown();
 	}
 
-	private function config(): array {
+	private function config( bool $lock_by_username = false ): array {
 		return [
 			'enabled'            => true,
+			'lock_by_username'   => $lock_by_username,
 			'trust_proxy'        => false,
 			'proxy_header'       => '',
 			'allowlist'          => [ '198.51.100.50' ],
@@ -302,5 +303,176 @@ final class AttemptLimiterTest extends TestCase {
 		$limiter->on_failed( '' );
 
 		$this->assertSame( 1, $lockouts, 'Crossing a strictly higher tier arms exactly one lockout.' );
+	}
+
+	/**
+	 * Username-lockout opt-in: with the DEFAULT config (`lock_by_username` off) a
+	 * failure counts ONLY against the IP dimension. The username counter is never
+	 * touched, so a targeted account can never be auto-locked from rotating IPs.
+	 */
+	public function test_on_failed_counts_only_the_ip_dimension_by_default(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.30';
+
+		// No locks and no prior counters/markers: bump() lifts the counter to 1,
+		// below the lowest tier (threshold 3), so only the counter transient is set.
+		Functions\when( 'get_transient' )->justReturn( false );
+
+		$set = [];
+		Functions\when( 'set_transient' )->alias(
+			static function ( $key ) use ( &$set ): bool {
+				$set[] = (string) $key;
+				return true;
+			}
+		);
+
+		$log = Mockery::mock( LoginLogRecorder::class );
+		$log->shouldReceive( 'record' )->once();
+
+		// Not locked or banned in any dimension -> the failure is a genuine attempt.
+		$bans = Mockery::mock( BanStore::class );
+		$bans->shouldReceive( 'is_banned' )->andReturn( false );
+
+		$limiter = new AttemptLimiter( $this->config(), new IpResolver( false, '' ), $log, $bans );
+
+		// A real attempted username is supplied — it must still not be counted.
+		$limiter->on_failed( 'admin' );
+
+		$this->assertContains(
+			'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.30' ),
+			$set,
+			'The IP dimension is always counted.'
+		);
+		$this->assertNotContains(
+			'fanxie_wp_core_lp_cnt_user_' . md5( 'admin' ),
+			$set,
+			'The username dimension must not be counted while lock_by_username is off.'
+		);
+	}
+
+	/**
+	 * Username-lockout opt-in: with `lock_by_username` ON the username dimension is
+	 * counted again (the pre-toggle behaviour), so automatic account lockout works.
+	 */
+	public function test_on_failed_counts_the_username_dimension_when_opted_in(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.31';
+
+		Functions\when( 'get_transient' )->justReturn( false );
+
+		$set = [];
+		Functions\when( 'set_transient' )->alias(
+			static function ( $key ) use ( &$set ): bool {
+				$set[] = (string) $key;
+				return true;
+			}
+		);
+
+		$log = Mockery::mock( LoginLogRecorder::class );
+		$log->shouldReceive( 'record' )->once();
+
+		$bans = Mockery::mock( BanStore::class );
+		$bans->shouldReceive( 'is_banned' )->andReturn( false );
+
+		$limiter = new AttemptLimiter( $this->config( true ), new IpResolver( false, '' ), $log, $bans );
+
+		$limiter->on_failed( 'admin' );
+
+		$this->assertContains(
+			'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.31' ),
+			$set,
+			'The IP dimension is always counted.'
+		);
+		$this->assertContains(
+			'fanxie_wp_core_lp_cnt_user_' . md5( 'admin' ),
+			$set,
+			'The username dimension is counted once opted in.'
+		);
+	}
+
+	/**
+	 * A MANUAL username ban is an explicit admin action, not an automatic lockout,
+	 * so `gate()` must block it even while `lock_by_username` is OFF.
+	 */
+	public function test_gate_blocks_a_manual_username_ban_even_with_lock_by_username_off(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.32';
+
+		// No lock transients in any dimension.
+		Functions\when( 'get_transient' )->justReturn( false );
+
+		// The IP is not banned, but the username carries a manual ban.
+		$bans = Mockery::mock( BanStore::class );
+		$bans->shouldReceive( 'is_banned' )->with( 'ip', '203.0.113.32' )->andReturn( false );
+		$bans->shouldReceive( 'is_banned' )->with( 'username', 'victim' )->andReturn( true );
+
+		$log = Mockery::mock( LoginLogRecorder::class );
+		$log->shouldReceive( 'record' )->with( 'blocked_attempt', Mockery::any(), Mockery::any(), Mockery::any(), Mockery::any() )->once();
+
+		$limiter = new AttemptLimiter( $this->config(), new IpResolver( false, '' ), $log, $bans );
+
+		$result = $limiter->gate( null, 'victim' );
+
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'fanxie_login_locked', $result->get_error_code() );
+	}
+
+	/**
+	 * With `lock_by_username` OFF, an automatic username LOCK transient must be
+	 * ignored by `gate()` — no username lock is ever written when the toggle is off,
+	 * and this proves a stale one could never block a login either.
+	 */
+	public function test_gate_ignores_a_username_lock_transient_when_lock_by_username_off(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.33';
+
+		$user_lock_key = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
+		Functions\when( 'get_transient' )->alias(
+			static function ( $key ) use ( $user_lock_key ): mixed {
+				return (string) $key === $user_lock_key ? 7 : false;
+			}
+		);
+
+		// Neither dimension is banned.
+		$bans = Mockery::mock( BanStore::class );
+		$bans->shouldReceive( 'is_banned' )->andReturn( false );
+
+		// A pass-through never records a blocked_attempt.
+		$log = Mockery::mock( LoginLogRecorder::class );
+		$log->shouldNotReceive( 'record' );
+
+		$limiter = new AttemptLimiter( $this->config(), new IpResolver( false, '' ), $log, $bans );
+
+		$user = new \stdClass();
+		$this->assertSame(
+			$user,
+			$limiter->gate( $user, 'victim' ),
+			'A username lock transient must not block while lock_by_username is off.'
+		);
+	}
+
+	/**
+	 * With `lock_by_username` ON, the automatic username LOCK transient blocks at
+	 * `gate()` on its own — no ban lookup needed.
+	 */
+	public function test_gate_enforces_a_username_lock_transient_when_opted_in(): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.34';
+
+		$user_lock_key = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
+		Functions\when( 'get_transient' )->alias(
+			static function ( $key ) use ( $user_lock_key ): mixed {
+				return (string) $key === $user_lock_key ? 9 : false;
+			}
+		);
+
+		// The username lock short-circuits before any ban lookup is reached.
+		$bans = Mockery::mock( BanStore::class );
+		$bans->shouldNotReceive( 'is_banned' );
+
+		$log = Mockery::mock( LoginLogRecorder::class );
+		$log->shouldReceive( 'record' )->with( 'blocked_attempt', Mockery::any(), Mockery::any(), Mockery::any(), Mockery::any() )->once();
+
+		$limiter = new AttemptLimiter( $this->config( true ), new IpResolver( false, '' ), $log, $bans );
+
+		$result = $limiter->gate( null, 'victim' );
+
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'fanxie_login_locked', $result->get_error_code() );
 	}
 }

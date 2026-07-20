@@ -17,8 +17,9 @@ use WP_Error;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Brute-force limiter: counts failures per IP + username in transients, applies
- * tiered lockouts, and blocks locked/banned subjects at `authenticate`.
+ * Brute-force limiter: counts failures per IP (always) and per username (only
+ * when `attempts.lock_by_username` is opted in) in transients, applies tiered
+ * lockouts, and blocks locked/banned subjects at `authenticate`.
  *
  * Failure counters (`cnt_*`) live for a day; lockout markers (`lock_*`) live
  * for the crossed tier's window. The gate runs at `authenticate` priority 30 —
@@ -89,7 +90,8 @@ final class AttemptLimiter {
 	}
 
 	/**
-	 * Count a failed login against both the IP and the username.
+	 * Count a failed login against the IP (always) and, when opted in via
+	 * `attempts.lock_by_username`, the username too.
 	 *
 	 * @param mixed $username Attempted login name.
 	 */
@@ -110,8 +112,18 @@ final class AttemptLimiter {
 			return;
 		}
 		$this->log->record( 'failed_login', $ip, $username, null, [] );
+
+		// The IP dimension is ALWAYS counted. The username dimension is opt-in via
+		// `attempts.lock_by_username` (default off): counting it arms an AUTOMATIC
+		// lockout of the targeted account, which an attacker rotating IPs could
+		// weaponise into a targeted account-lockout DoS (lock `admin` out at will).
+		// Leaving it off removes that out-of-the-box lever. Manual username bans are
+		// an explicit admin action and stay enforced in `is_locked_or_banned()`
+		// regardless of this toggle.
 		$this->bump( 'ip', $ip );
-		$this->bump( 'user', $username );
+		if ( $this->lock_by_username() ) {
+			$this->bump( 'user', $username );
+		}
 	}
 
 	/**
@@ -252,20 +264,40 @@ final class AttemptLimiter {
 	}
 
 	/**
-	 * Whether either dimension of the subject is currently locked or banned.
+	 * Whether the subject is currently locked or banned in an enforced dimension.
 	 *
 	 * Shared by `gate()` (to block the request) and `on_failed()` (to suppress the
 	 * echoed `wp_login_failed` a block triggers). Empty dimensions are skipped, and
-	 * the ban lookup is only reached when no lock transient already answers.
+	 * each ban lookup is only reached when no lock transient already answers.
+	 *
+	 * Enforced dimensions:
+	 *  - IP lock transient (always) and IP ban (always).
+	 *  - Manual USERNAME ban (always) — an explicit admin action, distinct from
+	 *    automatic lockout, so it is enforced regardless of `lock_by_username`.
+	 *  - AUTOMATIC username lock transient — only when `lock_by_username` is on.
+	 *    With the toggle off no username lock transient is ever written, but the
+	 *    check is gated explicitly so a stale marker can never block a login.
 	 *
 	 * @param string $ip       Client IP (may be empty).
 	 * @param string $username Attempted login name (may be empty).
 	 */
 	private function is_locked_or_banned( string $ip, string $username ): bool {
 		return ( '' !== $ip && false !== get_transient( self::lock_key( 'ip', $ip ) ) )
-			|| ( '' !== $username && false !== get_transient( self::lock_key( 'user', $username ) ) )
+			|| ( $this->lock_by_username() && '' !== $username && false !== get_transient( self::lock_key( 'user', $username ) ) )
 			|| ( '' !== $ip && $this->bans->is_banned( 'ip', $ip ) )
 			|| ( '' !== $username && $this->bans->is_banned( 'username', $username ) );
+	}
+
+	/**
+	 * Whether automatic lockout should also apply to the username dimension.
+	 *
+	 * Opt-in (default off): reads `attempts.lock_by_username` from the config
+	 * snapshot the limiter was constructed with. Governs both the username counter
+	 * bump in `on_failed()` and the automatic username lock-transient check in
+	 * `is_locked_or_banned()`. Manual username bans are never gated by it.
+	 */
+	private function lock_by_username(): bool {
+		return ! empty( $this->config['lock_by_username'] );
 	}
 
 	/**

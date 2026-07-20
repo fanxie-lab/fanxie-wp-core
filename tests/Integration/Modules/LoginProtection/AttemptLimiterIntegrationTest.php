@@ -70,9 +70,10 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 		return (int) $out['total'];
 	}
 
-	private function make_limiter( array $tiers, array $allowlist = [] ): AttemptLimiter {
+	private function make_limiter( array $tiers, array $allowlist = [], bool $lock_by_username = false ): AttemptLimiter {
 		$config  = [
 			'enabled'            => true,
+			'lock_by_username'   => $lock_by_username,
 			'trust_proxy'        => false,
 			'proxy_header'       => '',
 			'allowlist'          => $allowlist,
@@ -164,6 +165,10 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 
 	public function test_escalation_arms_each_higher_tier_exactly_once_across_windows(): void {
 		$_SERVER['REMOTE_ADDR'] = '203.0.113.99';
+		// Username auto-lockout opted in. These tiered-escalation tests exercise the
+		// full two-dimension (IP + username) machinery, so they run under
+		// lock_by_username=on to prove that path still behaves exactly as it did
+		// before username lockout became opt-in.
 		$this->make_limiter(
 			[
 				[
@@ -174,7 +179,9 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 					'threshold'       => 4,
 					'lockout_minutes' => 60,
 				],
-			]
+			],
+			[],
+			true
 		);
 
 		$lock_ip_key   = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.99' );
@@ -230,6 +237,10 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 
 	public function test_low_and_slow_keeps_applied_marker_in_lockstep_with_counter(): void {
 		$_SERVER['REMOTE_ADDR'] = '203.0.113.111';
+		// Username auto-lockout opted in. These tiered-escalation tests exercise the
+		// full two-dimension (IP + username) machinery, so they run under
+		// lock_by_username=on to prove that path still behaves exactly as it did
+		// before username lockout became opt-in.
 		$this->make_limiter(
 			[
 				[
@@ -240,7 +251,9 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 					'threshold'       => 4,
 					'lockout_minutes' => 60,
 				],
-			]
+			],
+			[],
+			true
 		);
 
 		$lock_ip_key         = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.111' );
@@ -306,5 +319,101 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 		// Nothing was logged for the allowlisted subject.
 		$out = $this->log->query( [], 1, 25 );
 		$this->assertSame( 0, $out['total'] );
+	}
+
+	/**
+	 * Security-posture default: a rotating-IP attack on a single username must NOT
+	 * auto-lock that account. With `lock_by_username` OFF (the shipped default) the
+	 * username dimension is never counted, so an attacker who cycles IPs against
+	 * `admin` can never lock it out — the targeted account-lockout DoS is removed.
+	 */
+	public function test_rotating_ip_attack_never_auto_locks_the_username_by_default(): void {
+		// Default config (lock_by_username off); a single threshold-2 tier.
+		$this->make_limiter( [ [ 'threshold' => 2, 'lockout_minutes' => 15 ] ] );
+
+		// Four failures against `admin`, each from a DIFFERENT IP. Were the username
+		// counted, count 4 would blow past the threshold-2 tier and lock the account.
+		for ( $i = 0; $i < 4; $i++ ) {
+			$_SERVER['REMOTE_ADDR'] = '203.0.113.' . ( 140 + $i );
+			do_action( 'wp_login_failed', 'admin' );
+		}
+
+		$lock_user_key  = 'fanxie_wp_core_lp_lock_user_' . md5( 'admin' );
+		$count_user_key = 'fanxie_wp_core_lp_cnt_user_' . md5( 'admin' );
+
+		$this->assertFalse( get_transient( $lock_user_key ), 'The username must never be auto-locked by default.' );
+		$this->assertFalse( get_transient( $count_user_key ), 'The username dimension must never be counted by default.' );
+
+		// No username-dimension lockout row was written.
+		$user_lockouts = $this->log->query(
+			[
+				'event_type' => 'lockout',
+				'username'   => 'admin',
+			],
+			1,
+			25
+		);
+		$this->assertSame( 0, $user_lockouts['total'], 'No username lockout may be recorded by default.' );
+
+		// A fresh IP attempting `admin` is NOT blocked — the account is not locked.
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.200';
+		$result                 = apply_filters( 'authenticate', null, 'admin', 'wrong-password' );
+		if ( $result instanceof WP_Error ) {
+			$this->assertNotSame( 'fanxie_login_locked', $result->get_error_code() );
+		}
+	}
+
+	/**
+	 * Opt-in restores automatic username lockout: with `lock_by_username` ON, a
+	 * rotating-IP attack DOES lock the targeted username, and the gate then blocks
+	 * that username even from an IP that has never failed before.
+	 */
+	public function test_rotating_ip_attack_auto_locks_the_username_when_opted_in(): void {
+		$this->make_limiter( [ [ 'threshold' => 2, 'lockout_minutes' => 15 ] ], [], true );
+
+		// Two failures against `victim` from two different IPs cross the username
+		// tier (count 2) and arm the username lock.
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.150';
+		do_action( 'wp_login_failed', 'victim' );
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.151';
+		do_action( 'wp_login_failed', 'victim' );
+
+		$lock_user_key = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
+		$this->assertNotFalse( get_transient( $lock_user_key ), 'The username lock is armed once opted in.' );
+
+		$user_lockouts = $this->log->query(
+			[
+				'event_type' => 'lockout',
+				'username'   => 'victim',
+			],
+			1,
+			25
+		);
+		$this->assertSame( 1, $user_lockouts['total'], 'Exactly one username lockout row is recorded.' );
+
+		// A never-seen IP attempting `victim` is blocked by the username lock alone.
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.210';
+		$result                 = apply_filters( 'authenticate', null, 'victim', 'wrong-password' );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'fanxie_login_locked', $result->get_error_code() );
+	}
+
+	/**
+	 * A MANUAL username ban is an explicit admin action, distinct from automatic
+	 * lockout, so it must still block at the gate even while `lock_by_username` is
+	 * OFF (the default). Proves the toggle governs only automatic lockout.
+	 */
+	public function test_manual_username_ban_still_blocks_gate_with_lock_by_username_off(): void {
+		$this->make_limiter( [ [ 'threshold' => 2, 'lockout_minutes' => 15 ] ] );
+
+		// Seed an indefinite manual ban on the username via the real repository.
+		$this->bans->add( 'username', 'victim', 'manual admin ban', null );
+
+		// A fresh IP (never failed, no lock transient) attempting the banned
+		// username is still blocked — the manual ban is enforced regardless.
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.220';
+		$result                 = apply_filters( 'authenticate', null, 'victim', 'wrong-password' );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'fanxie_login_locked', $result->get_error_code() );
 	}
 }

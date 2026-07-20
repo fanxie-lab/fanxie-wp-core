@@ -60,6 +60,7 @@ final class LoginProtection extends ModuleBase {
 		return array(
 			'attempts'   => array(
 				'enabled'            => true,
+				'lock_by_username'   => false,
 				'trust_proxy'        => false,
 				'proxy_header'       => 'HTTP_X_FORWARDED_FOR',
 				'allowlist'          => array(),
@@ -113,6 +114,14 @@ final class LoginProtection extends ModuleBase {
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
+			),
+			array(
+				'id'        => 'attempts.lock_by_username',
+				'label'     => __( 'Also lock by username', 'fanxie-wp-core' ),
+				'type'      => 'toggle',
+				'default'   => false,
+				'sanitizer' => 'bool',
+				'help'      => __( 'Off by default: automatic lockouts apply to the attacker IP only. Enabling this also locks the targeted username after repeated failures — which lets anyone who knows a username (for example "admin") lock that account out from rotating IP addresses, a targeted account-lockout denial of service. Manual username bans are always enforced regardless of this setting.', 'fanxie-wp-core' ),
 			),
 			array(
 				'id'        => 'attempts.trust_proxy',
