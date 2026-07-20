@@ -58,6 +58,7 @@ function makeConfigResponse(
     config: makeConfig(),
     slug_source: 'stored',
     effective_slug: '',
+    hide_login_active: false,
     ...overrides,
   };
 }
@@ -133,6 +134,38 @@ describe('useLoginProtectionStore', () => {
       expect(store.error).toBeNull();
     });
 
+    it('captures hide_login_active from the envelope', async () => {
+      mockAjaxResponse(
+        'login_protection/get-config',
+        makeConfigResponse({
+          effective_slug: 'secret-door',
+          hide_login_active: true,
+        }),
+      );
+
+      const store = useLoginProtectionStore();
+      await store.load();
+
+      expect(store.hideLoginActive).toBe(true);
+    });
+
+    it('leaves hideLoginActive false when the envelope reports it inactive', async () => {
+      // effective_slug is present (a slug is stored) but the feature is off, so
+      // the login is NOT actually hidden — hideLoginActive must reflect that.
+      mockAjaxResponse(
+        'login_protection/get-config',
+        makeConfigResponse({
+          effective_slug: 'secret-door',
+          hide_login_active: false,
+        }),
+      );
+
+      const store = useLoginProtectionStore();
+      await store.load();
+
+      expect(store.hideLoginActive).toBe(false);
+    });
+
     it('surfaces an error toast when get-config fails', async () => {
       mockAjaxResponse(
         'login_protection/get-config',
@@ -201,6 +234,7 @@ describe('useLoginProtectionStore', () => {
       const saved = makeConfigResponse();
       saved.config.passwords.enforce = true;
       saved.effective_slug = 'secret-door';
+      saved.hide_login_active = true;
       mockAjaxResponse('login_protection/save-config', saved);
 
       await store.save();
@@ -208,6 +242,7 @@ describe('useLoginProtectionStore', () => {
       expect(store.loading.saving).toBe(false);
       expect(store.config?.passwords.enforce).toBe(true);
       expect(store.effectiveSlug).toBe('secret-door');
+      expect(store.hideLoginActive).toBe(true);
       expect(store.isDirty).toBe(false);
       expect(store.toast?.variant).toBe('success');
     });

@@ -233,6 +233,36 @@ describe('<LoginProtection> — Hide Login', () => {
     expect(wrapper.find(`#${describedby!}`).exists()).toBe(true);
   });
 
+  it('reports the current login address only when hide-login is active', async () => {
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+      store.slugSource = 'stored';
+      store.effectiveSlug = 'secret-door';
+      store.hideLoginActive = true;
+    });
+
+    const readout = wrapper.get('.fx-login-protection__slug-readout').text();
+    expect(readout).toContain('Current login address');
+    expect(readout).toContain('secret-door');
+  });
+
+  it('does NOT report the stored slug as the login address when hide-login is inactive', async () => {
+    // A slug lingers from a previous enable, but the feature is switched off —
+    // the read-out must fall back to the default and never claim the login lives
+    // at the custom slug (a false sense of security).
+    const { wrapper } = await mountWithStore((store) => {
+      seedLoaded(store);
+      store.slugSource = 'stored';
+      store.effectiveSlug = 'secret-door';
+      store.hideLoginActive = false;
+    });
+
+    const readout = wrapper.get('.fx-login-protection__slug-readout').text();
+    expect(readout).not.toContain('secret-door');
+    expect(readout).not.toContain('Current login address');
+    expect(readout).toContain('wp-login.php');
+  });
+
   it('does NOT enable hide-login until the confirm modal is accepted', async () => {
     const { store, wrapper } = await mountWithStore((s) => {
       seedLoaded(s);
@@ -373,6 +403,23 @@ describe('<LoginProtection> — Passwords', () => {
     expect(preview).not.toContain('uppercase and lowercase letters');
     expect(preview).not.toContain('a number');
     expect(preview).not.toContain('a symbol');
+  });
+
+  it('shows a finite length (never NaN) when min_length is non-numeric', async () => {
+    const { store, wrapper } = await mountWithStore((s) => {
+      seedLoaded(s);
+    });
+
+    // Clearing the number input makes v-model.number hand back a non-numeric
+    // value; the preview must not render "at least NaN characters".
+    store.config!.passwords.min_length = Number.NaN;
+    await flushPromises();
+
+    const preview = wrapper
+      .get('.fx-login-protection__password-preview')
+      .text();
+    expect(preview).not.toContain('NaN');
+    expect(preview).toMatch(/at least \d+ character/);
   });
 
   it('marks the store dirty when a password rule changes', async () => {

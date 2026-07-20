@@ -72,6 +72,13 @@ interface LoginProtectionState {
   pristine: LoginProtectionConfig | null;
   slugSource: SlugSource | null;
   effectiveSlug: string;
+  /**
+   * Whether hide-login is actually enforcing (enabled AND a usable slug). The
+   * "current login address" read-out keys off this, not `effectiveSlug`, so a
+   * slug left over from a previously-enabled hide-login is never reported as the
+   * live login address once the feature is switched off.
+   */
+  hideLoginActive: boolean;
   log: LogState;
   bans: BansState;
   loading: LoadingFlags;
@@ -119,6 +126,7 @@ export const useLoginProtectionStore = defineStore('login-protection', {
     pristine: null,
     slugSource: null,
     effectiveSlug: '',
+    hideLoginActive: false,
     log: {
       rows: [],
       total: 0,
@@ -347,6 +355,7 @@ export const useLoginProtectionStore = defineStore('login-protection', {
       this.pristine = cloneConfig(data.config);
       this.slugSource = data.slug_source;
       this.effectiveSlug = data.effective_slug;
+      this.hideLoginActive = data.hide_login_active;
     },
 
     /** Internal: apply a ban-list envelope to state. */

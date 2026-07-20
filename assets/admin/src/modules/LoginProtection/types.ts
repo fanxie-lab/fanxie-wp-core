@@ -81,6 +81,13 @@ export interface LoginProtectionConfigResponse {
   config: LoginProtectionConfig;
   slug_source: SlugSource;
   effective_slug: string;
+  /**
+   * Whether hide-login is actually enforcing: the feature is enabled AND the
+   * slug resolves to a usable value. `effective_slug` reports the sanitised
+   * slug regardless of the enabled toggle, so this flag — not the slug — is the
+   * source of truth for "is the login currently hidden?".
+   */
+  hide_login_active: boolean;
 }
 
 /** Filters accepted by `login_protection/get-log`. */

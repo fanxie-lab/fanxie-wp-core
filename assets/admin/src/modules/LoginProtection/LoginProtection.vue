@@ -65,18 +65,21 @@ const headerStatusPill = computed<{
 });
 
 /**
- * Human-readable read-out of the effective login address. Available now even
- * though the Hide Login controls are not — it comes straight from the store's
- * config envelope, and surfaces the wp-config constant override when present.
+ * Human-readable read-out of the effective login address. It reports the custom
+ * slug ONLY while hide-login is actually enforcing (`store.hideLoginActive` —
+ * enabled AND a usable slug). When it is off, the login is served at the default
+ * URL, so we say so rather than surface a stale `effectiveSlug` and imply the
+ * login is still hidden. The wp-config constant override is still named, but
+ * only when it is genuinely in force.
  */
 const effectiveLoginSummary = computed<string>(() => {
+  if (!store.hideLoginActive) {
+    return 'Login is served at the default /wp-login.php address.';
+  }
   if (store.slugSource === 'constant') {
     return `Locked to /${store.effectiveSlug} by a wp-config constant.`;
   }
-  if (store.effectiveSlug !== '') {
-    return `Current login address: /${store.effectiveSlug}`;
-  }
-  return 'Using the default /wp-login.php address.';
+  return `Current login address: /${store.effectiveSlug}`;
 });
 
 const toastVariant = computed<ToastVariant>(() => {
@@ -223,7 +226,12 @@ function joinWithAnd(parts: string[]): string {
 const passwordPreview = computed<string>(() => {
   const rules = store.config?.passwords;
   if (!rules) return '';
-  const length = Math.max(0, Math.trunc(rules.min_length));
+  // A cleared number input hands back a non-numeric value via v-model.number;
+  // fall back to 0 so the preview never renders "at least NaN characters".
+  const rawLength = rules.min_length;
+  const length = Number.isFinite(rawLength)
+    ? Math.max(0, Math.trunc(rawLength))
+    : 0;
   const lengthClause = `at least ${String(length)} character${
     length === 1 ? '' : 's'
   }`;
