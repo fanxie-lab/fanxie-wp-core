@@ -89,10 +89,29 @@ final class LoginProtectionAjaxControllerTest extends LoginProtectionTableTestCa
 		$this->assertArrayHasKey( 'config', $result );
 		$this->assertArrayHasKey( 'slug_source', $result );
 		$this->assertArrayHasKey( 'effective_slug', $result );
+		$this->assertArrayHasKey( 'hide_login_active', $result );
 		$this->assertIsArray( $result['config'] );
 		$this->assertArrayHasKey( 'hide_login', $result['config'] );
 		// No FX_CORE_LOGIN_SLUG constant in the test runtime.
 		$this->assertSame( 'stored', $result['slug_source'] );
+		// Hide-login ships disabled, so it is not enforcing at defaults.
+		$this->assertFalse( $result['hide_login_active'], 'Hide-login is inactive at defaults.' );
+	}
+
+	public function test_get_config_reports_hide_login_active_when_enabled(): void {
+		$this->module->update_config(
+			[
+				'hide_login' => [
+					'enabled' => true,
+					'slug'    => 'secret-door',
+				],
+			]
+		);
+
+		$result = $this->controller->handle_get_config();
+
+		$this->assertTrue( $result['hide_login_active'], 'Enabling hide-login with a valid slug is active.' );
+		$this->assertSame( 'secret-door', $result['effective_slug'] );
 	}
 
 	public function test_save_config_persists_and_returns_contract_shape(): void {
@@ -242,6 +261,63 @@ final class LoginProtectionAjaxControllerTest extends LoginProtectionTableTestCa
 
 		$this->assertCount( 1, $this->sent_mail, 'Removing the custom slug notifies the admin.' );
 		$this->assertStringContainsString( 'default WordPress login', (string) $this->sent_mail[0]['message'] );
+	}
+
+	public function test_save_config_emails_admin_when_hide_login_is_enabled(): void {
+		// Baseline: hide-login off, so there is no active login address.
+		$this->module->update_config(
+			[
+				'hide_login' => [
+					'enabled' => false,
+					'slug'    => '',
+				],
+			]
+		);
+		$this->sent_mail = [];
+
+		// Enabling with a valid slug moves the active address '' -> 'new-door'.
+		$this->controller->handle_save_config(
+			[
+				'config' => [
+					'hide_login' => [
+						'enabled' => true,
+						'slug'    => 'new-door',
+					],
+				],
+			]
+		);
+
+		$this->assertCount( 1, $this->sent_mail, 'Enabling hide-login notifies the admin of the new address.' );
+		$this->assertStringContainsString( 'new-door', (string) $this->sent_mail[0]['message'] );
+	}
+
+	public function test_save_config_does_not_email_on_slug_change_while_disabled(): void {
+		// Baseline: hide-login disabled but a slug is stored (the guard is not
+		// enforcing, so the active login address is '').
+		$this->module->update_config(
+			[
+				'hide_login' => [
+					'enabled' => false,
+					'slug'    => 'door-one',
+				],
+			]
+		);
+		$this->sent_mail = [];
+
+		// Change only the slug while still disabled: the active address is '' both
+		// before and after, so no lock-out notice should fire.
+		$this->controller->handle_save_config(
+			[
+				'config' => [
+					'hide_login' => [
+						'enabled' => false,
+						'slug'    => 'door-two',
+					],
+				],
+			]
+		);
+
+		$this->assertSame( [], $this->sent_mail, 'A slug change while hide-login is off sends no notice.' );
 	}
 
 	public function test_get_log_returns_paginated_filtered_rows(): void {

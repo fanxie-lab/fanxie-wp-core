@@ -96,8 +96,11 @@ final class AjaxController {
 	 *
 	 * Validates the hide-login slug (a slug that sanitises to empty while
 	 * hide-login is enabled is rejected before anything persists), stores the
-	 * config, and — when the resulting effective login slug changes — e-mails the
-	 * site admin the new address as a lock-out safety net.
+	 * config, and — when the resulting active login address changes — e-mails the
+	 * site admin the new address as a lock-out safety net. The comparison is made
+	 * against the *active* address ({@see self::active_slug()}), so the notice
+	 * fires on enabling, disabling, and slug changes while enabled, but not on a
+	 * slug change made while hide-login is switched off.
 	 *
 	 * @param array<string, mixed> $payload Expects `{ config: array }`.
 	 * @return array<string, mixed>|WP_Error
@@ -121,16 +124,19 @@ final class AjaxController {
 			}
 		}
 
-		// Capture the effective slug BEFORE persisting so we can detect a change.
-		$old_slug = $this->effective_slug( $this->module->get_config() );
+		// Capture the ACTIVE login address BEFORE persisting so we can detect a
+		// change. Comparing the active address (rather than the raw effective
+		// slug) makes the notice fire on enable / disable / slug-change-while-
+		// enabled, but stay silent for a slug edit made while hide-login is off.
+		$old_active_slug = $this->active_slug( $this->module->get_config() );
 
 		$this->module->update_config( $incoming );
 
-		$new_config = $this->module->get_config();
-		$new_slug   = $this->effective_slug( $new_config );
+		$new_config      = $this->module->get_config();
+		$new_active_slug = $this->active_slug( $new_config );
 
-		if ( $new_slug !== $old_slug ) {
-			$this->notify_slug_change( $new_slug );
+		if ( $new_active_slug !== $old_active_slug ) {
+			$this->notify_slug_change( $new_active_slug );
 		}
 
 		return $this->config_envelope( $new_config );
@@ -330,11 +336,17 @@ final class AjaxController {
 	 */
 	private function config_envelope( ?array $config = null ): array {
 		$config = null === $config ? $this->module->get_config() : $config;
+		$guard  = $this->slug_guard( $config );
 
 		return [
-			'config'         => $config,
-			'slug_source'    => $this->slug_source(),
-			'effective_slug' => $this->effective_slug( $config ),
+			'config'            => $config,
+			'slug_source'       => $this->slug_source(),
+			'effective_slug'    => $guard->effective_slug(),
+			// Whether hide-login is truly enforcing (enabled AND resolves to a
+			// usable slug). The UI shows the "current login address" only when
+			// this is true, so disabling hide-login can no longer be misreported
+			// as the login still being hidden at the stored slug.
+			'hide_login_active' => $guard->is_active(),
 		];
 	}
 
@@ -350,14 +362,33 @@ final class AjaxController {
 	}
 
 	/**
-	 * Resolve the effective login slug for a config snapshot (constant wins).
+	 * Build a hide-login slug guard for a config snapshot's `hide_login` branch.
 	 *
 	 * @param array<string, mixed> $config Full module config.
 	 */
-	private function effective_slug( array $config ): string {
+	private function slug_guard( array $config ): LoginSlugGuard {
 		$hide_login = isset( $config['hide_login'] ) && is_array( $config['hide_login'] ) ? $config['hide_login'] : [];
 
-		return ( new LoginSlugGuard( $hide_login ) )->effective_slug();
+		return new LoginSlugGuard( $hide_login );
+	}
+
+	/**
+	 * The active login address for a config snapshot, or '' when hide-login is
+	 * not actually enforcing.
+	 *
+	 * Unlike {@see LoginSlugGuard::effective_slug()} (which reports the sanitised
+	 * slug regardless of the enabled toggle), this returns the slug only while the
+	 * guard is truly active ({@see LoginSlugGuard::is_active()} — enabled AND a
+	 * usable slug). It is the value the admin UI treats as the current login
+	 * address and the basis for the lock-out safety-net e-mail, so a slug edited
+	 * while hide-login is disabled resolves to '' at both ends and sends no notice.
+	 *
+	 * @param array<string, mixed> $config Full module config.
+	 */
+	private function active_slug( array $config ): string {
+		$guard = $this->slug_guard( $config );
+
+		return $guard->is_active() ? $guard->effective_slug() : '';
 	}
 
 	/**
@@ -367,9 +398,10 @@ final class AjaxController {
 	 * hidden login slug is not locked out. Failures are swallowed — the config
 	 * has already been saved and the response must still succeed.
 	 *
-	 * @param string $new_slug The new effective slug (empty when hide-login is off).
+	 * @param string $new_active_slug The new active login slug (empty when
+	 *                                hide-login is no longer enforcing).
 	 */
-	private function notify_slug_change( string $new_slug ): void {
+	private function notify_slug_change( string $new_active_slug ): void {
 		$admin_email = get_option( 'admin_email' );
 		if ( ! is_string( $admin_email ) || '' === $admin_email ) {
 			return;
@@ -377,13 +409,13 @@ final class AjaxController {
 
 		$subject = __( 'Your WordPress login URL has changed', 'fanxie-wp-core' );
 
-		if ( '' === $new_slug ) {
+		if ( '' === $new_active_slug ) {
 			$message = __( 'The custom login URL for your site has been removed. You can sign in at the default WordPress login screen.', 'fanxie-wp-core' );
 		} else {
 			$message = sprintf(
 				/* translators: %s: the new secret login URL. */
 				__( 'The custom login URL for your site has changed. Bookmark this address to sign in: %s', 'fanxie-wp-core' ),
-				home_url( '/' . $new_slug )
+				home_url( '/' . $new_active_slug )
 			);
 		}
 
