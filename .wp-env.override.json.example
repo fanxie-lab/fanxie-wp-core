@@ -1,9 +1,8 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
-	"_comment": "Copy this file to .wp-env.override.json for per-developer local overrides. The override file is gitignored. Anything set here merges over .wp-env.json. Remove keys you don't want to change.",
 
-	"port": 8888,
-	"testsPort": 8889,
+	"port": 8910,
+	"testsPort": 8911,
 
 	"plugins": [
 		".",
@@ -17,14 +16,5 @@
 		"WP_DEBUG_LOG": true,
 		"WP_DEBUG_DISPLAY": false,
 		"SCRIPT_DEBUG": true
-	},
-
-	"env": {
-		"development": {
-			"port": 8890
-		},
-		"tests": {
-			"port": 8891
-		}
 	}
 }

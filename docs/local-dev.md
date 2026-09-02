@@ -89,7 +89,12 @@ cp .wp-env.override.json.example .wp-env.override.json
 npm run env:restart
 ```
 
-`.wp-env.override.json` is gitignored — safe for per-developer tweaks.
+`.wp-env.override.json` is gitignored — safe for per-developer tweaks. It merges over
+`.wp-env.json`, so only include the keys you want to change; `port` (development) and
+`testsPort` (tests) are usually enough.
+
+Note: wp-env validates the file strictly and rejects unknown keys — JSON has no comment
+syntax and a `_comment` key fails with `"_comment" is not a configuration option`.
 
 ---
 

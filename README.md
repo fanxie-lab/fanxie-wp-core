@@ -34,6 +34,8 @@ Then visit <http://localhost:8888/wp-admin/options-general.php?page=fanxie-wp-co
 
 Default wp-env credentials: **admin** / **password**. (Do not use these outside local dev.)
 
+Ports 8888/8889 already taken by another wp-env instance? See [port conflicts](./docs/local-dev.md#5-port-conflicts--other-overrides).
+
 ## Testing
 
 | Command | What it runs |
