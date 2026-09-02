@@ -2,7 +2,7 @@
 Contributors: fanxielab
 Tags: security, performance, maintenance, optimization, hardening
 Requires at least: 6.4
-Tested up to: 6.9
+Tested up to: 7.1
 Requires PHP: 8.1
 Stable tag: 0.1.0-dev
 License: GPLv2 or later
@@ -28,6 +28,22 @@ Built for Fanxie Lab client deployments and released openly for the wider WordPr
 * Asset Manager — script defer/async/delay engine, conditional unloading, image dimension injection, Heartbeat / emoji / embed controls.
 * Media Optimizer — on-upload compression, WebP/AVIF generation, `<picture>` rewriting.
 * Cloud Storage — R2/S3 offload with URL rewriting and retention policies.
+
+== External services ==
+
+This plugin can contact one third-party service. It is named here, with what is sent and when, so you can decide before it happens.
+
+**api.wordpress.org (WordPress.org Plugin Information API)**
+
+* **What it is used for:** the Environment Health module reports when an active plugin looks abandoned. To do that it reads each plugin's `last_updated` date from the official WordPress.org plugin directory.
+* **What is sent:** the directory slug of each *active* plugin on this site (for example `akismet`), one slug per request, plus this plugin's version and your site URL in the request's user-agent header. No personal data, no visitor data, no site content, and no data about plugins that are installed but not active is ever transmitted.
+* **When it is sent:** on a background schedule only — a few plugins at a time, at most once every 24 hours per plugin, and never while a page is being rendered for a visitor. Requests also happen when an administrator presses "Re-run checks" on the Environment Health screen.
+* **Is it optional:** yes. The setting **Check plugin freshness on wordpress.org** (Environment Health → Settings) is on by default and can be switched off at any time. Turning it off stops all requests immediately and deletes every result already cached.
+* **Service terms:** https://wordpress.org/about/privacy/ and https://wordpress.org/about/privacy/cookies/
+
+No other module in this plugin contacts an external service. Version, cron, debug, and plugin/theme checks are performed entirely on your own server, and the WordPress core version check reads the update information WordPress has already fetched for itself rather than making a request of its own.
+
+The Environment Health module also opens a short-lived TLS connection **to your own site** to read the expiry date of its certificate. That connection never leaves your infrastructure, sends no data, and can be switched off with the **Check the TLS certificate** setting.
 
 == Installation ==
 

@@ -13,9 +13,9 @@
  * write `{ name: 'security-headers.csp' }` instead of hard-coding paths.
  *
  * SecurityHeaders ships with two nested sub-tabs (headers/csp); the CSP
- * violation log lives inside the CSP tab. Every other module currently
- * resolves to `PlaceholderTab` at the top level until its real
- * implementation lands.
+ * violation log lives inside the CSP tab. EnvironmentHealth follows the same
+ * nested shape (checks/settings). Every other module currently resolves to
+ * `PlaceholderTab` at the top level until its real implementation lands.
  */
 
 import {
@@ -90,6 +90,31 @@ const liveModuleRoutes: Record<string, RouteRecordRaw> = {
     path: '/login-protection',
     name: 'login-protection',
     component: () => import('@/modules/LoginProtection/LoginProtection.vue'),
+  },
+  // Environment Health splits into two sub-tabs: the report (Checks) and the
+  // module's settings. The shell keeps the header, the counts summary and the
+  // Re-run control above both, so the status counts stay visible while the
+  // user is editing a threshold.
+  'environment-health': {
+    path: '/environment-health',
+    name: 'environment-health',
+    component: () =>
+      import('@/modules/EnvironmentHealth/EnvironmentHealth.vue'),
+    redirect: { name: 'environment-health.checks' },
+    children: [
+      {
+        path: 'checks',
+        name: 'environment-health.checks',
+        component: () =>
+          import('@/modules/EnvironmentHealth/views/ChecksView.vue'),
+      },
+      {
+        path: 'settings',
+        name: 'environment-health.settings',
+        component: () =>
+          import('@/modules/EnvironmentHealth/views/SettingsView.vue'),
+      },
+    ],
   },
 };
 

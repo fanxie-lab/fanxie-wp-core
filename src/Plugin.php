@@ -11,6 +11,7 @@ namespace FanxieLab\WPCore;
 
 use FanxieLab\WPCore\Admin\AjaxRouter;
 use FanxieLab\WPCore\Admin\SettingsPage;
+use FanxieLab\WPCore\Modules\EnvironmentHealth\EnvironmentHealth;
 use FanxieLab\WPCore\Modules\Hardening\Hardening;
 use FanxieLab\WPCore\Modules\LoginProtection\BanRepository;
 use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
@@ -250,6 +251,9 @@ final class Plugin {
 		$login_protection = new LoginProtection( $ajax_router );
 		$registry->register( $login_protection );
 
+		$environment_health = new EnvironmentHealth( $ajax_router );
+		$registry->register( $environment_health );
+
 		$settings_page = new SettingsPage( $registry );
 
 		$this->services[ ModuleRegistry::class ]  = $registry;
@@ -258,6 +262,8 @@ final class Plugin {
 		$this->services[ SecurityHeaders::class ] = $security_headers;
 		$this->services[ Hardening::class ]       = $hardening;
 		$this->services[ LoginProtection::class ] = $login_protection;
+
+		$this->services[ EnvironmentHealth::class ] = $environment_health;
 	}
 
 	/**
@@ -273,7 +279,6 @@ final class Plugin {
 		// which is precisely the guarantee this migration needs.
 		$this->maybe_upgrade();
 
-		add_action( 'init', [ $this, 'load_textdomain' ] );
 		add_action( 'init', [ $this, 'boot_modules' ], 5 );
 
 		$settings_page = $this->services[ SettingsPage::class ];
@@ -285,19 +290,6 @@ final class Plugin {
 		if ( $ajax_router instanceof AjaxRouter ) {
 			$ajax_router->register_hooks();
 		}
-	}
-
-	/**
-	 * Load the plugin text domain.
-	 *
-	 * Fires on `init` (WordPress 6.7+ warns if registered earlier).
-	 */
-	public function load_textdomain(): void {
-		load_plugin_textdomain(
-			'fanxie-wp-core',
-			false,
-			dirname( plugin_basename( FANXIE_WP_CORE_FILE ) ) . '/languages'
-		);
 	}
 
 	/**

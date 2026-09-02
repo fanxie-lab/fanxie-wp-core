@@ -120,14 +120,32 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 - [ ] Tests: verifier mock, each integration renders + validates, fail-open vs fail-closed
 
 ### 2.2 Environment Health (PRD §7)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] Version checks (WP, PHP, MySQL/MariaDB, SSL, HTTPS) with hardcoded support matrix
-- [ ] Cron health (overdue events, `DISABLE_WP_CRON` presence, real-cron recommendation block)
-- [ ] Debug mode scan (`WP_DEBUG`, `WP_DEBUG_DISPLAY`, `SCRIPT_DEBUG`, PHP `display_errors`)
-- [ ] Inactive plugin + inactive non-default theme detection
-- [ ] Abandoned plugin check via wp.org API (cached 24h) — critical at 2y, warning at 1y
-- [ ] Dashboard widget summarising status
-- [ ] Vue tab: grouped cards (red/yellow/green), copy-paste fix snippets
-- [ ] Tests: matrix edge cases, wp.org API timeout/error handling, snapshot of widget render
+- [x] Version checks (WP, PHP, MySQL/MariaDB, SSL, HTTPS) — **date-driven** support matrix, not hardcoded version comparisons (see note below)
+- [x] Cron health (overdue events, `DISABLE_WP_CRON` presence, stale `doing_cron` lock, real-cron recommendation block)
+- [x] Debug mode scan (`WP_DEBUG`, `WP_DEBUG_DISPLAY`, `WP_DEBUG_LOG` in the web root, `SCRIPT_DEBUG`, PHP `display_errors`, `error_reporting`)
+- [x] Inactive plugin + inactive non-default theme detection
+- [x] Abandoned plugin check via wp.org API (cached 24h, batched, on by default with a `wporg_scan_enabled` opt-out) — critical at 2y, warning at 1y
+- [x] `readme.txt` **External services** disclosure for api.wordpress.org (required for wp.org review)
+- [x] Dashboard widget summarising status (renders from cache only — never builds a report or makes a request)
+- [x] Vue tab: grouped cards (red/yellow/green), copy-paste fix snippets, all 11 settings exposed, `unknown` as a first-class state
+- [x] Tests: matrix edge cases + boundary dates, wp.org API timeout/`is_wp_error`/`not_on_wporg` handling, SSL socket failure, threshold clamping + inverted-pair rule, AJAX surface, widget render
+
+**Threshold validation:** the four numeric settings are clamped server-side to
+ranges declared once in `EnvironmentHealth::THRESHOLD_RANGES`, which also feeds
+the defaults and publishes `min`/`max` to the admin UI so the browser's bounds
+are read from the server rather than duplicated in TypeScript. `save-config` is
+a plain AJAX endpoint, so the browser cannot be the validation layer: a bare
+`absint` accepted `0` (which breaks the cron and SSL checks silently) and any
+ceiling. `abandoned_critical_days < abandoned_warning_days` is resolved by
+raising critical to match.
+
+**Support-matrix decision (diverges from PRD §7.2):** the PRD's thresholds
+("warning < 8.2, critical < 8.1") were stale by the time the module was built.
+`SupportMatrix` instead stores each branch's published *active* and *security*
+end dates and derives status by comparing them against now, so verdicts age
+correctly on their own. Branches absent from the matrix report `unknown` rather
+than a guess, and `SupportMatrix::REVIEWED_ON` records when the tables were last
+checked against php.net and endoflife.date.
 
 ---
 
@@ -206,7 +224,23 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 
 ## Phase 7 — wp.org Submission  *(PRD §15 phase 7)*
 
+- [ ] **BLOCKER — plugin name/slug contains "wp".** wordpress.org bans the term
+  outright in both the plugin name ("Fanxie WP Core") and the slug
+  (`fanxie-wp-core`); Plugin Check reports it as `trademarked_term` and it is a
+  hard rejection at submission, not a negotiable warning. Deferred from Phase 2
+  by explicit decision — cheapest to fix while unreleased (no site has stored
+  options under the old prefix, so no migration is owed), and the cost grows with
+  every module added. Rename surface to map before deciding: plugin name +
+  `Plugin Name:` header, slug/directory, text domain (every `__()` call),
+  `readme.txt`, PSR-4 namespace root `FanxieLab\WPCore`, option prefix
+  `fanxie_wp_core_*`, table prefix `fanxie_core_*`, hook prefix
+  `fanxie_wp_core/`, capability `manage_fanxie_wp_core`, bootstrap constants
+  `FANXIE_WP_CORE_*`, the `fx-core` CLI root (already compliant), CI workflows,
+  and the repo name.
 - [ ] Full Plugin Check **zero** errors/warnings on complete plugin
+- [ ] Build a distribution archive that excludes `tests/`, `.github/`, `node_modules/`,
+  and dev configs — most Plugin Check findings against the dev checkout come from
+  test fixtures that never ship (146 of 184 at the end of Phase 2)
 - [ ] `readme.txt` polished: short description, long description, FAQ, screenshots, changelog
 - [ ] Screenshots captured for each module tab (1544×500+ per wp.org guidance)
 - [ ] Tested with latest WP major + trunk
@@ -218,6 +252,18 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 - [ ] Submit to wp.org; document review turnaround
 
 ---
+
+## Known issues
+
+- [ ] **Integration suite is order-fragile.** `LoginSlugGuardIntegrationTest`
+  calls `define( 'FX_CORE_LOGIN_SLUG', … )`, which leaks process-wide. Combined
+  with `executionOrder="depends,defects"` in `phpunit.xml.dist`, a stale
+  `.phpunit.cache` from a previously failed run reorders that test ahead of
+  `test_password_reset_link_is_rewritten_and_preserves_its_query`, which then
+  fails. Reproduced once at the end of Phase 2; three consecutive runs from a
+  cleared cache pass, so it is masked by ordering rather than genuinely fixed.
+  It will resurface in CI after any failing run. Fix by isolating the constant
+  (`@runInSeparateProcess`) or by dropping `defects` from the execution order.
 
 ## Cross-phase ongoing items
 

@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Author-enumeration guard no longer raises "Array to string conversion" on an
+  array-form probe (`?author[]=1`). Both call sites cast `$_GET['author']` to a
+  string directly; the request is now unslashed and sanitised with `map_deep`,
+  because a plain `sanitize_text_field()` returns `''` for an array and would let
+  the array-form probe through unguarded.
+- All 36 Plugin Check warnings in shipping code cleared (39 findings down to the
+  2 known `trademarked_term` warnings). The 17 `UnescapedDBParameter` reports were
+  fixed by restructuring rather than annotation: the three repositories now
+  resolve their table name once into a `private readonly string` that queries read
+  directly, and `LoginLogRepository` builds its WHERE clause from a keyed map of
+  literal fragments instead of interpolating column names. Superglobal reads gained
+  `wp_unslash()` plus the narrowest matching sanitiser throughout, and the CSP
+  report endpoint validates its client IP with `FILTER_VALIDATE_IP`. Remaining
+  suppressions are line-scoped, name a single sniff, and state a checkable reason.
+- Removed the `load_plugin_textdomain()` call: WordPress 4.6+ loads translations
+  automatically for wordpress.org-hosted plugins, and no translatable string in
+  the plugin runs before `init`.
+- `Tested up to` raised to 7.1 in both `readme.txt` and the plugin header.
+
 - Renamed the uninstall opt-in constant `FANXIE_WP_CORE_DELETE_ALL_DATA` ->
   `FX_CORE_DELETE_ALL_DATA`, bringing it in line with the `FX_CORE_*` convention
   for wp-config override constants. It was the last user-facing constant still on
@@ -16,6 +35,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   never been tagged, so no site can have the old constant defined.
 
 ### Added
+- Environment Health module, PHP side (PRD §7): read-only reporting on software
+  versions (WordPress, PHP, MySQL/MariaDB, TLS certificate expiry, HTTPS), cron
+  health (`DISABLE_WP_CRON`, a wedged `doing_cron` lock, overdue events), debug
+  exposure (`WP_DEBUG`, `WP_DEBUG_DISPLAY`, a debug log inside the web root,
+  `SCRIPT_DEBUG`, PHP `display_errors` / `error_reporting`), and plugin/theme
+  hygiene (inactive plugins, unused non-default themes, abandoned plugins).
+  Ships a dashboard widget, four AJAX sub-actions
+  (`environment-health/get-report`, `refresh`, `get-config`, `save-config`), and
+  a twice-daily `fanxie_wp_core_environment_health_scan` event.
+- Environment Health support matrix is expressed as **published end-of-support
+  dates per branch**, not as version comparisons. PRD §7.2 specified thresholds
+  as literals ("critical below 8.1"), which were already stale when the module
+  was written; deriving status from dates means "PHP 8.2 is EOL" becomes true on
+  the right day with no code change, and a branch missing from the matrix
+  reports `unknown` rather than a guess. `SupportMatrix::REVIEWED_ON` records
+  when the tables were last verified against php.net and endoflife.date.
+- Environment Health talks to **api.wordpress.org** to detect abandoned plugins.
+  On by default, with a `wporg_scan_enabled` opt-out that also discards every
+  cached result, 24-hour per-plugin caching, and batching so a site with dozens
+  of plugins never fires dozens of blocking requests at once — the scan runs on
+  a schedule or on an explicit refresh, never during a page render. Disclosed in
+  a new `readme.txt` **External services** section naming what is sent (plugin
+  slugs only), when, and linking wordpress.org's privacy policy.
+- Environment Health thresholds are range-checked server-side. The four numeric
+  settings previously used a bare `absint`, which accepted `0` and any ceiling —
+  and `absint('')` / `absint('garbage')` both land on `0`, the value that breaks
+  each check silently rather than loudly (`cron_overdue_minutes = 0` alarms
+  permanently; `ssl_expiry_warning_days = 0` never warns at all). Each is now
+  clamped to a documented range declared once in
+  `EnvironmentHealth::THRESHOLD_RANGES` (SSL 1–365, cron 1–1440, abandoned
+  warning/critical 30–3650), which also supplies the defaults and publishes
+  `min`/`max` to the admin UI. Out-of-range input clamps to the nearest limit
+  rather than reverting to the default; non-numeric input falls back to the
+  default. `abandoned_critical_days` below `abandoned_warning_days` — coherent
+  to each field's own bounds check, but a config in which nothing is ever
+  flagged critical — is resolved by raising critical to match. The rules apply
+  on read as well as write, so options stored before they existed self-heal.
+- Environment Health TLS check degrades gracefully: a short connect timeout, a
+  12-hour cache, and an explicit `unknown` status ("couldn't check — this host
+  may block outbound connections") when the socket fails, rather than a false
+  "certificate missing" alarm.
+- Environment Health admin tab (Vue): status cards grouped by check family, each
+  row carrying a pill, the observed value, and an expandable detail with
+  copy-paste remediation snippets. All 11 settings are exposed — four check-group
+  gates, the wordpress.org scan, the TLS probe, the dashboard widget, and four
+  numeric thresholds with client-side bounds read from the server's published
+  `min`/`max`. `unknown` is a first-class state (dashed neutral border, "Couldn't
+  check"), visually distinct from both healthy and critical, for hosts that block
+  the outbound TLS probe.
+- Environment Health admin tab is split into `Checks` and `Settings` sub-tabs
+  (deep-linkable, following the SecurityHeaders parent/children route pattern).
+  The page header, "last checked" timestamp, Re-run control, and the
+  OK/warning/critical counts stay pinned in the parent shell, so the health
+  verdict remains visible while settings are being changed. Each tab lazy-loads
+  as its own chunk. Leaving the Settings tab with unsaved edits now prompts
+  through the shared `ConfirmDialog` — behind a tab the SaveBar is no longer
+  always on screen, so dirty state could otherwise be lost silently; discarding
+  resets the store rather than leaving the edits to reappear or be saved later.
+- Environment Health plugin/theme checks now name the offending items instead of
+  only counting them: "2 unused themes are installed: Twenty Twenty-Three, Twenty
+  Twenty-Two." Up to three are named inline; longer lists fall back to a count and
+  are shown in full in the row's expanded detail. Abandoned plugins report their
+  human-readable header name rather than a directory slug, split into separate
+  critical and warning lists. The names were already being collected into `meta`
+  and discarded unrendered.
+- Check `meta` widened from a flat scalar map to allow `list<string>`. The names
+  were previously comma-joined into a string, which cannot be split back apart
+  safely because plugin and theme names legitimately contain commas. Lists are
+  capped at 15 with a companion `*_omitted` count, so a truncated list can no
+  longer silently disagree with the count beside it.
+- Shared `CodeSnippet` component promoted out of Environment Health and adopted by
+  Hardening, which fixes a pre-existing accessibility bug: Hardening's copy button
+  confirmed only via a silent icon swap, with no `aria-live` announcement.
+- Shared `TextField` gained real `min`/`max`/`step`/`inputmode` props and a `blur`
+  emit. These had to be props rather than fall-through attributes: `TextField`
+  does not set `inheritAttrs: false`, so bare `min`/`max` would have landed on the
+  wrapper element and enforced nothing — the same trap CLAUDE.md §3.4 documents
+  for `Toggle`'s `describedby`.
 - Login Protection module (PRD §5): brute-force attempt limiting with tiered
   lockouts (default on; per-IP by default with an opt-in username dimension,
   transient-backed, echo-suppressed so a

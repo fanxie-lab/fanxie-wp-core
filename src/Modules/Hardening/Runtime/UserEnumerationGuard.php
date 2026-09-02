@@ -50,6 +50,29 @@ final class UserEnumerationGuard {
 	}
 
 	/**
+	 * Whether the request carries a non-empty `author` query var.
+	 *
+	 * Shared by both guards so the two entry points can never disagree about
+	 * what counts as an enumeration probe.
+	 */
+	private function has_author_query_var(): bool {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only query inspection.
+		if ( ! isset( $_GET['author'] ) ) {
+			return false;
+		}
+
+		// `?author[]=1` arrives as an array and is just as much a probe as the
+		// scalar form, so map over the value instead of casting it: the previous
+		// `(string) $_GET['author']` raised an "Array to string conversion"
+		// warning on that input, and a bare sanitize_text_field() would flatten
+		// the array to '' and wave the probe through.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only query inspection.
+		$author = map_deep( wp_unslash( $_GET['author'] ), 'sanitize_text_field' );
+
+		return is_array( $author ) ? [] !== $author : '' !== (string) $author;
+	}
+
+	/**
 	 * Short-circuit `redirect_canonical` for `?author=N` probes.
 	 *
 	 * @param string|false $redirect_url  Canonical redirect URL.
@@ -63,8 +86,7 @@ final class UserEnumerationGuard {
 			return $redirect_url;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only query inspection.
-		if ( isset( $_GET['author'] ) && '' !== (string) $_GET['author'] ) {
+		if ( $this->has_author_query_var() ) {
 			return false;
 		}
 
@@ -83,9 +105,7 @@ final class UserEnumerationGuard {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only query inspection.
-		$has_author = isset( $_GET['author'] ) && '' !== (string) $_GET['author'];
-		if ( ! $has_author && ! is_author() ) {
+		if ( ! $this->has_author_query_var() && ! is_author() ) {
 			return;
 		}
 

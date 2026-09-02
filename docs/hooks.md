@@ -2,7 +2,7 @@
 
 Every custom action and filter exposed by the plugin lives here. Keep this file in sync with the code. Naming convention: `fanxie_wp_core/<area>/<verb>`.
 
-Last updated for Phase 1.2.
+Last updated for Phase 2.2.
 
 ---
 
@@ -320,6 +320,44 @@ All routed through the shared `fanxie_wp_core` admin-ajax action (nonce
   custom login slug (recovers access if you're locked out); when set, the admin
   UI shows the slug read-only. Reveal the active slug with `wp fx-core login
   reveal`; clear a lockout/ban with `wp fx-core login unlock <ip|username>`.
+
+---
+
+## Environment Health
+
+### `fanxie_wp_core_environment_health_scan`
+
+- **Type:** Action (WP-Cron event — flat name, not slash-namespaced)
+- **Since:** 0.1.0-dev
+- **Fires:** Twice daily via `wp_schedule_event()`, and as a one-off follow-up
+  (`wp_schedule_single_event()` with the argument `'follow-up'`) a minute later
+  whenever a wordpress.org batch ran out of budget before finishing.
+- **Params:** none for the recurring event; the follow-up event passes the
+  string `'follow-up'`, which the handler ignores.
+- **Note:** this is the module's only unattended path that performs network
+  I/O — it refreshes the TLS certificate reading and advances the throttled
+  wordpress.org freshness scan. Report assembly and the dashboard widget read
+  caches only and never make requests.
+
+### AJAX sub-actions
+
+All routed through the shared `fanxie_wp_core` admin-ajax action (nonce
+`fanxie_wp_core_admin` + capability `manage_fanxie_wp_core` enforced by
+`AjaxRouter`): `environment-health/get-report`, `refresh`, `get-config`,
+`save-config`. The three report-returning actions answer with the
+`HealthReport` payload (`generated_at`, `cached_until`, `counts`, `checks`);
+`get-config` answers with the settings map. `save-config` answers with a
+rebuilt report rather than the stored settings — settings pass through the
+schema sanitiser on the way in, so a client that needs the canonical values
+should follow up with `get-config`.
+
+### External service
+
+The module contacts **api.wordpress.org** to read each active plugin's
+`last_updated` date. It is on by default, disclosed in `readme.txt` under
+"External services", cached for 24 hours per plugin, throttled to a handful of
+lookups per pass, and switched off entirely by the `wporg_scan_enabled`
+setting — which also discards every cached result.
 
 ---
 

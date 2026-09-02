@@ -56,6 +56,7 @@ final class AjaxControllerTest extends TestCase {
 			}
 		);
 		Functions\when( 'sanitize_text_field' )->alias( static fn ( $v ) => is_string( $v ) ? trim( $v ) : '' );
+		Functions\when( 'wp_unslash' )->alias( static fn ( $v ) => is_string( $v ) ? stripslashes( $v ) : $v );
 		Functions\when( 'sanitize_textarea_field' )->returnArg( 1 );
 		Functions\when( 'sanitize_key' )->alias(
 			static function ( $v ) {

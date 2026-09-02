@@ -75,6 +75,7 @@ global $wpdb;
 // The `LIKE 'fanxie_wp_core_%'` sweep catches every plugin option, including
 // legacy `_enabled` flags that no longer drive behaviour after the module
 // enabled-gate was removed — no targeted migration needed.
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- core exposes no API for enumerating options by name prefix, and an uninstall runs once against rows that are deleted moments later, so there is nothing worth caching.
 $fanxie_wp_core_option_names = $wpdb->get_col(
 	$wpdb->prepare(
 		"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
@@ -90,6 +91,7 @@ if ( is_array( $fanxie_wp_core_option_names ) ) {
 
 // Multisite: mirror cleanup for network options.
 if ( is_multisite() ) {
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- network-option equivalent of the sweep above: no core API enumerates sitemeta by key prefix, and the rows are deleted immediately after.
 	$fanxie_wp_core_site_options = $wpdb->get_col(
 		$wpdb->prepare(
 			"SELECT meta_key FROM {$wpdb->sitemeta} WHERE meta_key LIKE %s",
@@ -110,7 +112,8 @@ if ( is_multisite() ) {
  * -----------------------------------------------------------------------------
  */
 $fanxie_wp_core_table_prefix = $wpdb->prefix . 'fanxie_core_';
-$fanxie_wp_core_tables       = $wpdb->get_col(
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- SHOW TABLES has no WordPress API wrapper; it is the only way to discover which of this plugin's tables were ever created, and the answer is invalidated by the DROP TABLE loop directly below it.
+$fanxie_wp_core_tables = $wpdb->get_col(
 	$wpdb->prepare(
 		'SHOW TABLES LIKE %s',
 		$wpdb->esc_like( $fanxie_wp_core_table_prefix ) . '%'

@@ -267,7 +267,17 @@ final class CspReportController {
 	 * Best-effort client IP for rate-limit bucketing.
 	 */
 	private function client_ip(): string {
-		$remote = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : '';
-		return '' === $remote ? '0.0.0.0' : $remote;
+		$remote = isset( $_SERVER['REMOTE_ADDR'] )
+			? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) )
+			: '';
+
+		// The value only ever becomes a sha1() transient-key suffix, so the
+		// narrowest useful check is "is this actually an IP?". Anything else
+		// (a value injected by a misconfigured SAPI, or a CLI/test context
+		// with no peer) collapses into the shared 0.0.0.0 bucket rather than
+		// minting an attacker-chosen rate-limit bucket per request.
+		$ip = filter_var( $remote, FILTER_VALIDATE_IP );
+
+		return is_string( $ip ) ? $ip : '0.0.0.0';
 	}
 }

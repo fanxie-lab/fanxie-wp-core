@@ -187,7 +187,9 @@ final class UploadsProtector {
 	 * Returns one of: `apache` | `nginx` | `litespeed` | `iis` | `unknown`.
 	 */
 	public function detect_server_type(): string {
-		$software = isset( $_SERVER['SERVER_SOFTWARE'] ) ? (string) $_SERVER['SERVER_SOFTWARE'] : '';
+		$software = isset( $_SERVER['SERVER_SOFTWARE'] )
+			? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) )
+			: '';
 		$software = strtolower( $software );
 
 		if ( str_contains( $software, 'litespeed' ) ) {

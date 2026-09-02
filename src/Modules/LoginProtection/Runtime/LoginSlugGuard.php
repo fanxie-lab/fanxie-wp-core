@@ -271,9 +271,10 @@ final class LoginSlugGuard {
 	 * login form, so allowing them does not weaken the hidden login.
 	 */
 	public function is_allowed_action(): bool {
+		// sanitize_key() already returns '' for a non-scalar (e.g. `?action[]=x`),
+		// so it doubles as the type guard the previous is_string() check provided.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing decision; no state change.
-		$raw    = isset( $_REQUEST['action'] ) ? wp_unslash( $_REQUEST['action'] ) : '';
-		$action = sanitize_key( is_string( $raw ) ? $raw : '' );
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
 
 		return in_array( $action, self::ALLOWED_ACTIONS, true );
 	}

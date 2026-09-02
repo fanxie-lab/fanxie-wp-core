@@ -24,6 +24,20 @@ interface Props {
   id?: string;
   /** autocomplete hint. */
   autocomplete?: string;
+  /**
+   * Numeric bounds and granularity, forwarded to the native input.
+   *
+   * These are real props rather than fall-through attributes on purpose: this
+   * component does not set `inheritAttrs: false`, so a bare `min`/`max` would
+   * land on the wrapper <div> and the browser would enforce nothing — the same
+   * trap CLAUDE.md §3.4 documents for Toggle's aria-describedby. Only
+   * meaningful with type="number".
+   */
+  min?: number;
+  max?: number;
+  step?: number;
+  /** Virtual-keyboard hint, e.g. 'numeric' for integer entry on mobile. */
+  inputmode?: 'text' | 'numeric' | 'decimal' | 'tel' | 'email' | 'url';
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -36,10 +50,16 @@ const props = withDefaults(defineProps<Props>(), {
   required: false,
   id: undefined,
   autocomplete: undefined,
+  min: undefined,
+  max: undefined,
+  step: undefined,
+  inputmode: undefined,
 });
 
 const emit = defineEmits<{
   'update:modelValue': [value: string];
+  /** Raised on blur so wrappers can normalise a half-typed value. */
+  blur: [];
 }>();
 
 const generatedId = useId();
@@ -57,6 +77,10 @@ const describedBy = computed(() => {
 function onInput(event: Event): void {
   const target = event.target as HTMLInputElement;
   emit('update:modelValue', target.value);
+}
+
+function onBlur(): void {
+  emit('blur');
 }
 </script>
 
@@ -82,9 +106,14 @@ function onInput(event: Event): void {
       :readonly="readonly"
       :required="required"
       :autocomplete="autocomplete"
+      :min="min"
+      :max="max"
+      :step="step"
+      :inputmode="inputmode"
       :aria-invalid="Boolean(error) || undefined"
       :aria-describedby="describedBy"
       @input="onInput"
+      @blur="onBlur"
     />
     <p v-if="help && !error" :id="helpId" class="fx-text-field__help">
       {{ help }}

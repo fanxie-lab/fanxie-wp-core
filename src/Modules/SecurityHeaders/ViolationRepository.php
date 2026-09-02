@@ -48,21 +48,33 @@ final class ViolationRepository {
 	public const TABLE_BASENAME = 'fanxie_core_csp_violations';
 
 	/**
-	 * Fully-qualified table name, resolved lazily.
+	 * Fully-qualified table name, resolved once at construction.
 	 *
-	 * @var string|null
+	 * Resolved from `$wpdb->prefix` plus the class constant above, so the
+	 * value can never contain anything a request could influence. Query
+	 * builders below read this property directly rather than calling
+	 * `table_name()` — a `$this->table` property read is provably
+	 * request-independent to a reader and to static analysis alike,
+	 * whereas an accessor call is opaque to both.
+	 *
+	 * @var string
 	 */
-	private ?string $table = null;
+	private readonly string $table;
+
+	/**
+	 * Resolve the table name from the active `$wpdb` prefix.
+	 */
+	public function __construct() {
+		global $wpdb;
+
+		$prefix      = isset( $wpdb ) && is_object( $wpdb ) && isset( $wpdb->prefix ) ? (string) $wpdb->prefix : 'wp_';
+		$this->table = $prefix . self::TABLE_BASENAME;
+	}
 
 	/**
 	 * Expose the resolved table name — handy for diagnostics + tests.
 	 */
 	public function table_name(): string {
-		if ( null === $this->table ) {
-			global $wpdb;
-			$prefix      = isset( $wpdb ) && is_object( $wpdb ) && isset( $wpdb->prefix ) ? (string) $wpdb->prefix : 'wp_';
-			$this->table = $prefix . self::TABLE_BASENAME;
-		}
 		return $this->table;
 	}
 
@@ -82,7 +94,7 @@ final class ViolationRepository {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-		$table           = $this->table_name();
+		$table           = $this->table;
 		$charset_collate = $wpdb->get_charset_collate();
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
@@ -121,7 +133,7 @@ final class ViolationRepository {
 	public function record( ViolationRecord $violation ): void {
 		global $wpdb;
 
-		$table        = $this->table_name();
+		$table        = $this->table;
 		$directive    = $violation->directive;
 		$blocked_uri  = $violation->blocked_uri;
 		$document_uri = $violation->document_uri;
@@ -201,7 +213,7 @@ final class ViolationRepository {
 	public function query( array $filters, int $page = 1, int $per_page = 25 ): array {
 		global $wpdb;
 
-		$table    = $this->table_name();
+		$table    = $this->table;
 		$page     = max( 1, $page );
 		$per_page = max( 1, min( 200, $per_page ) );
 		$offset   = ( $page - 1 ) * $per_page;
@@ -285,7 +297,7 @@ final class ViolationRepository {
 	public function prune( int $older_than_days ): int {
 		global $wpdb;
 
-		$table = $this->table_name();
+		$table = $this->table;
 		$days  = max( 1, $older_than_days );
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -309,7 +321,7 @@ final class ViolationRepository {
 	public function purge_all(): int {
 		global $wpdb;
 
-		$table = $this->table_name();
+		$table = $this->table;
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$deleted = $wpdb->query( "DELETE FROM {$table}" );

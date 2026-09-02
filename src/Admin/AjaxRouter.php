@@ -233,7 +233,9 @@ final class AjaxRouter {
 	 * @return array<string, mixed>
 	 */
 	private function read_payload(): array {
-		$content_type = isset( $_SERVER['CONTENT_TYPE'] ) ? (string) $_SERVER['CONTENT_TYPE'] : '';
+		$content_type = isset( $_SERVER['CONTENT_TYPE'] )
+			? sanitize_text_field( wp_unslash( $_SERVER['CONTENT_TYPE'] ) )
+			: '';
 		$is_json      = false !== stripos( $content_type, 'application/json' );
 
 		if ( $is_json ) {

@@ -91,6 +91,18 @@ if ( '' !== $fanxie_tests_dir && file_exists( $fanxie_tests_dir . '/includes/fun
 	if ( ! class_exists( \WP_Error::class, false ) ) {
 		require_once __DIR__ . '/stubs/wp-error.php';
 	}
+
+	// Minimal `WP_Theme` shim — the Environment Health module inspects the
+	// active theme and its parent, both of which are `WP_Theme` instances.
+	if ( ! class_exists( \WP_Theme::class, false ) ) {
+		require_once __DIR__ . '/stubs/wp-theme.php';
+	}
+
+	// Minimal `wpdb` shim — the Environment Health module reads the database
+	// server version off the global `$wpdb` handle.
+	if ( ! class_exists( \wpdb::class, false ) ) {
+		require_once __DIR__ . '/stubs/wpdb.php';
+	}
 }
 
 unset( $fanxie_tests_dir );
