@@ -43,7 +43,7 @@ No module is enabled out of the box. Each module ships with conservative default
 
 = Is my data deleted when I uninstall the plugin? =
 
-No, not by default. The plugin leaves all options and tables intact on uninstall unless you explicitly opt in via the admin setting or by defining `FANXIE_WP_CORE_DELETE_ALL_DATA` in `wp-config.php`. This protects you from accidentally wiping configuration when re-installing.
+No, not by default. The plugin leaves all options and tables intact on uninstall unless you explicitly opt in via the admin setting or by defining `FX_CORE_DELETE_ALL_DATA` in `wp-config.php`. This protects you from accidentally wiping configuration when re-installing.
 
 == Screenshots ==
 

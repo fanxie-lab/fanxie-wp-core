@@ -8,7 +8,7 @@
  * Data removal is **opt-in**. Nothing is wiped unless one of the following
  * is true:
  *
- *   1. The `FANXIE_WP_CORE_DELETE_ALL_DATA` constant is defined and truthy
+ *   1. The `FX_CORE_DELETE_ALL_DATA` constant is defined and truthy
  *      (typically added to `wp-config.php` for site-owner control).
  *   2. The stored option `fanxie_wp_core_delete_on_uninstall` equals `'yes'`
  *      (set via the admin UI).
@@ -40,7 +40,7 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
  */
 $fanxie_wp_core_should_delete = false;
 
-if ( defined( 'FANXIE_WP_CORE_DELETE_ALL_DATA' ) && FANXIE_WP_CORE_DELETE_ALL_DATA ) {
+if ( defined( 'FX_CORE_DELETE_ALL_DATA' ) && FX_CORE_DELETE_ALL_DATA ) {
 	$fanxie_wp_core_should_delete = true;
 }
 

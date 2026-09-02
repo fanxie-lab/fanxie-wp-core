@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Renamed the uninstall opt-in constant `FANXIE_WP_CORE_DELETE_ALL_DATA` ->
+  `FX_CORE_DELETE_ALL_DATA`, bringing it in line with the `FX_CORE_*` convention
+  for wp-config override constants. It was the last user-facing constant still on
+  the old prefix. Both wp-config override constants are now listed in
+  `docs/hooks.md`. Pre-release rename with no deprecation shim: the plugin has
+  never been tagged, so no site can have the old constant defined.
+
 ### Added
 - Login Protection module (PRD §5): brute-force attempt limiting with tiered
   lockouts (default on; per-IP by default with an opt-in username dimension,

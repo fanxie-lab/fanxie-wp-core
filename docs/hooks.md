@@ -281,7 +281,9 @@ Last updated for Phase 1.2.
 - **Since:** 0.1.0
 - **Fires:** Inside `uninstall.php` after the user opt-in flag has been resolved.
 - **Params:**
-  - `bool $should_delete` — whether the plugin should wipe its options and custom tables.
+  - `bool $should_delete` — whether the plugin should wipe its options and custom tables
+    (resolved from the `FX_CORE_DELETE_ALL_DATA` constant, else the
+    `fanxie_wp_core_delete_on_uninstall` option).
 - **Returns:** `bool` — overrides the opt-in decision programmatically.
 - **Example:**
 
@@ -318,6 +320,19 @@ All routed through the shared `fanxie_wp_core` admin-ajax action (nonce
   custom login slug (recovers access if you're locked out); when set, the admin
   UI shows the slug read-only. Reveal the active slug with `wp fx-core login
   reveal`; clear a lockout/ban with `wp fx-core login unlock <ip|username>`.
+
+---
+
+## wp-config override constants
+
+Site owners set these in `wp-config.php`. They all use the `FX_CORE_*` prefix;
+`FANXIE_WP_CORE_*` constants are internal bootstrap values (VERSION/PATH/URL/FILE
+and the minimum PHP/WP floors) and are not part of the public contract.
+
+| Constant | Effect |
+|---|---|
+| `FX_CORE_LOGIN_SLUG` | Overrides the custom login slug (lockout recovery). |
+| `FX_CORE_DELETE_ALL_DATA` | When truthy, opts into wiping every option and custom table on uninstall. Equivalent to the admin setting; either one is sufficient. |
 
 ---
 

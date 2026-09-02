@@ -49,7 +49,7 @@ The user has set explicit agent ownership. When the scope is clear, delegate; do
 - **Custom tables:** prefix `{$wpdb->prefix}fanxie_core_` (e.g., `wp_fanxie_core_csp_violations`, `wp_fanxie_core_login_log`, `wp_fanxie_core_login_bans`, `wp_fanxie_core_activity_log`). Install via `dbDelta`, version-tracked (one `fanxie_wp_core_<...>_version` option per table).
 - **Hooks API:** prefix custom hooks `fanxie_wp_core/` (e.g., `fanxie_wp_core/module/registered`). Documented in `docs/hooks.md`. (Exception: WP-Cron event names are flat, e.g. `fanxie_wp_core_login_protection_prune`.)
 - **Capabilities:** gate admin actions behind a dedicated cap `manage_fanxie_wp_core` (mapped to `manage_options` by default, overridable via filter).
-- **User-facing constants & CLI naming:** wp-config **override constants** use the `FX_CORE_*` prefix (e.g. `FX_CORE_LOGIN_SLUG`, `FX_CORE_TURNSTILE_*`); the **WP-CLI root command is `fx-core`** (e.g. `wp fx-core login reveal`). Internal bootstrap constants stay `FANXIE_WP_CORE_*` (VERSION/PATH/URL) and option/table/hook prefixes are unchanged. Applies to all modules.
+- **User-facing constants & CLI naming:** wp-config **override constants** use the `FX_CORE_*` prefix (e.g. `FX_CORE_LOGIN_SLUG`, `FX_CORE_DELETE_ALL_DATA`, `FX_CORE_TURNSTILE_*`); the **WP-CLI root command is `fx-core`** (e.g. `wp fx-core login reveal`). Internal bootstrap constants stay `FANXIE_WP_CORE_*` (VERSION/PATH/URL) and option/table/hook prefixes are unchanged. Applies to all modules.
 
 ### 3.2 Security
 

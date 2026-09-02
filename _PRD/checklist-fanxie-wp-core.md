@@ -98,7 +98,11 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 ### 1.3b Login Protection — 2FA enforcement (follow-on)  *(→ wordpress-development-expert + frontend-expert)*
 - [ ] Enforce 2FA on top of WordPress's official Two-Factor plugin (detect/offer install, per-role enrollment enforcement + grace window). Pulled forward from v2; separate spec/plan.
 
-### 1.3c Constants (and globally) renaming: fanxie_ -> fx_
+### 1.3c Constants renaming: `FANXIE_*` -> `FX_CORE_*`  *(→ wordpress-development-expert)*
+- [x] Audit every constant against the CLAUDE.md §3.1 convention (user-facing wp-config overrides use `FX_CORE_*`; internal bootstrap constants stay `FANXIE_WP_CORE_*`)
+- [x] Rename `FANXIE_WP_CORE_DELETE_ALL_DATA` -> `FX_CORE_DELETE_ALL_DATA` (the only misnamed user-facing constant; `FX_CORE_LOGIN_SLUG` and the `fx-core` CLI root already complied)
+- [x] Document both override constants in `docs/hooks.md`
+- [-] Options / tables / hooks left on `fanxie_wp_core_*` and `fanxie_core_*` — deliberate per CLAUDE.md §3.1; renaming them would break stored data for no user-visible benefit
 
 ---
 
