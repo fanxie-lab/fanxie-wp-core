@@ -31,6 +31,28 @@ final class PluginThemeInspector {
 	private const MAX_LISTED = 15;
 
 	/**
+	 * Above this many items, a summary sentence stops naming them inline.
+	 *
+	 * Naming two or three things reads well and saves the user a click; naming
+	 * fifteen produces an unreadable one-liner. Past this threshold the summary
+	 * falls back to a bare count and the names live in `meta`, where the admin
+	 * UI lists them in the expanded detail.
+	 *
+	 * @var int
+	 */
+	private const MAX_NAMED_INLINE = 3;
+
+	/**
+	 * Memoised `get_plugins()` result.
+	 *
+	 * Two of the three checks need the plugin headers and building a report is
+	 * on the dashboard render path, so read the directory once per instance.
+	 *
+	 * @var array<string, array<string, mixed>>|null
+	 */
+	private ?array $installed_plugins_cache = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param array<string, mixed> $config  Module config snapshot.
@@ -94,12 +116,11 @@ final class PluginThemeInspector {
 		$count     = count( $inactive );
 
 		$names = [];
-		foreach ( $inactive as $data ) {
-			if ( count( $names ) >= self::MAX_LISTED ) {
-				break;
-			}
-			$names[] = isset( $data['Name'] ) && is_string( $data['Name'] ) ? $data['Name'] : '';
+		foreach ( $inactive as $file => $data ) {
+			$names[] = $this->plugin_name( (string) $file, $data );
 		}
+
+		[ $listed, $omitted ] = $this->cap( $names );
 
 		if ( 0 === $count ) {
 			return new HealthCheck(
@@ -111,7 +132,11 @@ final class PluginThemeInspector {
 				__( 'Every installed plugin is in use.', 'fanxie-wp-core' ),
 				'',
 				[],
-				[ 'total_installed' => count( $installed ) ]
+				[
+					'total_installed' => count( $installed ),
+					'names'           => [],
+					'names_omitted'   => 0,
+				]
 			);
 		}
 
@@ -121,18 +146,31 @@ final class PluginThemeInspector {
 			__( 'Inactive plugins', 'fanxie-wp-core' ),
 			HealthCheck::STATUS_WARNING,
 			(string) $count,
-			sprintf(
-				/* translators: %d: number of inactive plugins. */
-				_n( '%d installed plugin is not active.', '%d installed plugins are not active.', $count, 'fanxie-wp-core' ),
-				$count
-			),
+			$count <= self::MAX_NAMED_INLINE
+				? sprintf(
+					/* translators: 1: number of inactive plugins, 2: comma-separated list of those plugin names (e.g. "Akismet, Hello Dolly"). */
+					_n(
+						'%1$d installed plugin is not active: %2$s.',
+						'%1$d installed plugins are not active: %2$s.',
+						$count,
+						'fanxie-wp-core'
+					),
+					$count,
+					$this->join_names( $listed )
+				)
+				: sprintf(
+					/* translators: %d: number of inactive plugins. */
+					_n( '%d installed plugin is not active.', '%d installed plugins are not active.', $count, 'fanxie-wp-core' ),
+					$count
+				),
 			__( 'A deactivated plugin still has its PHP files on disk, and a vulnerability in a directly-reachable file does not care whether the plugin is switched on. Deactivated code also stops being watched: it is the code people forget to update. Delete what you are not using; the plugin can always be reinstalled.', 'fanxie-wp-core' ),
 			[
 				HealthCheck::link( admin_url( 'plugins.php?plugin_status=inactive' ), __( 'Review inactive plugins', 'fanxie-wp-core' ) ),
 			],
 			[
 				'total_installed' => count( $installed ),
-				'names'           => implode( ', ', array_filter( $names ) ),
+				'names'           => $listed,
+				'names_omitted'   => $omitted,
 			]
 		);
 	}
@@ -155,7 +193,6 @@ final class PluginThemeInspector {
 
 		$inactive_default = 0;
 		$removable        = [];
-		$count            = 0;
 
 		foreach ( $themes as $stylesheet => $theme ) {
 			$stylesheet = (string) $stylesheet;
@@ -171,13 +208,12 @@ final class PluginThemeInspector {
 				continue;
 			}
 
-			++$count;
-
-			if ( count( $removable ) < self::MAX_LISTED ) {
-				$name        = $theme->get( 'Name' );
-				$removable[] = is_string( $name ) && '' !== $name ? $name : $stylesheet;
-			}
+			$name        = $theme->get( 'Name' );
+			$removable[] = is_string( $name ) && '' !== $name ? $name : $stylesheet;
 		}
+
+		$count                = count( $removable );
+		[ $listed, $omitted ] = $this->cap( $removable );
 
 		if ( 0 === $count ) {
 			return new HealthCheck(
@@ -192,6 +228,8 @@ final class PluginThemeInspector {
 				[
 					'total_installed'  => count( $themes ),
 					'default_retained' => $inactive_default,
+					'names'            => [],
+					'names_omitted'    => 0,
 				]
 			);
 		}
@@ -202,11 +240,23 @@ final class PluginThemeInspector {
 			__( 'Inactive themes', 'fanxie-wp-core' ),
 			HealthCheck::STATUS_WARNING,
 			(string) $count,
-			sprintf(
-				/* translators: %d: number of inactive non-default themes. */
-				_n( '%d unused theme is installed.', '%d unused themes are installed.', $count, 'fanxie-wp-core' ),
-				$count
-			),
+			$count <= self::MAX_NAMED_INLINE
+				? sprintf(
+					/* translators: 1: number of inactive non-default themes, 2: comma-separated list of those theme names (e.g. "Twenty Twenty-Three, Twenty Twenty-Two"). */
+					_n(
+						'%1$d unused theme is installed: %2$s.',
+						'%1$d unused themes are installed: %2$s.',
+						$count,
+						'fanxie-wp-core'
+					),
+					$count,
+					$this->join_names( $listed )
+				)
+				: sprintf(
+					/* translators: %d: number of inactive non-default themes. */
+					_n( '%d unused theme is installed.', '%d unused themes are installed.', $count, 'fanxie-wp-core' ),
+					$count
+				),
 			__( 'Unused themes are attack surface with no upside, and their template files have historically been a source of vulnerabilities. Keep the active theme, its parent if it has one, and one current WordPress default as a recovery fallback — delete the rest.', 'fanxie-wp-core' ),
 			[
 				HealthCheck::link( admin_url( 'themes.php' ), __( 'Review installed themes', 'fanxie-wp-core' ) ),
@@ -214,7 +264,8 @@ final class PluginThemeInspector {
 			[
 				'total_installed'  => count( $themes ),
 				'default_retained' => $inactive_default,
-				'names'            => implode( ', ', $removable ),
+				'names'            => $listed,
+				'names_omitted'    => $omitted,
 			]
 		);
 	}
@@ -252,6 +303,7 @@ final class PluginThemeInspector {
 		$warning_after  = $this->threshold( 'abandoned_warning_days', 365 );
 		$critical_after = $this->threshold( 'abandoned_critical_days', 730 );
 
+		$names        = $this->plugin_names_by_slug();
 		$critical     = [];
 		$warning      = [];
 		$not_on_wporg = 0;
@@ -279,22 +331,27 @@ final class PluginThemeInspector {
 			$age_days = (int) floor( ( $now - $entry['last_updated'] ) / DAY_IN_SECONDS );
 
 			if ( $age_days >= $critical_after ) {
-				$critical[] = $slug;
+				$critical[] = $names[ $slug ] ?? $slug;
 			} elseif ( $age_days >= $warning_after ) {
-				$warning[] = $slug;
+				$warning[] = $names[ $slug ] ?? $slug;
 			}
 		}
 
+		[ $critical_listed, $critical_omitted ] = $this->cap( $critical );
+		[ $warning_listed, $warning_omitted ]   = $this->cap( $warning );
+
 		$meta = [
-			'enabled'        => true,
-			'checked'        => count( $slugs ) - $pending,
-			'pending'        => $pending,
-			'not_on_wporg'   => $not_on_wporg,
-			'errors'         => $errors,
-			'critical_slugs' => implode( ', ', array_slice( $critical, 0, self::MAX_LISTED ) ),
-			'warning_slugs'  => implode( ', ', array_slice( $warning, 0, self::MAX_LISTED ) ),
-			'warning_after'  => $warning_after,
-			'critical_after' => $critical_after,
+			'enabled'          => true,
+			'checked'          => count( $slugs ) - $pending,
+			'pending'          => $pending,
+			'not_on_wporg'     => $not_on_wporg,
+			'errors'           => $errors,
+			'critical_names'   => $critical_listed,
+			'critical_omitted' => $critical_omitted,
+			'warning_names'    => $warning_listed,
+			'warning_omitted'  => $warning_omitted,
+			'warning_after'    => $warning_after,
+			'critical_after'   => $critical_after,
 		];
 
 		if ( [] !== $critical || [] !== $warning ) {
@@ -307,16 +364,28 @@ final class PluginThemeInspector {
 				$label,
 				$status,
 				(string) $count,
-				sprintf(
-					/* translators: %d: number of stale active plugins. */
-					_n(
-						'%d active plugin has not been updated in over a year.',
-						'%d active plugins have not been updated in over a year.',
+				$count <= self::MAX_NAMED_INLINE
+					? sprintf(
+						/* translators: 1: number of stale active plugins, 2: comma-separated list of those plugin names (e.g. "Contact Form 7, Akismet"). */
+						_n(
+							'%1$d active plugin has not been updated in over a year: %2$s.',
+							'%1$d active plugins have not been updated in over a year: %2$s.',
+							$count,
+							'fanxie-wp-core'
+						),
 						$count,
-						'fanxie-wp-core'
+						$this->join_names( array_merge( $critical_listed, $warning_listed ) )
+					)
+					: sprintf(
+						/* translators: %d: number of stale active plugins. */
+						_n(
+							'%d active plugin has not been updated in over a year.',
+							'%d active plugins have not been updated in over a year.',
+							$count,
+							'fanxie-wp-core'
+						),
+						$count
 					),
-					$count
-				),
 				__( 'An unmaintained plugin will not be patched when the next vulnerability is found in it, and it will eventually break on a new PHP or WordPress release. Look for a maintained alternative before you need one urgently. Premium plugins are excluded from this check — wordpress.org has no record of them.', 'fanxie-wp-core' ),
 				[
 					HealthCheck::link( admin_url( 'plugins.php' ), __( 'Review active plugins', 'fanxie-wp-core' ) ),
@@ -364,16 +433,94 @@ final class PluginThemeInspector {
 	}
 
 	/**
+	 * Cap a name list at {@see MAX_LISTED}, reporting how many were dropped.
+	 *
+	 * The caller emits both halves: the UI needs the count of omitted names to
+	 * render a "+N more" affordance without doing arithmetic on a display
+	 * string, and a truncated list with no such marker silently lies about how
+	 * much there is to clean up.
+	 *
+	 * @param array<int, string> $names Every matching name, in display order.
+	 *
+	 * @return array{0: list<string>, 1: int} Listed names, then the count omitted.
+	 */
+	private function cap( array $names ): array {
+		$listed = array_slice( array_values( $names ), 0, self::MAX_LISTED );
+
+		return [ $listed, count( $names ) - count( $listed ) ];
+	}
+
+	/**
+	 * Join names for an inline summary sentence.
+	 *
+	 * Only ever used for {@see MAX_NAMED_INLINE} names or fewer — `meta` keeps
+	 * the list as a real array, because names legitimately contain commas and a
+	 * joined string cannot be split back apart safely.
+	 *
+	 * @param array<int, string> $names Names to join.
+	 */
+	private function join_names( array $names ): string {
+		return implode( _x( ', ', 'separator between item names in a summary sentence', 'fanxie-wp-core' ), $names );
+	}
+
+	/**
+	 * Display name for a plugin: its header `Name`, or its slug as a fallback.
+	 *
+	 * A plugin with an unreadable or empty header still has to be nameable, and
+	 * the directory slug is the next most recognisable thing about it.
+	 *
+	 * @param string               $file Plugin file, relative to the plugins directory.
+	 * @param array<string, mixed> $data Plugin header data from `get_plugins()`.
+	 */
+	private function plugin_name( string $file, array $data ): string {
+		$name = isset( $data['Name'] ) && is_string( $data['Name'] ) ? trim( $data['Name'] ) : '';
+
+		return '' !== $name ? $name : $this->slug_from_file( $file );
+	}
+
+	/**
+	 * Display names for every installed plugin, keyed by directory slug.
+	 *
+	 * The wp.org scanner works in slugs; users recognise "Contact Form 7", not
+	 * `contact-form-7`. Where two plugin files resolve to the same slug the
+	 * first wins — the alternative is inventing a distinction the user cannot
+	 * see anyway.
+	 *
+	 * @return array<string, string>
+	 */
+	private function plugin_names_by_slug(): array {
+		$map = [];
+
+		foreach ( $this->installed_plugins() as $file => $data ) {
+			$slug = $this->slug_from_file( (string) $file );
+
+			if ( '' === $slug || isset( $map[ $slug ] ) ) {
+				continue;
+			}
+
+			$map[ $slug ] = $this->plugin_name( (string) $file, $data );
+		}
+
+		return $map;
+	}
+
+	/**
 	 * Every installed plugin, keyed by plugin file.
 	 *
 	 * @return array<string, array<string, mixed>>
 	 */
 	private function installed_plugins(): array {
+		if ( null !== $this->installed_plugins_cache ) {
+			return $this->installed_plugins_cache;
+		}
+
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
-		return get_plugins();
+		$this->installed_plugins_cache = get_plugins();
+
+		return $this->installed_plugins_cache;
 	}
 
 	/**

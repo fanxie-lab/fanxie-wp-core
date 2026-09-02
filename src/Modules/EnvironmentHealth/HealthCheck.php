@@ -26,8 +26,14 @@ defined( 'ABSPATH' ) || exit;
  *     summary:     string,   // translated one-liner
  *     detail:      string,   // translated prose, may be ''
  *     remediation: Array<Snippet | Link>,
- *     meta:        Record<string, scalar|null>
+ *     meta:        Record<string, scalar | null | Array<string>>
  *   }
+ *
+ * A `meta` value is either a scalar (a count, a threshold, a flag) or a flat
+ * list of strings (names the UI lists out — plugin titles, theme titles).
+ * Lists are emitted as real arrays, never as a joined string: plugin and theme
+ * names legitimately contain commas, so a client cannot split a joined string
+ * back apart without corrupting names.
  *
  * `status` and `group` are closed enums: nothing outside the constants below
  * is ever emitted. Remediation `code` is deliberately NOT translated —
@@ -137,15 +143,15 @@ final class HealthCheck {
 	/**
 	 * Constructor.
 	 *
-	 * @param string                            $id          Stable snake_case key.
-	 * @param string                            $group       One of `self::ALL_GROUPS`.
-	 * @param string                            $label       Translated check name.
-	 * @param string                            $status      One of `self::ALL_STATUSES`.
-	 * @param string                            $value       Display-ready observed value.
-	 * @param string                            $summary     Translated one-line verdict.
-	 * @param string                            $detail      Translated longer prose ('' when unused).
-	 * @param array<int, array<string, string>> $remediation Ordered remediation entries.
-	 * @param array<string, scalar|null>        $meta        Check-specific scalar map.
+	 * @param string                                  $id          Stable snake_case key.
+	 * @param string                                  $group       One of `self::ALL_GROUPS`.
+	 * @param string                                  $label       Translated check name.
+	 * @param string                                  $status      One of `self::ALL_STATUSES`.
+	 * @param string                                  $value       Display-ready observed value.
+	 * @param string                                  $summary     Translated one-line verdict.
+	 * @param string                                  $detail      Translated longer prose ('' when unused).
+	 * @param array<int, array<string, string>>       $remediation Ordered remediation entries.
+	 * @param array<string, scalar|null|list<string>> $meta        Check-specific map of scalars and string lists.
 	 */
 	public function __construct(
 		public readonly string $id,

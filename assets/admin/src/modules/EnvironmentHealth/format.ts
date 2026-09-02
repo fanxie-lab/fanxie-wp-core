@@ -206,6 +206,182 @@ export function isSafeUrl(url: string): boolean {
   }
 }
 
+// --- Meta lists -------------------------------------------------------------
+
+/**
+ * One named list of items lifted out of a check's `meta`.
+ *
+ * Exists because the summary sentence can only name a handful of items before
+ * it stops being a sentence: PHP spells out three or fewer inline and falls
+ * back to a bare count above that, so the expanded row is the *only* place a
+ * long list can actually be read. Rendering it is the point, not a garnish.
+ */
+export interface MetaList {
+  /** Stable render key — the `meta` key the items came from. */
+  key: string;
+  /** Heading for the list. Our own chrome, so authored here, not sent by PHP. */
+  label: string;
+  /**
+   * Optional severity tint. Never the only signal: the label text itself says
+   * "Critical" / "Warning", so a tone of `null` loses nothing but colour.
+   */
+  tone: 'warn' | 'critical' | null;
+  /** The names, in the order PHP sent them. Never empty — see buildMetaLists. */
+  items: string[];
+  /** How many items the server dropped past its cap. Always >= 0. */
+  omitted: number;
+}
+
+/** Where one renderable list lives inside a check's `meta`. */
+interface MetaListSpec {
+  namesKey: string;
+  omittedKey: string;
+  label: string;
+  tone: 'warn' | 'critical' | null;
+}
+
+/**
+ * Which `meta` keys carry a renderable list, per check id.
+ *
+ * A table rather than a naming convention because the convention is not
+ * actually uniform on the wire (`names` pairs with `names_omitted`, but
+ * `critical_names` pairs with `critical_omitted`), and because the heading has
+ * to come from somewhere regardless. Adding a Phase 3 check is one row here —
+ * the renderer itself knows nothing about plugins or themes.
+ *
+ * `abandoned_plugins` is split into two entries on purpose. Merging them would
+ * throw away the one thing that check exists to say: some of these plugins are
+ * further gone than others.
+ */
+const META_LIST_SPECS: Readonly<Record<string, readonly MetaListSpec[]>> = {
+  inactive_plugins: [
+    {
+      namesKey: 'names',
+      omittedKey: 'names_omitted',
+      label: 'Inactive plugins',
+      tone: null,
+    },
+  ],
+  inactive_themes: [
+    {
+      namesKey: 'names',
+      omittedKey: 'names_omitted',
+      label: 'Unused themes',
+      tone: null,
+    },
+  ],
+  abandoned_plugins: [
+    {
+      namesKey: 'critical_names',
+      omittedKey: 'critical_omitted',
+      label: 'Critical',
+      tone: 'critical',
+    },
+    {
+      namesKey: 'warning_names',
+      omittedKey: 'warning_omitted',
+      label: 'Warning',
+      tone: 'warn',
+    },
+  ],
+};
+
+/** Widen an unknown value to an array without letting `any` leak out of it. */
+function asUnknownArray(value: unknown): unknown[] | null {
+  return Array.isArray(value) ? (value as unknown[]) : null;
+}
+
+/**
+ * Read a `meta` key as a list of names.
+ *
+ * `meta` is decoded JSON, so its declared type is a contract rather than a
+ * guarantee — every branch here is a real possibility on the wire. A key that
+ * is missing, holds a scalar where an array was promised, or holds an array of
+ * the wrong thing all collapse to the same answer: an empty list, which the
+ * caller renders as nothing at all. One malformed check must not take down the
+ * whole report.
+ *
+ * Entries are trimmed and blanks dropped (PHP's own `array_filter` does the
+ * same), but nothing is ever split: a name containing a comma is one item.
+ */
+export function readMetaNames(
+  meta: Record<string, unknown> | undefined,
+  key: string,
+): string[] {
+  if (meta === undefined) return [];
+
+  const raw = asUnknownArray(meta[key]);
+  if (raw === null) return [];
+
+  const names: string[] = [];
+  for (const entry of raw) {
+    if (typeof entry !== 'string') continue;
+    const trimmed = entry.trim();
+    if (trimmed !== '') names.push(trimmed);
+  }
+  return names;
+}
+
+/**
+ * Read a `meta` key as a non-negative integer count.
+ *
+ * Used for the `*_omitted` counters, which exist precisely so the UI never has
+ * to derive "+N more" by subtracting a rendered list length from a display
+ * string. Anything that is not a finite number reads as 0 — i.e. "nothing was
+ * dropped", the same answer a missing key gives, which is the safe way to be
+ * wrong: at worst the truncation notice is absent, never invented.
+ */
+export function readMetaCount(
+  meta: Record<string, unknown> | undefined,
+  key: string,
+): number {
+  if (meta === undefined) return 0;
+
+  const raw = meta[key];
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
+
+  return Math.max(0, Math.floor(raw));
+}
+
+/**
+ * Every renderable list on a check, in spec order.
+ *
+ * A list with no items is omitted entirely rather than returned empty: an
+ * empty array on the wire is a real answer ("nothing to show"), and it must
+ * produce no heading and no container, not an empty one.
+ */
+export function buildMetaLists(check: HealthCheck): MetaList[] {
+  const specs = META_LIST_SPECS[check.id];
+  if (specs === undefined) return [];
+
+  const lists: MetaList[] = [];
+  for (const spec of specs) {
+    const items = readMetaNames(check.meta, spec.namesKey);
+    if (items.length === 0) continue;
+
+    lists.push({
+      key: spec.namesKey,
+      label: spec.label,
+      tone: spec.tone,
+      items,
+      omitted: readMetaCount(check.meta, spec.omittedKey),
+    });
+  }
+  return lists;
+}
+
+/**
+ * Wording for the truncation notice, or `''` when nothing was dropped.
+ *
+ * Truncation is never silent: without this the rendered list would quietly
+ * disagree with the count in the row's `value`, and the reader would have no
+ * way to tell a short list from a capped one.
+ */
+export function formatOmitted(omitted: number): string {
+  if (!Number.isFinite(omitted) || omitted <= 0) return '';
+  return `and ${String(Math.floor(omitted))} more`;
+}
+
 // --- Threshold bounds -------------------------------------------------------
 
 /** Min/max/step for one numeric threshold field. */

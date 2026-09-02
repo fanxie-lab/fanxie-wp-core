@@ -72,6 +72,7 @@ final class PluginThemeInspectorTest extends TestCase {
 		Functions\when( '_n' )->alias(
 			static fn ( $single, $plural, $number ) => 1 === (int) $number ? $single : $plural
 		);
+		Functions\when( '_x' )->returnArg( 1 );
 		Functions\when( 'esc_url_raw' )->returnArg( 1 );
 		Functions\when( 'admin_url' )->alias( static fn ( $path = '' ) => 'https://example.test/wp-admin/' . (string) $path );
 		Functions\when( 'is_multisite' )->justReturn( false );
@@ -132,6 +133,34 @@ final class PluginThemeInspectorTest extends TestCase {
 		];
 	}
 
+	/**
+	 * Install one active plugin plus N inactive ones named "Dormant N".
+	 *
+	 * @param int $count How many inactive plugins to install.
+	 */
+	private function install_inactive_plugins( int $count ): void {
+		$this->installed = [ 'active/active.php' => [ 'Name' => 'Active Plugin' ] ];
+
+		for ( $i = 1; $i <= $count; $i++ ) {
+			$this->installed[ "dormant-{$i}/dormant.php" ] = [ 'Name' => "Dormant {$i}" ];
+		}
+
+		$this->options['active_plugins'] = [ 'active/active.php' ];
+	}
+
+	/**
+	 * Install the active theme plus N unused ones named "Dormant N".
+	 *
+	 * @param int $count How many unused themes to install.
+	 */
+	private function install_inactive_themes( int $count ): void {
+		$this->themes = [ 'acme-theme' => $this->active_theme ];
+
+		for ( $i = 1; $i <= $count; $i++ ) {
+			$this->themes[ "dormant-{$i}" ] = new WP_Theme( "dormant-{$i}", "Dormant {$i}" );
+		}
+	}
+
 	public function test_all_plugins_active_passes(): void {
 		$this->installed              = [ 'akismet/akismet.php' => [ 'Name' => 'Akismet' ] ];
 		$this->options['active_plugins'] = [ 'akismet/akismet.php' ];
@@ -140,6 +169,8 @@ final class PluginThemeInspectorTest extends TestCase {
 
 		$this->assertSame( HealthCheck::STATUS_OK, $check->status );
 		$this->assertSame( '0', $check->value );
+		$this->assertSame( [], $check->meta['names'] );
+		$this->assertSame( 0, $check->meta['names_omitted'] );
 	}
 
 	public function test_an_installed_but_inactive_plugin_warns_and_is_named(): void {
@@ -153,8 +184,71 @@ final class PluginThemeInspectorTest extends TestCase {
 
 		$this->assertSame( HealthCheck::STATUS_WARNING, $check->status );
 		$this->assertSame( '1', $check->value );
-		$this->assertSame( 'Old Thing', $check->meta['names'] );
+		$this->assertSame( [ 'Old Thing' ], $check->meta['names'] );
+		$this->assertSame( 0, $check->meta['names_omitted'] );
 		$this->assertSame( 2, $check->meta['total_installed'] );
+		$this->assertSame( '1 installed plugin is not active: Old Thing.', $check->summary );
+	}
+
+	public function test_a_short_inactive_plugin_list_is_named_in_the_summary(): void {
+		$this->install_inactive_plugins( 2 );
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_plugins' );
+
+		$this->assertSame( '2 installed plugins are not active: Dormant 1, Dormant 2.', $check->summary );
+	}
+
+	public function test_a_long_inactive_plugin_list_summarises_by_count_alone(): void {
+		$this->install_inactive_plugins( 4 );
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_plugins' );
+
+		$this->assertSame( '4 installed plugins are not active.', $check->summary );
+		$this->assertCount( 4, $check->meta['names'] );
+	}
+
+	public function test_exactly_fifteen_inactive_plugins_are_listed_with_nothing_omitted(): void {
+		$this->install_inactive_plugins( 15 );
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_plugins' );
+
+		$this->assertSame( '15', $check->value );
+		$this->assertCount( 15, $check->meta['names'] );
+		$this->assertSame( 0, $check->meta['names_omitted'] );
+	}
+
+	public function test_a_longer_inactive_plugin_list_is_capped_and_reports_what_it_dropped(): void {
+		$this->install_inactive_plugins( 20 );
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_plugins' );
+
+		$this->assertSame( '20', $check->value );
+		$this->assertCount( 15, $check->meta['names'] );
+		$this->assertSame( 5, $check->meta['names_omitted'] );
+		$this->assertSame( 'Dormant 1', $check->meta['names'][0] );
+		$this->assertSame( 'Dormant 15', $check->meta['names'][14] );
+	}
+
+	public function test_a_plugin_name_containing_a_comma_stays_one_list_entry(): void {
+		$this->installed = [
+			'active/active.php' => [ 'Name' => 'Active Plugin' ],
+			'sfs/sfs.php'       => [ 'Name' => 'Search, Filter & Sort' ],
+			'other/other.php'   => [ 'Name' => 'Other Thing' ],
+		];
+
+		$this->options['active_plugins'] = [ 'active/active.php' ];
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_plugins' );
+
+		$this->assertSame( [ 'Search, Filter & Sort', 'Other Thing' ], $check->meta['names'] );
+	}
+
+	public function test_a_plugin_with_no_readable_header_is_listed_by_its_slug(): void {
+		$this->installed = [ 'mystery/mystery.php' => [] ];
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_plugins' );
+
+		$this->assertSame( [ 'mystery' ], $check->meta['names'] );
 	}
 
 	public function test_active_plugin_slugs_are_derived_from_the_directory_name(): void {
@@ -173,6 +267,8 @@ final class PluginThemeInspectorTest extends TestCase {
 
 		$this->assertSame( HealthCheck::STATUS_OK, $check->status );
 		$this->assertSame( 1, $check->meta['default_retained'] );
+		$this->assertSame( [], $check->meta['names'] );
+		$this->assertSame( 0, $check->meta['names_omitted'] );
 	}
 
 	public function test_an_unused_non_default_theme_warns(): void {
@@ -184,7 +280,57 @@ final class PluginThemeInspectorTest extends TestCase {
 		$check = $this->find( $this->inspector()->checks(), 'inactive_themes' );
 
 		$this->assertSame( HealthCheck::STATUS_WARNING, $check->status );
-		$this->assertSame( 'Old Theme', $check->meta['names'] );
+		$this->assertSame( [ 'Old Theme' ], $check->meta['names'] );
+		$this->assertSame( 0, $check->meta['names_omitted'] );
+		$this->assertSame( '1 unused theme is installed: Old Theme.', $check->summary );
+	}
+
+	public function test_a_short_unused_theme_list_is_named_in_the_summary(): void {
+		$this->install_inactive_themes( 2 );
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_themes' );
+
+		$this->assertSame( '2 unused themes are installed: Dormant 1, Dormant 2.', $check->summary );
+	}
+
+	public function test_a_long_unused_theme_list_summarises_by_count_alone(): void {
+		$this->install_inactive_themes( 4 );
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_themes' );
+
+		$this->assertSame( '4 unused themes are installed.', $check->summary );
+	}
+
+	public function test_exactly_fifteen_unused_themes_are_listed_with_nothing_omitted(): void {
+		$this->install_inactive_themes( 15 );
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_themes' );
+
+		$this->assertSame( '15', $check->value );
+		$this->assertCount( 15, $check->meta['names'] );
+		$this->assertSame( 0, $check->meta['names_omitted'] );
+	}
+
+	public function test_a_longer_unused_theme_list_is_capped_and_reports_what_it_dropped(): void {
+		$this->install_inactive_themes( 20 );
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_themes' );
+
+		$this->assertSame( '20', $check->value );
+		$this->assertCount( 15, $check->meta['names'] );
+		$this->assertSame( 5, $check->meta['names_omitted'] );
+	}
+
+	public function test_a_theme_name_containing_a_comma_stays_one_list_entry(): void {
+		$this->themes = [
+			'acme-theme' => $this->active_theme,
+			'old-theme'  => new WP_Theme( 'old-theme', 'Bold, Bright' ),
+			'older'      => new WP_Theme( 'older', 'Older' ),
+		];
+
+		$check = $this->find( $this->inspector()->checks(), 'inactive_themes' );
+
+		$this->assertSame( [ 'Bold, Bright', 'Older' ], $check->meta['names'] );
 	}
 
 	public function test_a_child_themes_parent_is_never_flagged(): void {
@@ -209,7 +355,57 @@ final class PluginThemeInspectorTest extends TestCase {
 		);
 
 		$this->assertSame( HealthCheck::STATUS_CRITICAL, $check->status );
-		$this->assertSame( 'stale', $check->meta['critical_slugs'] );
+		$this->assertSame( [ 'stale' ], $check->meta['critical_names'] );
+		$this->assertSame( 0, $check->meta['critical_omitted'] );
+	}
+
+	public function test_an_abandoned_plugin_is_named_by_its_header_not_its_slug(): void {
+		$this->installed = [ 'contact-form-7/wp-contact-form-7.php' => [ 'Name' => 'Contact Form 7' ] ];
+
+		$this->options['active_plugins'] = [ 'contact-form-7/wp-contact-form-7.php' ];
+
+		$check = $this->find(
+			$this->inspector( [], [ 'contact-form-7' => $this->updated_days_ago( 900 ) ] )->checks(),
+			'abandoned_plugins'
+		);
+
+		$this->assertSame( [ 'Contact Form 7' ], $check->meta['critical_names'] );
+		$this->assertSame( '1 active plugin has not been updated in over a year: Contact Form 7.', $check->summary );
+	}
+
+	public function test_an_abandoned_plugin_falls_back_to_its_slug_when_no_header_is_available(): void {
+		// Active, but absent from `get_plugins()` — an unreadable or
+		// half-removed plugin directory still has to be nameable.
+		$this->options['active_plugins'] = [ 'ghost/ghost.php' ];
+
+		$check = $this->find(
+			$this->inspector( [], [ 'ghost' => $this->updated_days_ago( 900 ) ] )->checks(),
+			'abandoned_plugins'
+		);
+
+		$this->assertSame( [ 'ghost' ], $check->meta['critical_names'] );
+	}
+
+	public function test_the_abandoned_plugin_lists_are_capped_and_report_what_they_dropped(): void {
+		$active  = [];
+		$results = [];
+
+		for ( $i = 1; $i <= 20; $i++ ) {
+			$file                     = "stale-{$i}/stale-{$i}.php";
+			$active[]                 = $file;
+			$this->installed[ $file ] = [ 'Name' => "Stale {$i}" ];
+			$results[ "stale-{$i}" ]  = $this->updated_days_ago( 900 );
+		}
+
+		$this->options['active_plugins'] = $active;
+
+		$check = $this->find( $this->inspector( [], $results )->checks(), 'abandoned_plugins' );
+
+		$this->assertCount( 15, $check->meta['critical_names'] );
+		$this->assertSame( 5, $check->meta['critical_omitted'] );
+		$this->assertSame( [], $check->meta['warning_names'] );
+		$this->assertSame( 0, $check->meta['warning_omitted'] );
+		$this->assertSame( '20 active plugins have not been updated in over a year.', $check->summary );
 	}
 
 	public function test_a_plugin_stale_for_a_year_only_warns(): void {
@@ -221,7 +417,8 @@ final class PluginThemeInspectorTest extends TestCase {
 		);
 
 		$this->assertSame( HealthCheck::STATUS_WARNING, $check->status );
-		$this->assertSame( 'ageing', $check->meta['warning_slugs'] );
+		$this->assertSame( [ 'ageing' ], $check->meta['warning_names'] );
+		$this->assertSame( 0, $check->meta['warning_omitted'] );
 	}
 
 	public function test_a_recently_updated_plugin_passes(): void {
@@ -256,7 +453,8 @@ final class PluginThemeInspectorTest extends TestCase {
 
 		$this->assertSame( HealthCheck::STATUS_OK, $check->status );
 		$this->assertSame( 1, $check->meta['not_on_wporg'] );
-		$this->assertSame( '', $check->meta['critical_slugs'] );
+		$this->assertSame( [], $check->meta['critical_names'] );
+		$this->assertSame( [], $check->meta['warning_names'] );
 	}
 
 	public function test_a_failed_lookup_is_counted_as_an_error_not_as_abandoned(): void {

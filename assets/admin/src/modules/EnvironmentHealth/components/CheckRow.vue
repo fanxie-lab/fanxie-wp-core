@@ -2,7 +2,8 @@
 import { computed, ref, useId } from 'vue';
 import { ChevronDown, ExternalLink } from 'lucide-vue-next';
 import { CodeSnippet, StatusPill } from '@/components';
-import { isSafeUrl, statusPill } from '../format';
+import CheckMetaList from './CheckMetaList.vue';
+import { buildMetaLists, isSafeUrl, statusPill } from '../format';
 import type { HealthCheck, Remediation } from '../types';
 
 /**
@@ -11,7 +12,7 @@ import type { HealthCheck, Remediation } from '../types';
  *   [pill]  PHP version                                     8.2.14
  *           Running a supported PHP release.
  *           [ Details ▾ ]
- *           └─ detail paragraph + copy-paste-ready remediation
+ *           └─ detail paragraph + affected items + copy-paste-ready remediation
  *
  * Why this is not the Hardening `ChecklistItem`: that row is control-first
  * (a Toggle owns the left column) and deliberately suppresses its pill for the
@@ -53,8 +54,22 @@ const remediations = computed<Remediation[]>(() =>
   }),
 );
 
+/**
+ * Named lists lifted out of `meta` — the inactive plugins, the unused themes,
+ * the abandoned plugins split by severity.
+ *
+ * PHP names items inline only while there are three or fewer of them and falls
+ * back to a bare count above that, so for any list worth reading this region
+ * is the only place the names appear at all. Malformed or absent `meta`
+ * degrades to no lists rather than an error (see `buildMetaLists`).
+ */
+const metaLists = computed(() => buildMetaLists(props.check));
+
 const hasDetail = computed<boolean>(
-  () => Boolean(props.check.detail) || remediations.value.length > 0,
+  () =>
+    Boolean(props.check.detail) ||
+    metaLists.value.length > 0 ||
+    remediations.value.length > 0,
 );
 
 function toggleDetail(): void {
@@ -131,6 +146,23 @@ function onCopyFailed(message: string): void {
       <p v-if="check.detail" class="fx-eh-row__detail-text">
         {{ check.detail }}
       </p>
+
+      <!--
+        Between the explanation and the fix: "here is why it matters", "here is
+        what it applies to", "here is what to do". Each list is a plain
+        (label, items, omitted) triple, so a Phase 3 check that reports names
+        gets rendered here with no change to this component.
+      -->
+      <div v-if="metaLists.length" class="fx-eh-row__lists">
+        <CheckMetaList
+          v-for="list in metaLists"
+          :key="list.key"
+          :label="list.label"
+          :items="list.items"
+          :omitted="list.omitted"
+          :tone="list.tone"
+        />
+      </div>
 
       <div v-if="remediations.length" class="fx-eh-row__remediation">
         <p class="fx-eh-row__remediation-title">Recommended action</p>
@@ -302,6 +334,14 @@ function onCopyFailed(message: string): void {
   font-size: var(--fx-font-size-sm);
   line-height: var(--fx-line-height-normal);
   max-width: 68ch;
+}
+
+/* Two lists (abandoned plugins' critical + warning groups) sit as separate
+   labelled blocks rather than one merged list — the split *is* the finding. */
+.fx-eh-row__lists {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fx-space-3);
 }
 
 .fx-eh-row__remediation {

@@ -74,6 +74,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   through the shared `ConfirmDialog` — behind a tab the SaveBar is no longer
   always on screen, so dirty state could otherwise be lost silently; discarding
   resets the store rather than leaving the edits to reappear or be saved later.
+- Environment Health plugin/theme checks now name the offending items instead of
+  only counting them: "2 unused themes are installed: Twenty Twenty-Three, Twenty
+  Twenty-Two." Up to three are named inline; longer lists fall back to a count and
+  are shown in full in the row's expanded detail. Abandoned plugins report their
+  human-readable header name rather than a directory slug, split into separate
+  critical and warning lists. The names were already being collected into `meta`
+  and discarded unrendered.
+- Check `meta` widened from a flat scalar map to allow `list<string>`. The names
+  were previously comma-joined into a string, which cannot be split back apart
+  safely because plugin and theme names legitimately contain commas. Lists are
+  capped at 15 with a companion `*_omitted` count, so a truncated list can no
+  longer silently disagree with the count beside it.
 - Shared `CodeSnippet` component promoted out of Environment Health and adopted by
   Hardening, which fixes a pre-existing accessibility bug: Hardening's copy button
   confirmed only via a silent icon swap, with no `aria-live` announcement.

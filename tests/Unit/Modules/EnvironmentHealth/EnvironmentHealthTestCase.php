@@ -148,6 +148,7 @@ abstract class EnvironmentHealthTestCase extends TestCase {
 		Functions\when( '_n' )->alias(
 			static fn ( $single, $plural, $number ) => 1 === (int) $number ? $single : $plural
 		);
+		Functions\when( '_x' )->returnArg( 1 );
 		Functions\when( 'esc_url_raw' )->returnArg( 1 );
 		Functions\when( 'sanitize_key' )->alias( static fn ( $v ) => strtolower( preg_replace( '/[^a-z0-9_\-]/i', '', (string) $v ) ?? '' ) );
 		Functions\when( 'sanitize_text_field' )->alias( static fn ( $v ) => is_string( $v ) ? trim( $v ) : '' );
@@ -324,6 +325,28 @@ abstract class EnvironmentHealthTestCase extends TestCase {
 			$this->assertIsString( $check['id'] );
 			$this->assertIsArray( $check['remediation'] );
 			$this->assertIsArray( $check['meta'] );
+
+			// `meta` is a map of scalars, nulls, and flat lists of strings —
+			// nothing deeper. Names are lists rather than joined strings so a
+			// name containing a comma survives the trip to the client.
+			foreach ( $check['meta'] as $key => $value ) {
+				$this->assertIsString( $key );
+
+				if ( is_array( $value ) ) {
+					$this->assertSame( array_values( $value ), $value, "meta[{$key}] must be a list." );
+
+					foreach ( $value as $item ) {
+						$this->assertIsString( $item, "meta[{$key}] must hold strings." );
+					}
+
+					continue;
+				}
+
+				$this->assertTrue(
+					null === $value || is_scalar( $value ),
+					"meta[{$key}] must be a scalar, null, or a list of strings."
+				);
+			}
 		}
 	}
 }

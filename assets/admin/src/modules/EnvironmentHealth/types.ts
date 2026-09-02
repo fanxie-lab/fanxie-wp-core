@@ -55,8 +55,30 @@ export interface HealthCheck {
   /** Longer explanation shown in the expanded region. Pre-translated by PHP. */
   detail?: string;
   remediation?: Remediation[];
-  /** Opaque extra data. Not rendered — reserved for future rows. */
-  meta?: Record<string, string | number | boolean | null>;
+  /**
+   * Extra structured data about the finding, keyed by whatever the emitting
+   * check chose to send.
+   *
+   * Deliberately loose, and deliberately NOT to be trusted as declared: this
+   * arrives as decoded JSON from PHP, so the declared union describes the
+   * contract, not a guarantee. Read it through the narrowing helpers in
+   * `format.ts` (`readMetaNames` / `readMetaCount`) rather than indexing it
+   * directly — a key that arrives with the wrong type must degrade to
+   * "render nothing", never throw and take the whole report down with it.
+   *
+   * `string[]` is in the union so a check can hand over a real list of names.
+   * Names routinely contain commas ("Foo, Inc. Toolkit"), which is exactly why
+   * the wire format is an array and not a pre-joined string — nothing on this
+   * side may re-join or re-split it. Lists are capped server-side; the
+   * companion `*_omitted` count says how many were dropped.
+   *
+   * Keys currently sent (see `Runtime/PluginThemeInspector.php`):
+   *   inactive_plugins  → names, names_omitted
+   *   inactive_themes   → names, names_omitted
+   *   abandoned_plugins → critical_names, critical_omitted,
+   *                       warning_names,  warning_omitted
+   */
+  meta?: Record<string, string | number | boolean | null | string[]>;
 }
 
 /** Per-status tallies across the whole report. */
