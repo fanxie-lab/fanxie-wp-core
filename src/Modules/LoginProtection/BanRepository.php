@@ -44,21 +44,33 @@ final class BanRepository implements BanStore {
 	public const TABLE_BASENAME = 'fanxie_core_login_bans';
 
 	/**
-	 * Fully-qualified table name, resolved lazily.
+	 * Fully-qualified table name, resolved once at construction.
 	 *
-	 * @var string|null
+	 * Resolved from `$wpdb->prefix` plus the class constant above, so the
+	 * value can never contain anything a request could influence. Query
+	 * builders below read this property directly rather than calling
+	 * `table_name()` — a `$this->table` property read is provably
+	 * request-independent to a reader and to static analysis alike,
+	 * whereas an accessor call is opaque to both.
+	 *
+	 * @var string
 	 */
-	private ?string $table = null;
+	private readonly string $table;
+
+	/**
+	 * Resolve the table name from the active `$wpdb` prefix.
+	 */
+	public function __construct() {
+		global $wpdb;
+
+		$prefix      = isset( $wpdb ) && is_object( $wpdb ) && isset( $wpdb->prefix ) ? (string) $wpdb->prefix : 'wp_';
+		$this->table = $prefix . self::TABLE_BASENAME;
+	}
 
 	/**
 	 * Expose the resolved table name — handy for diagnostics + tests.
 	 */
 	public function table_name(): string {
-		if ( null === $this->table ) {
-			global $wpdb;
-			$prefix      = isset( $wpdb ) && is_object( $wpdb ) && isset( $wpdb->prefix ) ? (string) $wpdb->prefix : 'wp_';
-			$this->table = $prefix . self::TABLE_BASENAME;
-		}
 		return $this->table;
 	}
 
@@ -77,7 +89,7 @@ final class BanRepository implements BanStore {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-		$table           = $this->table_name();
+		$table           = $this->table;
 		$charset_collate = $wpdb->get_charset_collate();
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
@@ -126,7 +138,7 @@ final class BanRepository implements BanStore {
 		$wpdb->query(
 			$wpdb->prepare(
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is a private property.
-				"INSERT INTO {$this->table_name()} (subject_type, subject_value, reason, expires_at, created_at)
+				"INSERT INTO {$this->table} (subject_type, subject_value, reason, expires_at, created_at)
 				 VALUES (%s, %s, NULLIF(%s, ''), NULLIF(%s, ''), %s)
 				 ON DUPLICATE KEY UPDATE reason = NULLIF(%s, ''), expires_at = NULLIF(%s, '')",
 				substr( $subject_type, 0, 16 ),
@@ -153,7 +165,7 @@ final class BanRepository implements BanStore {
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$deleted = $wpdb->delete(
-			$this->table_name(),
+			$this->table,
 			[
 				'subject_type'  => $subject_type,
 				'subject_value' => $subject_value,
@@ -174,7 +186,7 @@ final class BanRepository implements BanStore {
 	public function is_banned( string $subject_type, string $subject_value ): bool {
 		global $wpdb;
 
-		$table = $this->table_name();
+		$table = $this->table;
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$id = $wpdb->get_var(
@@ -201,7 +213,7 @@ final class BanRepository implements BanStore {
 	public function query( int $page = 1, int $per_page = 25 ): array {
 		global $wpdb;
 
-		$table    = $this->table_name();
+		$table    = $this->table;
 		$page     = max( 1, $page );
 		$per_page = max( 1, min( 200, $per_page ) );
 		$offset   = ( $page - 1 ) * $per_page;
@@ -252,7 +264,7 @@ final class BanRepository implements BanStore {
 	public function prune_expired(): int {
 		global $wpdb;
 
-		$table = $this->table_name();
+		$table = $this->table;
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$deleted = $wpdb->query(

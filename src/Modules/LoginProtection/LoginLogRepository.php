@@ -48,21 +48,33 @@ final class LoginLogRepository implements LoginLogRecorder {
 	public const TABLE_BASENAME = 'fanxie_core_login_log';
 
 	/**
-	 * Fully-qualified table name, resolved lazily.
+	 * Fully-qualified table name, resolved once at construction.
 	 *
-	 * @var string|null
+	 * Resolved from `$wpdb->prefix` plus the class constant above, so the
+	 * value can never contain anything a request could influence. Query
+	 * builders below read this property directly rather than calling
+	 * `table_name()` — a `$this->table` property read is provably
+	 * request-independent to a reader and to static analysis alike,
+	 * whereas an accessor call is opaque to both.
+	 *
+	 * @var string
 	 */
-	private ?string $table = null;
+	private readonly string $table;
+
+	/**
+	 * Resolve the table name from the active `$wpdb` prefix.
+	 */
+	public function __construct() {
+		global $wpdb;
+
+		$prefix      = isset( $wpdb ) && is_object( $wpdb ) && isset( $wpdb->prefix ) ? (string) $wpdb->prefix : 'wp_';
+		$this->table = $prefix . self::TABLE_BASENAME;
+	}
 
 	/**
 	 * Expose the resolved table name — handy for diagnostics + tests.
 	 */
 	public function table_name(): string {
-		if ( null === $this->table ) {
-			global $wpdb;
-			$prefix      = isset( $wpdb ) && is_object( $wpdb ) && isset( $wpdb->prefix ) ? (string) $wpdb->prefix : 'wp_';
-			$this->table = $prefix . self::TABLE_BASENAME;
-		}
 		return $this->table;
 	}
 
@@ -81,7 +93,7 @@ final class LoginLogRepository implements LoginLogRecorder {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-		$table           = $this->table_name();
+		$table           = $this->table;
 		$charset_collate = $wpdb->get_charset_collate();
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
@@ -120,7 +132,7 @@ final class LoginLogRepository implements LoginLogRecorder {
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->insert(
-			$this->table_name(),
+			$this->table,
 			[
 				'event_type' => substr( $event_type, 0, 32 ),
 				'ip'         => substr( $ip, 0, 45 ),
@@ -146,7 +158,7 @@ final class LoginLogRepository implements LoginLogRecorder {
 	public function query( array $filters, int $page = 1, int $per_page = 25 ): array {
 		global $wpdb;
 
-		$table    = $this->table_name();
+		$table    = $this->table;
 		$page     = max( 1, $page );
 		$per_page = max( 1, min( 200, $per_page ) );
 		$offset   = ( $page - 1 ) * $per_page;
@@ -154,9 +166,20 @@ final class LoginLogRepository implements LoginLogRecorder {
 		$where  = [];
 		$params = [];
 
-		foreach ( [ 'event_type', 'ip', 'username' ] as $col ) {
+		// Each filter maps to a literal WHERE fragment rather than one built by
+		// interpolating the column name. The two forms behave identically for
+		// the three keys below, but the literal form makes it impossible for a
+		// future filter key to reach the SQL body: only the bound %s
+		// placeholders ever carry caller-supplied values.
+		$column_fragments = [
+			'event_type' => 'event_type = %s',
+			'ip'         => 'ip = %s',
+			'username'   => 'username = %s',
+		];
+
+		foreach ( $column_fragments as $col => $fragment ) {
 			if ( isset( $filters[ $col ] ) && '' !== (string) $filters[ $col ] ) {
-				$where[]  = "{$col} = %s";
+				$where[]  = $fragment;
 				$params[] = sanitize_text_field( (string) $filters[ $col ] );
 			}
 		}
@@ -227,7 +250,7 @@ final class LoginLogRepository implements LoginLogRecorder {
 	public function prune( int $older_than_days ): int {
 		global $wpdb;
 
-		$table = $this->table_name();
+		$table = $this->table;
 		$days  = max( 1, $older_than_days );
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching

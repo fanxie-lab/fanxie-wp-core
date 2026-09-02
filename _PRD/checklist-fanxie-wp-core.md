@@ -224,7 +224,23 @@ checked against php.net and endoflife.date.
 
 ## Phase 7 — wp.org Submission  *(PRD §15 phase 7)*
 
+- [ ] **BLOCKER — plugin name/slug contains "wp".** wordpress.org bans the term
+  outright in both the plugin name ("Fanxie WP Core") and the slug
+  (`fanxie-wp-core`); Plugin Check reports it as `trademarked_term` and it is a
+  hard rejection at submission, not a negotiable warning. Deferred from Phase 2
+  by explicit decision — cheapest to fix while unreleased (no site has stored
+  options under the old prefix, so no migration is owed), and the cost grows with
+  every module added. Rename surface to map before deciding: plugin name +
+  `Plugin Name:` header, slug/directory, text domain (every `__()` call),
+  `readme.txt`, PSR-4 namespace root `FanxieLab\WPCore`, option prefix
+  `fanxie_wp_core_*`, table prefix `fanxie_core_*`, hook prefix
+  `fanxie_wp_core/`, capability `manage_fanxie_wp_core`, bootstrap constants
+  `FANXIE_WP_CORE_*`, the `fx-core` CLI root (already compliant), CI workflows,
+  and the repo name.
 - [ ] Full Plugin Check **zero** errors/warnings on complete plugin
+- [ ] Build a distribution archive that excludes `tests/`, `.github/`, `node_modules/`,
+  and dev configs — most Plugin Check findings against the dev checkout come from
+  test fixtures that never ship (146 of 184 at the end of Phase 2)
 - [ ] `readme.txt` polished: short description, long description, FAQ, screenshots, changelog
 - [ ] Screenshots captured for each module tab (1544×500+ per wp.org guidance)
 - [ ] Tested with latest WP major + trunk
@@ -236,6 +252,18 @@ checked against php.net and endoflife.date.
 - [ ] Submit to wp.org; document review turnaround
 
 ---
+
+## Known issues
+
+- [ ] **Integration suite is order-fragile.** `LoginSlugGuardIntegrationTest`
+  calls `define( 'FX_CORE_LOGIN_SLUG', … )`, which leaks process-wide. Combined
+  with `executionOrder="depends,defects"` in `phpunit.xml.dist`, a stale
+  `.phpunit.cache` from a previously failed run reorders that test ahead of
+  `test_password_reset_link_is_rewritten_and_preserves_its_query`, which then
+  fails. Reproduced once at the end of Phase 2; three consecutive runs from a
+  cleared cache pass, so it is masked by ordering rather than genuinely fixed.
+  It will resurface in CI after any failing run. Fix by isolating the constant
+  (`@runInSeparateProcess`) or by dropping `defects` from the execution order.
 
 ## Cross-phase ongoing items
 

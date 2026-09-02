@@ -28,6 +28,8 @@ final class UploadsProtectorTest extends TestCase {
 
 		Functions\when( '__' )->returnArg( 1 );
 		Functions\when( 'trailingslashit' )->alias( static fn ( $v ) => rtrim( (string) $v, '/' ) . '/' );
+		Functions\when( 'sanitize_text_field' )->alias( static fn ( $v ) => is_string( $v ) ? trim( $v ) : '' );
+		Functions\when( 'wp_unslash' )->alias( static fn ( $v ) => is_string( $v ) ? stripslashes( $v ) : $v );
 
 		$this->uploads_dir = sys_get_temp_dir() . '/fanxie-uploads-' . uniqid( '', true );
 		mkdir( $this->uploads_dir, 0777, true );

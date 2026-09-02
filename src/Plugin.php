@@ -279,7 +279,6 @@ final class Plugin {
 		// which is precisely the guarantee this migration needs.
 		$this->maybe_upgrade();
 
-		add_action( 'init', [ $this, 'load_textdomain' ] );
 		add_action( 'init', [ $this, 'boot_modules' ], 5 );
 
 		$settings_page = $this->services[ SettingsPage::class ];
@@ -291,19 +290,6 @@ final class Plugin {
 		if ( $ajax_router instanceof AjaxRouter ) {
 			$ajax_router->register_hooks();
 		}
-	}
-
-	/**
-	 * Load the plugin text domain.
-	 *
-	 * Fires on `init` (WordPress 6.7+ warns if registered earlier).
-	 */
-	public function load_textdomain(): void {
-		load_plugin_textdomain(
-			'fanxie-wp-core',
-			false,
-			dirname( plugin_basename( FANXIE_WP_CORE_FILE ) ) . '/languages'
-		);
 	}
 
 	/**

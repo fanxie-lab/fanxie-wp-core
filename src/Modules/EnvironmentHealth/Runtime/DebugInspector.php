@@ -249,7 +249,12 @@ final class DebugInspector {
 	 * PHP's `error_reporting` mask.
 	 */
 	private function error_reporting_check(): HealthCheck {
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.prevent_path_disclosure_error_reporting,WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting -- read-only: called with no argument, which returns the current mask without changing it. Reporting that mask is the entire point of this check.
+		// Called with no argument, so this is the getter form: it returns the
+		// current mask and leaves it untouched. Surfacing that mask to the
+		// operator is the whole purpose of this health check (PRD 7.4), and
+		// grep for `error_reporting` across src/ confirms this is the only call
+		// site — the plugin never sets the level anywhere.
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.prevent_path_disclosure_error_reporting,WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting,PluginCheck.CodeAnalysis.PHPErrorReporting.DirectErrorReportingCall -- getter form only; see comment above.
 		$level = (int) error_reporting();
 		$noisy = 0 !== ( $level & self::NOISY_ERROR_BITS );
 

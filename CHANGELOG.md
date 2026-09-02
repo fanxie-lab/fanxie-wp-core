@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Author-enumeration guard no longer raises "Array to string conversion" on an
+  array-form probe (`?author[]=1`). Both call sites cast `$_GET['author']` to a
+  string directly; the request is now unslashed and sanitised with `map_deep`,
+  because a plain `sanitize_text_field()` returns `''` for an array and would let
+  the array-form probe through unguarded.
+- All 36 Plugin Check warnings in shipping code cleared (39 findings down to the
+  2 known `trademarked_term` warnings). The 17 `UnescapedDBParameter` reports were
+  fixed by restructuring rather than annotation: the three repositories now
+  resolve their table name once into a `private readonly string` that queries read
+  directly, and `LoginLogRepository` builds its WHERE clause from a keyed map of
+  literal fragments instead of interpolating column names. Superglobal reads gained
+  `wp_unslash()` plus the narrowest matching sanitiser throughout, and the CSP
+  report endpoint validates its client IP with `FILTER_VALIDATE_IP`. Remaining
+  suppressions are line-scoped, name a single sniff, and state a checkable reason.
+- Removed the `load_plugin_textdomain()` call: WordPress 4.6+ loads translations
+  automatically for wordpress.org-hosted plugins, and no translatable string in
+  the plugin runs before `init`.
+- `Tested up to` raised to 7.1 in both `readme.txt` and the plugin header.
+
 - Renamed the uninstall opt-in constant `FANXIE_WP_CORE_DELETE_ALL_DATA` ->
   `FX_CORE_DELETE_ALL_DATA`, bringing it in line with the `FX_CORE_*` convention
   for wp-config override constants. It was the last user-facing constant still on

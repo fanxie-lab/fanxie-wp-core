@@ -27,6 +27,28 @@ final class UserEnumerationGuardTest extends TestCase {
 		Functions\when( '__' )->returnArg( 1 );
 		Functions\when( 'esc_html__' )->returnArg( 1 );
 		Functions\when( 'sanitize_text_field' )->alias( static fn ( $v ) => is_string( $v ) ? trim( $v ) : '' );
+		Functions\when( 'wp_unslash' )->alias(
+			static function ( $value ) {
+				$strip = static function ( $item ) use ( &$strip ) {
+					if ( is_array( $item ) ) {
+						return array_map( $strip, $item );
+					}
+					return is_string( $item ) ? stripslashes( $item ) : $item;
+				};
+				return $strip( $value );
+			}
+		);
+		Functions\when( 'map_deep' )->alias(
+			static function ( $value, $callback ) {
+				$walk = static function ( $item ) use ( &$walk, $callback ) {
+					if ( is_array( $item ) ) {
+						return array_map( $walk, $item );
+					}
+					return $callback( $item );
+				};
+				return $walk( $value );
+			}
+		);
 
 		// Shim the minimal WP_REST_Request surface we need. Only define the
 		// class once per test run — Brain Monkey resets functions, not classes.
@@ -53,6 +75,32 @@ final class UserEnumerationGuardTest extends TestCase {
 
 		$_GET['author'] = '1';
 		$this->assertFalse( $guard->filter_redirect_canonical( 'https://example.test/author/foo/', 'https://example.test/?author=1' ) );
+	}
+
+	public function test_redirect_canonical_blocks_array_author_param(): void {
+		Functions\when( 'is_user_logged_in' )->justReturn( false );
+		Functions\when( 'apply_filters' )->returnArg( 2 );
+
+		$guard = new UserEnumerationGuard( [ 'user_enumeration' => [ 'block_author_archive' => true ] ] );
+
+		// `?author[]=1` is the array form of the same enumeration probe. It must
+		// still be blocked, and must not raise an "Array to string conversion"
+		// warning on the way.
+		$_GET['author'] = [ '1' ];
+		$this->assertFalse( $guard->filter_redirect_canonical( 'https://example.test/author/foo/', 'https://example.test/?author[]=1' ) );
+	}
+
+	public function test_redirect_canonical_ignores_empty_array_author_param(): void {
+		Functions\when( 'is_user_logged_in' )->justReturn( false );
+		Functions\when( 'apply_filters' )->returnArg( 2 );
+
+		$guard = new UserEnumerationGuard( [ 'user_enumeration' => [ 'block_author_archive' => true ] ] );
+
+		$_GET['author'] = [];
+		$this->assertSame(
+			'https://example.test/',
+			$guard->filter_redirect_canonical( 'https://example.test/', 'https://example.test/' )
+		);
 	}
 
 	public function test_redirect_canonical_ignored_for_logged_in_users(): void {
