@@ -284,6 +284,7 @@ Protect the login system from brute-force attacks without requiring 2FA (deferre
   - At least one number
   - At least one special character
 - Clear error messaging explaining requirements
+- 2FA Enforcement — Install WP's 2FA plugin
 
 #### 5.2.4 Admin Session Timeout
 
@@ -312,8 +313,8 @@ Protect forms from bots using Cloudflare Turnstile — privacy-friendly, GDPR-co
 
 ```php
 // Recommended wp-config.php approach
-define( 'FANXIE_TURNSTILE_SITE_KEY', 'your-site-key' );
-define( 'FANXIE_TURNSTILE_SECRET_KEY', 'your-secret-key' );
+define( 'FX_CORE_TURNSTILE_SITE_KEY', 'your-site-key' );
+define( 'FX_CORE_TURNSTILE_SECRET_KEY', 'your-secret-key' );
 ```
 
 ### 6.3 Protected Forms
@@ -1128,14 +1129,17 @@ Offload media to Cloudflare R2 (or S3-compatible) to reduce origin disk usage an
 
 ---
 
-## 18. Future Considerations (v2)
-
-- **Two-factor authentication:** TOTP-based 2FA for admin users
+## 18. Scope after first build is done (all of the above)
 - **Email notifications:** Alerts for failed login spikes, EOL software, SSL expiry
-- **DNS prefetch / preconnect hints:** Auto-detect third-party domains, inject resource hints
+- **Telemetry:** Integrate with BeaconStat (full opt-in)
 - **Google Fonts local hosting:** Detect Google Fonts CDN, offer download + local serving (GDPR)
-- **Gravatar privacy:** Option to disable or cache locally
 - **SMTP check:** Detect PHP `mail()` vs proper SMTP, surface warning
 - **Multisite support:** Network-wide settings with per-site overrides
+
+## 19. Future Considerations (v2)
+
+- **Two-factor authentication:** TOTP-based 2FA for admin users
+- **DNS prefetch / preconnect hints:** Auto-detect third-party domains, inject resource hints
+- **Gravatar privacy:** Option to disable or cache locally
 - **REST API exposure:** Authenticated endpoints for health checks
 - **White-labeling:** Allow agencies to fully rebrand

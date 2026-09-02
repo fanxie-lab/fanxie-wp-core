@@ -98,6 +98,8 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 ### 1.3b Login Protection — 2FA enforcement (follow-on)  *(→ wordpress-development-expert + frontend-expert)*
 - [ ] Enforce 2FA on top of WordPress's official Two-Factor plugin (detect/offer install, per-role enrollment enforcement + grace window). Pulled forward from v2; separate spec/plan.
 
+### 1.3c Constants (and globally) renaming: fanxie_ -> fx_
+
 ---
 
 ## Phase 2 — Bot Protection & Environment Visibility  *(PRD §6, §7)*

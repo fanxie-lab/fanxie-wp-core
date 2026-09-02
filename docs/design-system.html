@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fanxie WP Core — Admin Design System</title>
+<meta name="description" content="Design specification for the Fanxie WP Core admin SPA — tokens, typography, layout, sidebar, and components. Portable reference for recreating the look in another plugin." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lexend:wght@500;600;800&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================================
+ * FANXIE WP CORE — DESIGN TOKENS
+ * These are the exact tokens from assets/admin/src/styles/main.css.
+ * In the real plugin they are scoped under `#fanxie-wp-core-admin`; here they
+ * live on :root so the whole reference doc renders in the system it documents.
+ * ==========================================================================*/
+:root {
+  /* Brand primary (mint) */
+  --fx-color-primary: #00e298;
+  --fx-color-primary-strong: #00a870;
+  --fx-color-primary-hover: #00c785;
+  --fx-color-primary-active: #008a5c;
+  --fx-color-primary-soft: #e6fbf4;
+
+  /* Buttons — literal brand mint + black label */
+  --fx-color-button-primary: #00e298;
+  --fx-color-button-primary-hover: #00c785;
+  --fx-color-button-primary-active: #00a870;
+  --fx-color-button-primary-text: #000000;
+
+  /* Accent (mint-light) */
+  --fx-color-accent: #66f5c4;
+  --fx-color-accent-soft: #d6fbed;
+
+  /* Neutral scale (fanxielab.com light palette) */
+  --fx-color-canvas: #f7f7f5;
+  --fx-color-surface: #ffffff;
+  --fx-color-elevated: #eeeeed;
+  --fx-color-border: #d4d4d8;
+  --fx-color-border-strong: #a1a1aa;
+  --fx-color-text: #1c1c1f;
+  --fx-color-text-muted: #52525b;
+  --fx-color-text-dim: #a1a1aa;
+  --fx-color-text-inverse: #ffffff;
+
+  /* Status */
+  --fx-color-ok: #00a870;
+  --fx-color-ok-bg: #e6fbf4;
+  --fx-color-warn: #b45309;
+  --fx-color-warn-bg: #fff7ed;
+  --fx-color-critical: #d92d2d;
+  --fx-color-critical-bg: #fff1f1;
+  --fx-color-info: #0f766e;
+  --fx-color-info-bg: #ecfdf5;
+  --fx-color-neutral: #52525b;
+  --fx-color-neutral-bg: #eeeeed;
+
+  --fx-color-focus-ring: #00a870;
+
+  /* Aliases (back-compat) */
+  --fx-color-bg: var(--fx-color-canvas);
+  --fx-color-bg-subtle: var(--fx-color-elevated);
+  --fx-color-bg-raised: var(--fx-color-surface);
+
+  /* Spacing (4px grid) */
+  --fx-space-1: 0.25rem;
+  --fx-space-2: 0.5rem;
+  --fx-space-3: 0.75rem;
+  --fx-space-4: 1rem;
+  --fx-space-5: 1.5rem;
+  --fx-space-6: 2rem;
+  --fx-space-7: 3rem;
+
+  /* Radius */
+  --fx-radius-sm: 4px;
+  --fx-radius-md: 6px;
+  --fx-radius-lg: 8px;
+  --fx-radius-xl: 12px;
+  --fx-radius-pill: 999px;
+
+  /* Shadow */
+  --fx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --fx-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.06);
+  --fx-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1);
+  --fx-shadow-glow: 0 0 20px rgba(0, 226, 152, 0.25);
+
+  /* Typography */
+  --fx-font-heading: 'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --fx-font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --fx-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  --fx-font-weight-regular: 400;
+  --fx-font-weight-medium: 500;
+  --fx-font-weight-semibold: 600;
+
+  --fx-font-size-xs: 0.75rem;
+  --fx-font-size-sm: 0.8125rem;
+  --fx-font-size-md: 0.875rem;
+  --fx-font-size-lg: 1rem;
+  --fx-font-size-xl: 1.125rem;
+  --fx-font-size-2xl: 1.375rem;
+  --fx-font-size-3xl: 1.75rem;
+
+  --fx-line-height-tight: 1.2;
+  --fx-line-height-snug: 1.375;
+  --fx-line-height-normal: 1.5;
+
+  /* Motion */
+  --fx-transition-fast: 120ms ease;
+  --fx-transition-base: 200ms ease;
+
+  /* Layout */
+  --fx-sidebar-width: 16rem;
+  --fx-sidebar-width-collapsed: 3.5rem;
+  --fx-max-content-width: 64rem;
+}
+
+/* ============================================================================
+ * DOC CHROME (styles specific to this reference page)
+ * ==========================================================================*/
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  font-family: var(--fx-font-body);
+  font-size: var(--fx-font-size-md);
+  line-height: var(--fx-line-height-normal);
+  color: var(--fx-color-text);
+  background: var(--fx-color-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--fx-font-heading);
+  color: var(--fx-color-text);
+  line-height: var(--fx-line-height-tight);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+code, kbd, pre { font-family: var(--fx-font-mono); }
+
+a { color: var(--fx-color-primary-strong); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.doc {
+  display: grid;
+  grid-template-columns: 17rem 1fr;
+  min-height: 100vh;
+}
+
+/* ---- The doc's own sidebar — a live demonstration of the plugin sidebar ---- */
+.doc-nav {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--fx-space-5);
+  padding: var(--fx-space-5) var(--fx-space-4);
+  background: var(--fx-color-surface);
+  border-right: 1px solid var(--fx-color-border);
+}
+.doc-nav__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--fx-space-2);
+  padding-bottom: var(--fx-space-4);
+  border-bottom: 1px solid var(--fx-color-border);
+}
+.doc-nav__brand {
+  font-family: var(--fx-font-heading);
+  font-size: var(--fx-font-size-lg);
+  font-weight: var(--fx-font-weight-semibold);
+  letter-spacing: -0.01em;
+}
+.doc-nav__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--fx-space-2);
+  background: var(--fx-color-primary-soft);
+  color: var(--fx-color-primary-strong);
+  border-radius: var(--fx-radius-pill);
+  font-size: 0.6875rem;
+  font-weight: var(--fx-font-weight-medium);
+  font-family: var(--fx-font-mono);
+  letter-spacing: 0.02em;
+}
+.doc-nav__group { display: flex; flex-direction: column; gap: var(--fx-space-2); }
+.doc-nav__group-label {
+  margin: 0 0 var(--fx-space-1);
+  padding: 0 var(--fx-space-2);
+  font-family: var(--fx-font-heading);
+  font-size: var(--fx-font-size-sm);
+  font-weight: 800;
+  color: var(--fx-color-text);
+}
+.doc-nav__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.doc-nav__link {
+  display: block;
+  padding: var(--fx-space-2) var(--fx-space-3);
+  border-radius: var(--fx-radius-md);
+  color: var(--fx-color-text-muted);
+  font-size: var(--fx-font-size-md);
+  font-weight: var(--fx-font-weight-medium);
+  transition: background var(--fx-transition-fast), color var(--fx-transition-fast);
+}
+.doc-nav__link:hover { background: var(--fx-color-elevated); color: var(--fx-color-text); text-decoration: none; }
+.doc-nav__link.is-active { background: var(--fx-color-primary-soft); color: var(--fx-color-primary-strong); }
+.doc-nav__footer {
+  margin-top: auto;
+  padding-top: var(--fx-space-4);
+  border-top: 1px solid var(--fx-color-border);
+  font-size: var(--fx-font-size-sm);
+  color: var(--fx-color-text-muted);
+}
+
+.doc-main {
+  padding: var(--fx-space-7) var(--fx-space-6);
+  max-width: 68rem;
+  width: 100%;
+}
+
+.doc-section { margin-bottom: var(--fx-space-7); scroll-margin-top: var(--fx-space-5); }
+.doc-section > h2 {
+  font-size: var(--fx-font-size-2xl);
+  font-weight: var(--fx-font-weight-semibold);
+  padding-bottom: var(--fx-space-3);
+  border-bottom: 1px solid var(--fx-color-border);
+  margin-bottom: var(--fx-space-5);
+}
+.doc-section h3 {
+  font-size: var(--fx-font-size-xl);
+  font-weight: var(--fx-font-weight-medium);
+  margin: var(--fx-space-6) 0 var(--fx-space-3);
+}
+.doc-lead { color: var(--fx-color-text-muted); font-size: var(--fx-font-size-lg); max-width: 68ch; margin: 0 0 var(--fx-space-4); }
+.doc-note {
+  color: var(--fx-color-text-muted);
+  max-width: 72ch;
+  margin: 0 0 var(--fx-space-4);
+}
+.doc-eyebrow {
+  font-family: var(--fx-font-heading);
+  font-weight: 800;
+  font-size: var(--fx-font-size-3xl);
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--fx-space-2);
+}
+
+/* Preview surface used to frame live component examples */
+.demo {
+  padding: var(--fx-space-5);
+  background: var(--fx-color-surface);
+  border: 1px solid var(--fx-color-border);
+  border-radius: var(--fx-radius-lg);
+  box-shadow: var(--fx-shadow-sm);
+  margin-bottom: var(--fx-space-4);
+}
+.demo--canvas { background: var(--fx-color-canvas); }
+.demo-row { display: flex; flex-wrap: wrap; gap: var(--fx-space-4); align-items: center; }
+.demo-col { display: flex; flex-direction: column; gap: var(--fx-space-4); }
+
+.spec-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.spec-list li { display: grid; grid-template-columns: 12rem 1fr; gap: var(--fx-space-3); padding: var(--fx-space-2) 0; border-bottom: 1px solid var(--fx-color-border); font-size: var(--fx-font-size-sm); }
+.spec-list dt, .spec-list .k { color: var(--fx-color-text-muted); }
+.spec-list .v code { font-size: 0.8125rem; }
+
+.token { font-family: var(--fx-font-mono); font-size: 0.8125rem; background: var(--fx-color-elevated); padding: 1px 6px; border-radius: var(--fx-radius-sm); color: var(--fx-color-text); }
+
+/* Tables */
+table.spec { width: 100%; border-collapse: collapse; font-size: var(--fx-font-size-sm); margin-bottom: var(--fx-space-4); }
+table.spec th, table.spec td { text-align: left; padding: var(--fx-space-3); border-bottom: 1px solid var(--fx-color-border); vertical-align: middle; }
+table.spec thead th { font-family: var(--fx-font-heading); font-weight: var(--fx-font-weight-semibold); color: var(--fx-color-text); font-size: var(--fx-font-size-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--fx-color-text-muted); }
+table.spec code { font-size: 0.8125rem; }
+.table-scroll { overflow-x: auto; }
+
+/* Color swatches */
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--fx-space-3); }
+.swatch { border: 1px solid var(--fx-color-border); border-radius: var(--fx-radius-md); overflow: hidden; background: var(--fx-color-surface); }
+.swatch__chip { height: 76px; border-bottom: 1px solid var(--fx-color-border); }
+.swatch__body { padding: var(--fx-space-3); display: flex; flex-direction: column; gap: 3px; }
+.swatch__name { font-family: var(--fx-font-mono); font-size: 0.75rem; color: var(--fx-color-text); word-break: break-all; }
+.swatch__hex { font-family: var(--fx-font-mono); font-size: 0.75rem; color: var(--fx-color-text-muted); text-transform: uppercase; }
+.swatch__use { font-size: 0.75rem; color: var(--fx-color-text-muted); }
+
+/* Spacing / radius / shadow visualisers */
+.scale-grid { display: grid; gap: var(--fx-space-3); }
+.scale-row { display: grid; grid-template-columns: 8rem 1fr; align-items: center; gap: var(--fx-space-4); }
+.scale-row .k { font-family: var(--fx-font-mono); font-size: 0.8125rem; color: var(--fx-color-text-muted); }
+.bar { height: 16px; background: var(--fx-color-primary); border-radius: 3px; }
+.box-row { display: flex; flex-wrap: wrap; gap: var(--fx-space-5); }
+.box-demo { display: flex; flex-direction: column; align-items: center; gap: var(--fx-space-2); font-size: 0.75rem; color: var(--fx-color-text-muted); font-family: var(--fx-font-mono); }
+.box { width: 88px; height: 64px; background: var(--fx-color-surface); border: 1px solid var(--fx-color-border); }
+
+/* Code block */
+pre.code {
+  margin: 0 0 var(--fx-space-4);
+  padding: var(--fx-space-4);
+  background: #1c1c1f;
+  color: #f2f2f0;
+  border-radius: var(--fx-radius-lg);
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  position: relative;
+}
+pre.code .c { color: #8a8f98; }        /* comment  */
+pre.code .p { color: #66f5c4; }        /* property */
+pre.code .n { color: #f2f2f0; }        /* value    */
+.copy-btn {
+  position: absolute; top: 10px; right: 10px;
+  font-family: var(--fx-font-body);
+  font-size: 0.75rem; font-weight: var(--fx-font-weight-medium);
+  padding: 4px 10px; border-radius: var(--fx-radius-sm);
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06); color: #f2f2f0; cursor: pointer;
+}
+.copy-btn:hover { background: rgba(0,226,152,0.2); border-color: var(--fx-color-primary); }
+
+/* Callout */
+.callout {
+  padding: var(--fx-space-4);
+  border-radius: var(--fx-radius-md);
+  background: var(--fx-color-primary-soft);
+  border: 1px solid var(--fx-color-accent);
+  color: #044e39;
+  font-size: var(--fx-font-size-sm);
+  margin-bottom: var(--fx-space-4);
+}
+.callout strong { color: #033b2b; }
+
+/* =====================  LIVE COMPONENT STYLES  =====================
+ * Copied verbatim from the Vue single-file components so the previews
+ * are faithful and the CSS is itself reusable.
+ * ================================================================== */
+
+/* Buttons */
+.fx-btn {
+  padding: var(--fx-space-2) var(--fx-space-4);
+  border-radius: var(--fx-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--fx-font-body);
+  font-size: var(--fx-font-size-md);
+  font-weight: var(--fx-font-weight-semibold);
+  transition: background var(--fx-transition-fast), border-color var(--fx-transition-fast), color var(--fx-transition-fast), box-shadow var(--fx-transition-fast);
+}
+.fx-btn--primary {
+  background: var(--fx-color-button-primary);
+  border-color: var(--fx-color-button-primary);
+  color: var(--fx-color-button-primary-text);
+  font-family: var(--fx-font-heading);
+  font-weight: var(--fx-font-weight-medium);
+}
+.fx-btn--primary:hover { background: var(--fx-color-button-primary-hover); border-color: var(--fx-color-button-primary-hover); box-shadow: var(--fx-shadow-glow); }
+.fx-btn--primary:active { background: var(--fx-color-button-primary-active); border-color: var(--fx-color-button-primary-active); }
+.fx-btn--ghost { background: transparent; border-color: var(--fx-color-border); color: var(--fx-color-text); }
+.fx-btn--ghost:hover { background: var(--fx-color-elevated); border-color: var(--fx-color-border-strong); }
+.fx-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* Status pill */
+.fx-pill { display: inline-flex; align-items: center; gap: var(--fx-space-1); padding: 2px var(--fx-space-2); border-radius: var(--fx-radius-pill); font-family: var(--fx-font-body); font-size: var(--fx-font-size-xs); font-weight: var(--fx-font-weight-medium); line-height: var(--fx-line-height-tight); border: 1px solid transparent; white-space: nowrap; }
+.fx-pill__icon { width: 0.875rem; height: 0.875rem; flex-shrink: 0; }
+.fx-pill--ok { color: var(--fx-color-ok); background: var(--fx-color-ok-bg); border-color: var(--fx-color-ok); }
+.fx-pill--warn { color: var(--fx-color-warn); background: var(--fx-color-warn-bg); border-color: var(--fx-color-warn); }
+.fx-pill--critical { color: var(--fx-color-critical); background: var(--fx-color-critical-bg); border-color: var(--fx-color-critical); }
+.fx-pill--info { color: var(--fx-color-info); background: var(--fx-color-info-bg); border-color: var(--fx-color-info); }
+.fx-pill--neutral { color: var(--fx-color-neutral); background: var(--fx-color-neutral-bg); border-color: var(--fx-color-border); }
+
+/* Toggle */
+.fx-toggle { display: flex; align-items: flex-start; gap: var(--fx-space-3); }
+.fx-toggle__switch { flex-shrink: 0; position: relative; width: 2.25rem; height: 1.25rem; padding: 0; border: 1px solid var(--fx-color-border-strong); border-radius: var(--fx-radius-pill); background: var(--fx-color-bg-subtle); cursor: pointer; transition: background var(--fx-transition-fast), border-color var(--fx-transition-fast); }
+.fx-toggle__switch[aria-checked='true'] { background: var(--fx-color-primary-strong); border-color: var(--fx-color-primary-strong); }
+.fx-toggle__switch:hover { border-color: var(--fx-color-primary-strong); }
+.fx-toggle__thumb { position: absolute; top: 50%; left: 2px; width: 1rem; height: 1rem; border-radius: 50%; background: var(--fx-color-surface); box-shadow: var(--fx-shadow-sm); transform: translateY(-50%); transition: left var(--fx-transition-fast); }
+.fx-toggle__switch[aria-checked='true'] .fx-toggle__thumb { left: calc(100% - 1rem - 2px); }
+.fx-toggle__label { display: flex; flex-direction: column; gap: var(--fx-space-1); cursor: pointer; user-select: none; }
+.fx-toggle__label-text { font-weight: var(--fx-font-weight-medium); color: var(--fx-color-text); }
+.fx-toggle__description { color: var(--fx-color-text-muted); font-size: var(--fx-font-size-sm); }
+
+/* Text field */
+.fx-text-field { display: flex; flex-direction: column; gap: var(--fx-space-2); max-width: 22rem; }
+.fx-text-field__label { font-weight: 500; color: var(--fx-color-text); }
+.fx-text-field__required { color: var(--fx-color-critical); margin-left: 2px; }
+.fx-text-field__input { padding: var(--fx-space-2) var(--fx-space-3); border: 1px solid var(--fx-color-border); border-radius: var(--fx-radius-md); background: var(--fx-color-surface); color: var(--fx-color-text); font-family: var(--fx-font-body); font-size: var(--fx-font-size-md); line-height: var(--fx-line-height-normal); transition: border-color var(--fx-transition-fast), box-shadow var(--fx-transition-fast); }
+.fx-text-field__input:hover { border-color: var(--fx-color-border-strong); }
+.fx-text-field__input:focus { outline: none; border-color: var(--fx-color-primary-strong); box-shadow: 0 0 0 3px var(--fx-color-primary-soft); }
+.fx-text-field__help { margin: 0; font-size: var(--fx-font-size-sm); color: var(--fx-color-text-muted); }
+.fx-text-field__error { margin: 0; font-size: var(--fx-font-size-sm); color: var(--fx-color-critical); }
+.fx-text-field--invalid .fx-text-field__input { border-color: var(--fx-color-critical); }
+
+/* Select */
+.fx-select { display: flex; flex-direction: column; gap: var(--fx-space-2); max-width: 22rem; }
+.fx-select__label { font-weight: 500; color: var(--fx-color-text); }
+.fx-select__control-wrap { position: relative; display: grid; grid-template-columns: 1fr; width: 100%; }
+.fx-select__control { grid-column: 1; grid-row: 1; width: 100%; max-width: none; min-width: 0; padding: var(--fx-space-2) 2.5rem var(--fx-space-2) var(--fx-space-3); border: 1px solid var(--fx-color-border); border-radius: var(--fx-radius-md); background: var(--fx-color-surface); color: var(--fx-color-text); font-family: var(--fx-font-body); font-size: var(--fx-font-size-md); line-height: var(--fx-line-height-normal); appearance: none; -webkit-appearance: none; background-image: none; transition: border-color var(--fx-transition-fast), box-shadow var(--fx-transition-fast); }
+.fx-select__control:focus { outline: none; border-color: var(--fx-color-primary-strong); box-shadow: 0 0 0 3px var(--fx-color-primary-soft); }
+.fx-select__caret { grid-column: 1; grid-row: 1; justify-self: end; align-self: center; margin-right: 0.875rem; display: inline-flex; color: var(--fx-color-text-muted); pointer-events: none; }
+
+/* Toast */
+.fx-toast { display: inline-flex; align-items: center; gap: var(--fx-space-3); padding: var(--fx-space-3) var(--fx-space-4); border-radius: var(--fx-radius-md); box-shadow: var(--fx-shadow-lg); border: 1px solid transparent; font-size: var(--fx-font-size-md); max-width: 28rem; }
+.fx-toast--info { background: var(--fx-color-info-bg); color: var(--fx-color-info); border-color: var(--fx-color-info); }
+.fx-toast--success { background: var(--fx-color-ok-bg); color: var(--fx-color-ok); border-color: var(--fx-color-ok); }
+.fx-toast--warning { background: var(--fx-color-warn-bg); color: var(--fx-color-warn); border-color: var(--fx-color-warn); }
+.fx-toast--error { background: var(--fx-color-critical-bg); color: var(--fx-color-critical); border-color: var(--fx-color-critical); }
+.fx-toast__message { flex: 1; }
+.fx-toast__close { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; padding: 0; border: none; border-radius: var(--fx-radius-sm); background: transparent; color: inherit; cursor: pointer; }
+.fx-toast__close svg { width: 0.875rem; height: 0.875rem; }
+
+/* Save bar */
+.fx-save-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--fx-space-4); padding: var(--fx-space-3) var(--fx-space-5); background: var(--fx-color-surface); border-top: 1px solid var(--fx-color-border); box-shadow: var(--fx-shadow-md); border-radius: var(--fx-radius-md); }
+.fx-save-bar__status { display: flex; align-items: center; gap: var(--fx-space-2); min-height: 1.5rem; }
+.fx-save-bar__dirty-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--fx-color-warn); flex-shrink: 0; }
+.fx-save-bar__status-text { color: var(--fx-color-text-muted); font-size: var(--fx-font-size-sm); }
+.fx-save-bar__actions { display: flex; gap: var(--fx-space-2); }
+
+/* Tabs (underline) */
+.fx-tablist { display: flex; gap: var(--fx-space-1); border-bottom: 1px solid var(--fx-color-border); overflow-x: auto; }
+.fx-tab { padding: var(--fx-space-2) var(--fx-space-4); border: none; background: transparent; color: var(--fx-color-text-muted); font-family: var(--fx-font-body); font-size: var(--fx-font-size-md); font-weight: var(--fx-font-weight-medium); cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color var(--fx-transition-fast), border-color var(--fx-transition-fast); }
+.fx-tab:hover { color: var(--fx-color-text); }
+.fx-tab--active { color: var(--fx-color-text); border-bottom-color: var(--fx-color-primary-strong); }
+
+/* Module content header (icon chip + title + description) */
+.fx-module-header { display: grid; grid-template-columns: auto 1fr; gap: var(--fx-space-4); align-items: start; }
+.fx-icon-chip { display: inline-flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border-radius: var(--fx-radius-lg); background: var(--fx-color-primary-soft); color: var(--fx-color-primary-strong); }
+.fx-module-title { font-family: var(--fx-font-heading); font-size: var(--fx-font-size-3xl); font-weight: var(--fx-font-weight-semibold); letter-spacing: -0.015em; margin: 0 0 var(--fx-space-2); }
+.fx-title-row { display: flex; align-items: center; gap: var(--fx-space-3); flex-wrap: wrap; }
+.fx-module-desc { margin: 0; color: var(--fx-color-text-muted); font-size: var(--fx-font-size-lg); line-height: var(--fx-line-height-snug); max-width: 62ch; }
+
+/* Card / panel */
+.fx-panel { display: flex; flex-direction: column; gap: var(--fx-space-4); padding: var(--fx-space-5); background: var(--fx-color-surface); border: 1px solid var(--fx-color-border); border-radius: var(--fx-radius-lg); box-shadow: var(--fx-shadow-sm); }
+
+/* Breadcrumb */
+.fx-breadcrumb { margin: 0; display: inline-flex; align-items: center; gap: var(--fx-space-2); font-size: var(--fx-font-size-sm); color: var(--fx-color-text-muted); font-weight: var(--fx-font-weight-medium); }
+.fx-breadcrumb__group { text-transform: uppercase; letter-spacing: 0.08em; font-size: var(--fx-font-size-xs); color: var(--fx-color-text-dim); }
+.fx-breadcrumb__sep { color: var(--fx-color-text-dim); }
+
+/* Mini shell illustration */
+.shell-illo { display: grid; grid-template-columns: 84px 1fr; height: 180px; border: 1px solid var(--fx-color-border); border-radius: var(--fx-radius-lg); overflow: hidden; }
+.shell-illo__side { background: var(--fx-color-surface); border-right: 1px solid var(--fx-color-border); padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.shell-illo__side span { display: block; height: 8px; border-radius: 3px; background: var(--fx-color-elevated); }
+.shell-illo__side span.brand { background: var(--fx-color-primary-soft); height: 12px; }
+.shell-illo__side span.active { background: var(--fx-color-primary-soft); }
+.shell-illo__main { background: var(--fx-color-canvas); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.shell-illo__main span { display: block; border-radius: 4px; background: var(--fx-color-elevated); }
+.shell-illo__main .h { height: 16px; width: 45%; background: var(--fx-color-border); }
+.shell-illo__main .card { flex: 1; background: var(--fx-color-surface); border: 1px solid var(--fx-color-border); box-shadow: var(--fx-shadow-sm); }
+.shell-dims { display: flex; gap: var(--fx-space-4); flex-wrap: wrap; margin-top: var(--fx-space-3); font-size: var(--fx-font-size-sm); color: var(--fx-color-text-muted); }
+
+/* Responsive */
+.doc-menu-btn { display: none; }
+@media (max-width: 900px) {
+  .doc { grid-template-columns: 1fr; }
+  .doc-nav {
+    position: fixed; inset: 0 auto 0 0; z-index: 20;
+    width: 17rem; max-width: 85vw;
+    transform: translateX(-100%);
+    transition: transform var(--fx-transition-base);
+    box-shadow: var(--fx-shadow-lg);
+  }
+  .doc-nav.is-open { transform: translateX(0); }
+  .doc-menu-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    position: fixed; top: 12px; left: 12px; z-index: 30;
+    width: 2.5rem; height: 2.5rem; padding: 0;
+    border: 1px solid var(--fx-color-border); border-radius: var(--fx-radius-md);
+    background: var(--fx-color-surface); color: var(--fx-color-text);
+    box-shadow: var(--fx-shadow-sm); cursor: pointer;
+  }
+  .doc-main { padding: calc(var(--fx-space-7) + 1.5rem) var(--fx-space-4) var(--fx-space-6); }
+  .spec-list li { grid-template-columns: 1fr; gap: 2px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<button class="doc-menu-btn" id="menuBtn" aria-label="Toggle navigation" aria-expanded="false">
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14"/></svg>
+</button>
+
+<div class="doc">
+  <!-- ===================== DOC SIDEBAR (live demo of the plugin sidebar) ===================== -->
+  <aside class="doc-nav" id="docNav">
+    <div class="doc-nav__header">
+      <span class="doc-nav__brand">Fanxie WP Core</span>
+      <span class="doc-nav__pill">Design&nbsp;Spec</span>
+    </div>
+    <nav class="doc-nav__group" aria-label="Sections">
+      <h2 class="doc-nav__group-label">Foundations</h2>
+      <ul class="doc-nav__list">
+        <li><a class="doc-nav__link" href="#overview">Overview</a></li>
+        <li><a class="doc-nav__link" href="#color">Color</a></li>
+        <li><a class="doc-nav__link" href="#typography">Typography</a></li>
+        <li><a class="doc-nav__link" href="#spacing">Spacing &amp; grid</a></li>
+        <li><a class="doc-nav__link" href="#radius">Radius &amp; elevation</a></li>
+        <li><a class="doc-nav__link" href="#motion">Motion</a></li>
+      </ul>
+    </nav>
+    <nav class="doc-nav__group" aria-label="Layout sections">
+      <h2 class="doc-nav__group-label">Layout</h2>
+      <ul class="doc-nav__list">
+        <li><a class="doc-nav__link" href="#shell">App shell</a></li>
+        <li><a class="doc-nav__link" href="#sidebar">Sidebar nav</a></li>
+        <li><a class="doc-nav__link" href="#content">Content header</a></li>
+      </ul>
+    </nav>
+    <nav class="doc-nav__group" aria-label="Component sections">
+      <h2 class="doc-nav__group-label">Components</h2>
+      <ul class="doc-nav__list">
+        <li><a class="doc-nav__link" href="#buttons">Buttons</a></li>
+        <li><a class="doc-nav__link" href="#forms">Form controls</a></li>
+        <li><a class="doc-nav__link" href="#pills">Status pills</a></li>
+        <li><a class="doc-nav__link" href="#tabs">Tabs</a></li>
+        <li><a class="doc-nav__link" href="#savebar">Save bar</a></li>
+        <li><a class="doc-nav__link" href="#toast">Toasts</a></li>
+        <li><a class="doc-nav__link" href="#panel">Cards &amp; panels</a></li>
+      </ul>
+    </nav>
+    <nav class="doc-nav__group" aria-label="Reference sections">
+      <h2 class="doc-nav__group-label">Reference</h2>
+      <ul class="doc-nav__list">
+        <li><a class="doc-nav__link" href="#tokens">Token CSS (copy)</a></li>
+        <li><a class="doc-nav__link" href="#guardrails">Guardrails</a></li>
+      </ul>
+    </nav>
+    <div class="doc-nav__footer">Built by Fanxie&nbsp;Lab</div>
+  </aside>
+
+  <!-- ===================== CONTENT ===================== -->
+  <main class="doc-main">
+
+    <!-- OVERVIEW -->
+    <section class="doc-section" id="overview">
+      <p class="fx-breadcrumb"><span class="fx-breadcrumb__group">Reference</span><span class="fx-breadcrumb__sep">/</span><span>Design system</span></p>
+      <h1 class="doc-eyebrow">Admin Design System</h1>
+      <p class="doc-lead">The complete visual language of the Fanxie WP Core admin SPA: every token, layout rule, and component needed to recreate the same look and feel in another plugin.</p>
+      <p class="doc-note">The palette and type are derived from <a href="https://fanxielab.com">fanxielab.com</a> so the plugin inherits the studio identity: <strong>brand mint</strong> on a warm-neutral canvas, <strong>Lexend</strong> for display and <strong>Inter</strong> for UI, <strong>light mode only</strong>, restrained shadows, and a mint glow reserved for primary emphasis. Everything is a CSS custom property prefixed <span class="token">--fx-*</span>.</p>
+      <div class="callout">
+        <strong>How to port this.</strong> Copy the <a href="#tokens">token CSS block</a> into your plugin (scoped under your admin mount id), self-host Lexend + Inter, then rebuild components from the specs below. The component CSS in each example is lifted verbatim from the source and is drop-in reusable.
+      </div>
+      <ul class="spec-list">
+        <li><span class="k">Fonts</span><span class="v">Lexend (500/600/800 — display &amp; headings) · Inter (400/500/600 — body &amp; UI)</span></li>
+        <li><span class="k">Signature color</span><span class="v"><code>#00e298</code> brand mint — CTAs, active nav, focus, glow</span></li>
+        <li><span class="k">Canvas</span><span class="v"><code>#f7f7f5</code> warm off-white · surfaces pure white <code>#ffffff</code></span></li>
+        <li><span class="k">Theme</span><span class="v">Light mode only — no dark theme</span></li>
+        <li><span class="k">Scoping</span><span class="v">All tokens &amp; styles live under <span class="token">#fanxie-wp-core-admin</span> to avoid leaking into WP admin chrome</span></li>
+        <li><span class="k">Spacing base</span><span class="v">4px grid (<code>--fx-space-1</code> … <code>--fx-space-7</code>)</span></li>
+      </ul>
+    </section>
+
+    <!-- COLOR -->
+    <section class="doc-section" id="color">
+      <h2>Color</h2>
+      <p class="doc-note">OKLCH was not used in source; values are literal hex from fanxielab.com's light palette. Status colors are darkened brand hues chosen to pass WCAG AA on white. Body text must hit ≥4.5:1; the muted/dim greys below are for secondary and decorative text only.</p>
+
+      <h3>Brand &amp; accent</h3>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch__chip" style="background:#00e298"></div><div class="swatch__body"><span class="swatch__name">--fx-color-primary</span><span class="swatch__hex">#00e298</span><span class="swatch__use">Hero mint · accents · active dot · glow</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#00a870"></div><div class="swatch__body"><span class="swatch__name">--fx-color-primary-strong</span><span class="swatch__hex">#00a870</span><span class="swatch__use">Mint text on white (AA) · active nav text · focus ring</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#00c785"></div><div class="swatch__body"><span class="swatch__name">--fx-color-primary-hover</span><span class="swatch__hex">#00c785</span><span class="swatch__use">Primary button hover</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#008a5c"></div><div class="swatch__body"><span class="swatch__name">--fx-color-primary-active</span><span class="swatch__hex">#008a5c</span><span class="swatch__use">Pressed state</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#e6fbf4"></div><div class="swatch__body"><span class="swatch__name">--fx-color-primary-soft</span><span class="swatch__hex">#E6FBF4</span><span class="swatch__use">Active nav fill · icon chip · focus halo</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#66f5c4"></div><div class="swatch__body"><span class="swatch__name">--fx-color-accent</span><span class="swatch__hex">#66F5C4</span><span class="swatch__use">Mint-light · secondary emphasis (sparingly)</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#d6fbed"></div><div class="swatch__body"><span class="swatch__name">--fx-color-accent-soft</span><span class="swatch__hex">#D6FBED</span><span class="swatch__use">Soft accent surfaces</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#00e298; box-shadow: inset 0 0 20px rgba(0,226,152,0.6), 0 0 20px rgba(0,226,152,0.25)"></div><div class="swatch__body"><span class="swatch__name">--fx-shadow-glow</span><span class="swatch__hex">rgba(0,226,152,.25)</span><span class="swatch__use">Primary hover / active-dot glow</span></div></div>
+      </div>
+
+      <h3>Neutrals</h3>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch__chip" style="background:#f7f7f5"></div><div class="swatch__body"><span class="swatch__name">--fx-color-canvas</span><span class="swatch__hex">#F7F7F5</span><span class="swatch__use">Page background</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#ffffff"></div><div class="swatch__body"><span class="swatch__name">--fx-color-surface</span><span class="swatch__hex">#FFFFFF</span><span class="swatch__use">Cards · panels · sidebar</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#eeeeed"></div><div class="swatch__body"><span class="swatch__name">--fx-color-elevated</span><span class="swatch__hex">#EEEEED</span><span class="swatch__use">Ghost hover · code bg · subtle fills</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#d4d4d8"></div><div class="swatch__body"><span class="swatch__name">--fx-color-border</span><span class="swatch__hex">#D4D4D8</span><span class="swatch__use">Default border / divider</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#a1a1aa"></div><div class="swatch__body"><span class="swatch__name">--fx-color-border-strong</span><span class="swatch__hex">#A1A1AA</span><span class="swatch__use">Form controls · emphasised dividers</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#1c1c1f"></div><div class="swatch__body"><span class="swatch__name">--fx-color-text</span><span class="swatch__hex">#1C1C1F</span><span class="swatch__use">Body copy · headings (~15:1 on white)</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#52525b"></div><div class="swatch__body"><span class="swatch__name">--fx-color-text-muted</span><span class="swatch__hex">#52525B</span><span class="swatch__use">Secondary copy · metadata (~7:1)</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#a1a1aa"></div><div class="swatch__body"><span class="swatch__name">--fx-color-text-dim</span><span class="swatch__hex">#A1A1AA</span><span class="swatch__use">Captions · disabled — decorative only</span></div></div>
+      </div>
+
+      <h3>Status</h3>
+      <p class="doc-note">Each status has a saturated text/border color and a pale background of the same hue. Pills, toasts, and alerts pair them. Never rely on color alone — components carry an icon or SR-only prefix.</p>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch__chip" style="background:#00a870"></div><div class="swatch__body"><span class="swatch__name">--fx-color-ok / -bg</span><span class="swatch__hex">#00A870 · #E6FBF4</span><span class="swatch__use">Success / enabled</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#b45309"></div><div class="swatch__body"><span class="swatch__name">--fx-color-warn / -bg</span><span class="swatch__hex">#B45309 · #FFF7ED</span><span class="swatch__use">Warning · unsaved dot</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#d92d2d"></div><div class="swatch__body"><span class="swatch__name">--fx-color-critical / -bg</span><span class="swatch__hex">#D92D2D · #FFF1F1</span><span class="swatch__use">Error · required · destructive</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#0f766e"></div><div class="swatch__body"><span class="swatch__name">--fx-color-info / -bg</span><span class="swatch__hex">#0F766E · #ECFDF5</span><span class="swatch__use">Info · neutral notices</span></div></div>
+        <div class="swatch"><div class="swatch__chip" style="background:#52525b"></div><div class="swatch__body"><span class="swatch__name">--fx-color-neutral / -bg</span><span class="swatch__hex">#52525B · #EEEEED</span><span class="swatch__use">Neutral / loading state</span></div></div>
+      </div>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section class="doc-section" id="typography">
+      <h2>Typography</h2>
+      <p class="doc-note">Two families on a contrast axis: <strong>Lexend</strong> (geometric display) for headings, brand marks, group labels, and primary buttons; <strong>Inter</strong> (humanist UI sans) for body, controls, and metadata. Both self-hosted via <span class="token">@fontsource</span> (no CDN at runtime). Headings carry <span class="token">-0.01em</span> tracking (module titles <span class="token">-0.015em</span>).</p>
+
+      <div class="demo demo-col">
+        <div style="font-family:var(--fx-font-heading); font-size:var(--fx-font-size-3xl); font-weight:600; letter-spacing:-0.015em;">Lexend · Module title 28px / 600</div>
+        <div style="font-family:var(--fx-font-heading); font-size:var(--fx-font-size-2xl); font-weight:600;">Lexend · Section heading 22px / 600</div>
+        <div style="font-family:var(--fx-font-heading); font-size:var(--fx-font-size-sm); font-weight:800;">Lexend · Sidebar group label 13px / 800</div>
+        <div style="font-family:var(--fx-font-body); font-size:var(--fx-font-size-lg);">Inter · Emphasised body 16px — module descriptions read at this size.</div>
+        <div style="font-family:var(--fx-font-body); font-size:var(--fx-font-size-md);">Inter · UI / body 14px — the default. Controls, links, and copy live here.</div>
+        <div style="font-family:var(--fx-font-body); font-size:var(--fx-font-size-sm); color:var(--fx-color-text-muted);">Inter · Secondary 13px — help text, breadcrumb, status lines.</div>
+        <div style="font-family:var(--fx-font-mono); font-size:var(--fx-font-size-xs); color:var(--fx-color-text-muted);">Mono · 12px — version pill, code, module ids.</div>
+      </div>
+
+      <h3>Type scale</h3>
+      <div class="table-scroll">
+      <table class="spec">
+        <thead><tr><th>Token</th><th>rem</th><th>px</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><code>--fx-font-size-xs</code></td><td>0.75</td><td>12</td><td>Captions, version pill, code, pills</td></tr>
+          <tr><td><code>--fx-font-size-sm</code></td><td>0.8125</td><td>13</td><td>Secondary UI, help/error, breadcrumb</td></tr>
+          <tr><td><code>--fx-font-size-md</code></td><td>0.875</td><td>14</td><td>Body / controls (default)</td></tr>
+          <tr><td><code>--fx-font-size-lg</code></td><td>1</td><td>16</td><td>Emphasised body, module description</td></tr>
+          <tr><td><code>--fx-font-size-xl</code></td><td>1.125</td><td>18</td><td>h3 / sub-section title</td></tr>
+          <tr><td><code>--fx-font-size-2xl</code></td><td>1.375</td><td>22</td><td>h2 / group header</td></tr>
+          <tr><td><code>--fx-font-size-3xl</code></td><td>1.75</td><td>28</td><td>h1 / page &amp; module title</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>Weights &amp; line-height</h3>
+      <ul class="spec-list">
+        <li><span class="k">Weights</span><span class="v">regular <code>400</code> · medium <code>500</code> · semibold <code>600</code> · group labels <code>800</code> (Lexend)</span></li>
+        <li><span class="k">Line-height tight</span><span class="v"><code>1.2</code> — headings</span></li>
+        <li><span class="k">Line-height snug</span><span class="v"><code>1.375</code> — module descriptions</span></li>
+        <li><span class="k">Line-height normal</span><span class="v"><code>1.5</code> — body (default)</span></li>
+        <li><span class="k">Heading tracking</span><span class="v"><code>-0.01em</code> (h1–h4) · <code>-0.015em</code> (module title)</span></li>
+        <li><span class="k">Measure</span><span class="v">Body capped at ~62–68ch</span></li>
+      </ul>
+    </section>
+
+    <!-- SPACING -->
+    <section class="doc-section" id="spacing">
+      <h2>Spacing &amp; grid</h2>
+      <p class="doc-note">A 4px base grid. Components compose from these steps only, never arbitrary pixel gaps. Common rhythm: <code>--fx-space-2</code> inside controls, <code>--fx-space-3</code>/<code>4</code> between fields, <code>--fx-space-5</code> between sections, <code>--fx-space-6</code>/<code>7</code> for page padding.</p>
+      <div class="demo">
+        <div class="scale-grid">
+          <div class="scale-row"><span class="k">--fx-space-1 · 4px</span><div class="bar" style="width:4px"></div></div>
+          <div class="scale-row"><span class="k">--fx-space-2 · 8px</span><div class="bar" style="width:8px"></div></div>
+          <div class="scale-row"><span class="k">--fx-space-3 · 12px</span><div class="bar" style="width:12px"></div></div>
+          <div class="scale-row"><span class="k">--fx-space-4 · 16px</span><div class="bar" style="width:16px"></div></div>
+          <div class="scale-row"><span class="k">--fx-space-5 · 24px</span><div class="bar" style="width:24px"></div></div>
+          <div class="scale-row"><span class="k">--fx-space-6 · 32px</span><div class="bar" style="width:32px"></div></div>
+          <div class="scale-row"><span class="k">--fx-space-7 · 48px</span><div class="bar" style="width:48px"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RADIUS + SHADOW -->
+    <section class="doc-section" id="radius">
+      <h2>Radius &amp; elevation</h2>
+      <p class="doc-note">Corners match the brand site (md 6px, lg 8px, xl 12px). Shadows are restrained and diffuse — real depth is carried by the 1px border, not the shadow. The mint glow is the one expressive shadow, reserved for primary emphasis.</p>
+
+      <h3>Radius</h3>
+      <div class="demo"><div class="box-row">
+        <div class="box-demo"><div class="box" style="border-radius:var(--fx-radius-sm)"></div>sm · 4px</div>
+        <div class="box-demo"><div class="box" style="border-radius:var(--fx-radius-md)"></div>md · 6px</div>
+        <div class="box-demo"><div class="box" style="border-radius:var(--fx-radius-lg)"></div>lg · 8px</div>
+        <div class="box-demo"><div class="box" style="border-radius:var(--fx-radius-xl)"></div>xl · 12px</div>
+        <div class="box-demo"><div class="box" style="border-radius:var(--fx-radius-pill); width:120px"></div>pill · 999px</div>
+      </div></div>
+
+      <h3>Shadow</h3>
+      <div class="demo demo--canvas"><div class="box-row">
+        <div class="box-demo"><div class="box" style="box-shadow:var(--fx-shadow-sm); border-color:transparent"></div>sm</div>
+        <div class="box-demo"><div class="box" style="box-shadow:var(--fx-shadow-md); border-color:transparent"></div>md</div>
+        <div class="box-demo"><div class="box" style="box-shadow:var(--fx-shadow-lg); border-color:transparent"></div>lg</div>
+        <div class="box-demo"><div class="box" style="box-shadow:var(--fx-shadow-glow); border-color:var(--fx-color-primary)"></div>glow</div>
+      </div></div>
+      <ul class="spec-list">
+        <li><span class="k">--fx-shadow-sm</span><span class="v"><code>0 1px 2px rgba(0,0,0,.04)</code> — cards, toggle thumb, nav toggle</span></li>
+        <li><span class="k">--fx-shadow-md</span><span class="v"><code>0 4px 8px rgba(0,0,0,.06)</code> — save bar</span></li>
+        <li><span class="k">--fx-shadow-lg</span><span class="v"><code>0 12px 32px rgba(0,0,0,.1)</code> — toasts, mobile drawer</span></li>
+        <li><span class="k">--fx-shadow-glow</span><span class="v"><code>0 0 20px rgba(0,226,152,.25)</code> — primary hover, enabled dot</span></li>
+      </ul>
+    </section>
+
+    <!-- MOTION -->
+    <section class="doc-section" id="motion">
+      <h2>Motion</h2>
+      <p class="doc-note">Two easing tokens, both plain <code>ease</code>. Transitions animate color, background, border, box-shadow, and transform, never layout. <strong>Reduced motion is always respected</strong> via a global <code>prefers-reduced-motion</code> override that collapses durations to ~0.</p>
+      <ul class="spec-list">
+        <li><span class="k">--fx-transition-fast</span><span class="v"><code>120ms ease</code> — hovers, focus, toggle thumb, nav links</span></li>
+        <li><span class="k">--fx-transition-base</span><span class="v"><code>200ms ease</code> — toast enter/leave, mobile drawer slide</span></li>
+        <li><span class="k">Toast enter/leave</span><span class="v">opacity 0→1 + <code>translateY(-4px)</code>→0</span></li>
+        <li><span class="k">Reduced motion</span><span class="v">durations forced to <code>0.01ms</code>; scroll-behavior auto</span></li>
+      </ul>
+    </section>
+
+    <!-- SHELL -->
+    <section class="doc-section" id="shell">
+      <h2>App shell &amp; layout</h2>
+      <p class="doc-note">A two-column CSS grid: a fixed <code>16rem</code> sidebar and a fluid content column. The sidebar is <code>position: sticky</code> full-height; content is capped at <code>64rem</code> and padded <code>--fx-space-6</code>. Below 900px the grid collapses to one column and the sidebar becomes an off-canvas drawer toggled by a hamburger.</p>
+      <div class="demo">
+        <div class="shell-illo">
+          <div class="shell-illo__side">
+            <span class="brand"></span>
+            <span class="active"></span><span></span><span></span><span></span>
+          </div>
+          <div class="shell-illo__main">
+            <span class="h"></span>
+            <span class="card"></span>
+          </div>
+        </div>
+        <div class="shell-dims">
+          <span><span class="token">--fx-sidebar-width</span> 16rem / 256px</span>
+          <span><span class="token">--fx-max-content-width</span> 64rem</span>
+          <span>content padding <span class="token">--fx-space-6</span></span>
+          <span>breakpoint 900px</span>
+        </div>
+      </div>
+      <ul class="spec-list">
+        <li><span class="k">Shell grid</span><span class="v"><code>grid-template-columns: 16rem 1fr</code> · min-height 100vh · background canvas</span></li>
+        <li><span class="k">Sidebar</span><span class="v">surface bg · 1px right border · sticky top:0 · padding <code>24px 16px</code> · flex column, gap 24px</span></li>
+        <li><span class="k">Main</span><span class="v">padding <code>32px</code> · max-width 64rem · flex column, gap 24px</span></li>
+        <li><span class="k">Collapse</span><span class="v">&lt;900px → single column; sidebar <code>position:fixed</code>, <code>translateX(-100%)</code>, slides in on open with shadow-lg</span></li>
+      </ul>
+    </section>
+
+    <!-- SIDEBAR -->
+    <section class="doc-section" id="sidebar">
+      <h2>Sidebar navigation</h2>
+      <p class="doc-note">Header (brand + version pill) → grouped nav (Security / Performance / Maintenance) → footer credit. Group labels are Lexend <strong>800, Title Case, no tracking</strong> (a deliberate section header, never an uppercase eyebrow). Each item is an icon + label grid; enabled modules show a glowing mint dot. The live doc sidebar on the left is this exact component.</p>
+
+      <div class="demo" style="max-width:20rem">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--fx-color-border);margin-bottom:8px;">
+            <span style="font-family:var(--fx-font-heading);font-weight:600;font-size:var(--fx-font-size-lg);">Fanxie WP Core</span>
+            <span class="doc-nav__pill">v0.1.0</span>
+          </div>
+          <div class="doc-nav__group-label">Security</div>
+          <a class="doc-nav__link is-active" style="display:grid;grid-template-columns:1.25rem 1fr auto;align-items:center;gap:12px;" href="#sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span>Security Headers</span>
+            <span style="width:.5rem;height:.5rem;border-radius:50%;background:var(--fx-color-primary);box-shadow:var(--fx-shadow-glow);"></span>
+          </a>
+          <a class="doc-nav__link" style="display:grid;grid-template-columns:1.25rem 1fr auto;align-items:center;gap:12px;" href="#sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>Hardening</span><span></span>
+          </a>
+          <a class="doc-nav__link" style="display:grid;grid-template-columns:1.25rem 1fr auto;align-items:center;gap:12px;" href="#sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 17.4A2 2 0 0 0 2 18.8V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.2a2 2 0 0 0 1.4-.6l.8-.8a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+            <span>Login Protection</span><span></span>
+          </a>
+        </div>
+      </div>
+
+      <h3>States &amp; anatomy</h3>
+      <ul class="spec-list">
+        <li><span class="k">Brand name</span><span class="v">Lexend 16px / 600, tracking -0.01em</span></li>
+        <li><span class="k">Version pill</span><span class="v">mono 11px, primary-soft bg, primary-strong text, pill radius, padding <code>2px 8px</code></span></li>
+        <li><span class="k">Group label</span><span class="v">Lexend <code>800</code>, 13px, Title Case, no tracking, padding <code>0 8px</code></span></li>
+        <li><span class="k">Nav link</span><span class="v">grid <code>1.25rem 1fr auto</code> · gap 12px · padding <code>8px 12px</code> · radius md · Inter 500 · muted text</span></li>
+        <li><span class="k">Link : hover</span><span class="v">bg <code>--fx-color-elevated</code>, text → default</span></li>
+        <li><span class="k">Link : active</span><span class="v">bg <code>--fx-color-primary-soft</code>, text <code>--fx-color-primary-strong</code></span></li>
+        <li><span class="k">Icons</span><span class="v">Lucide, 18px, stroke-width 1.75, <code>currentColor</code></span></li>
+        <li><span class="k">Enabled dot</span><span class="v">8px mint circle with glow shadow, right-aligned</span></li>
+        <li><span class="k">Item gap</span><span class="v">2px between links · 24px between groups</span></li>
+        <li><span class="k">Footer</span><span class="v">top border · "Built by Fanxie Lab" 13px muted · external-link icon 12px</span></li>
+      </ul>
+    </section>
+
+    <!-- CONTENT HEADER -->
+    <section class="doc-section" id="content">
+      <h2>Content header</h2>
+      <p class="doc-note">Each module page opens with a small breadcrumb (uppercase group · module), then a module header: a <code>3rem</code> mint icon chip, the module title at 28px, an inline status pill, and a 16px description capped at 62ch.</p>
+      <div class="demo demo-col">
+        <p class="fx-breadcrumb"><span class="fx-breadcrumb__group">Security</span><span class="fx-breadcrumb__sep">/</span><span>Security Headers</span></p>
+        <header class="fx-module-header">
+          <span class="fx-icon-chip" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+          </span>
+          <div>
+            <div class="fx-title-row">
+              <h2 class="fx-module-title">Security Headers</h2>
+              <span class="fx-pill fx-pill--ok"><svg class="fx-pill__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10.5l3.5 3.5L15 7.5"/></svg><span>5 headers active</span></span>
+            </div>
+            <p class="fx-module-desc">Adds HSTS, Content Security Policy, X-Frame-Options and related response headers to harden the site against clickjacking, MIME confusion, and script injection.</p>
+          </div>
+        </header>
+      </div>
+      <ul class="spec-list">
+        <li><span class="k">Icon chip</span><span class="v">3rem square · radius lg · primary-soft bg · primary-strong icon (28px, stroke 1.75)</span></li>
+        <li><span class="k">Title</span><span class="v">Lexend 28px / 600 · tracking -0.015em</span></li>
+        <li><span class="k">Description</span><span class="v">Inter 16px · line-height 1.375 · muted · max 62ch</span></li>
+        <li><span class="k">Breadcrumb group</span><span class="v">uppercase 12px · tracking 0.08em · dim</span></li>
+      </ul>
+    </section>
+
+    <!-- BUTTONS -->
+    <section class="doc-section" id="buttons">
+      <h2>Buttons</h2>
+      <p class="doc-note">Two roles. <strong>Primary</strong> paints the literal brand mint with a <em>black</em> label (≈13:1, AAA) set in Lexend 500, and lifts with a mint glow on hover. <strong>Ghost</strong> is a bordered neutral for secondary/cancel actions. Both use radius md and semibold-ish weight.</p>
+      <div class="demo demo-row">
+        <button class="fx-btn fx-btn--primary">Save changes</button>
+        <button class="fx-btn fx-btn--ghost">Reset</button>
+        <button class="fx-btn fx-btn--primary" disabled>Save changes</button>
+      </div>
+      <ul class="spec-list">
+        <li><span class="k">Primary</span><span class="v">bg <code>#00e298</code> · text <code>#000</code> · Lexend 500 · padding <code>8px 16px</code> · radius md</span></li>
+        <li><span class="k">Primary : hover</span><span class="v">bg <code>#00c785</code> + <code>--fx-shadow-glow</code></span></li>
+        <li><span class="k">Primary : active</span><span class="v">bg <code>#00a870</code></span></li>
+        <li><span class="k">Ghost</span><span class="v">transparent · 1px border · text default · Inter 600</span></li>
+        <li><span class="k">Ghost : hover</span><span class="v">bg elevated · border-strong</span></li>
+        <li><span class="k">Disabled</span><span class="v">opacity 0.5 · not-allowed cursor</span></li>
+      </ul>
+    </section>
+
+    <!-- FORMS -->
+    <section class="doc-section" id="forms">
+      <h2>Form controls</h2>
+      <p class="doc-note">All controls share the same shape: 1px border, radius md, white surface, 14px Inter, and a mint focus ring (<code>border primary-strong + 3px primary-soft halo</code>). Labels are always native and visible, never placeholder-as-label. Help text is muted; errors are critical red with <code>role="alert"</code>.</p>
+
+      <div class="demo demo-col">
+        <div class="demo-row" style="align-items:flex-start;gap:var(--fx-space-6);">
+          <div class="fx-text-field">
+            <label class="fx-text-field__label">Custom login slug <span class="fx-text-field__required">*</span></label>
+            <input class="fx-text-field__input" type="text" value="secret-door" />
+            <p class="fx-text-field__help">Letters, numbers and hyphens only.</p>
+          </div>
+          <div class="fx-text-field fx-text-field--invalid">
+            <label class="fx-text-field__label">Report endpoint</label>
+            <input class="fx-text-field__input" type="url" value="not a url" />
+            <p class="fx-text-field__error" role="alert">Enter a valid URL.</p>
+          </div>
+        </div>
+
+        <div class="fx-select">
+          <label class="fx-select__label">Referrer-Policy</label>
+          <div class="fx-select__control-wrap">
+            <select class="fx-select__control">
+              <option>strict-origin-when-cross-origin</option>
+              <option>no-referrer</option>
+              <option>same-origin</option>
+            </select>
+            <span class="fx-select__caret" aria-hidden="true"><svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </div>
+
+        <div class="fx-toggle">
+          <button class="fx-toggle__switch" type="button" role="switch" aria-checked="true" data-toggle><span class="fx-toggle__thumb"></span></button>
+          <span class="fx-toggle__label"><span class="fx-toggle__label-text">Enable HSTS</span><span class="fx-toggle__description">Adds Strict-Transport-Security with a 2-year max-age.</span></span>
+        </div>
+        <div class="fx-toggle">
+          <button class="fx-toggle__switch" type="button" role="switch" aria-checked="false" data-toggle><span class="fx-toggle__thumb"></span></button>
+          <span class="fx-toggle__label"><span class="fx-toggle__label-text">Include subdomains</span></span>
+        </div>
+      </div>
+
+      <ul class="spec-list">
+        <li><span class="k">Input / select</span><span class="v">padding <code>8px 12px</code> · 1px border · radius md · white bg · 14px</span></li>
+        <li><span class="k">: hover</span><span class="v">border → <code>--fx-color-border-strong</code></span></li>
+        <li><span class="k">: focus</span><span class="v">border <code>--fx-color-primary-strong</code> + <code>box-shadow: 0 0 0 3px var(--fx-color-primary-soft)</code></span></li>
+        <li><span class="k">Invalid</span><span class="v">border <code>--fx-color-critical</code></span></li>
+        <li><span class="k">Select caret</span><span class="v">custom SVG chevron (native arrow suppressed) · muted, darkens on hover</span></li>
+        <li><span class="k">Toggle track</span><span class="v"><code>2.25rem × 1.25rem</code> pill · off = border-strong on subtle bg · on = primary-strong fill</span></li>
+        <li><span class="k">Toggle thumb</span><span class="v">1rem white circle, shadow-sm, slides <code>120ms</code>; <code>role="switch"</code>, Space/Enter</span></li>
+        <li><span class="k">Required mark</span><span class="v">critical-red <code>*</code> + SR-only "(required)"</span></li>
+      </ul>
+    </section>
+
+    <!-- PILLS -->
+    <section class="doc-section" id="pills">
+      <h2>Status pills</h2>
+      <p class="doc-note">Compact inline status. Icon + label in a pill-radius chip with a same-hue border and pale background. The icon plus an SR-only prefix ("OK:", "Warning:"…) means color is never the only signal. Five variants.</p>
+      <div class="demo demo-row">
+        <span class="fx-pill fx-pill--ok"><svg class="fx-pill__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10.5l3.5 3.5L15 7.5"/></svg><span>Active</span></span>
+        <span class="fx-pill fx-pill--warn"><svg class="fx-pill__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5v5M10 14v.5"/></svg><span>Needs attention</span></span>
+        <span class="fx-pill fx-pill--critical"><svg class="fx-pill__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l8 8M14 6l-8 8"/></svg><span>Failed</span></span>
+        <span class="fx-pill fx-pill--info"><svg class="fx-pill__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8v5M10 5.5v.5"/></svg><span>Coming in Phase 2</span></span>
+        <span class="fx-pill fx-pill--neutral"><svg class="fx-pill__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10h10"/></svg><span>Loading…</span></span>
+      </div>
+      <ul class="spec-list">
+        <li><span class="k">Shape</span><span class="v">inline-flex · gap 4px · padding <code>2px 8px</code> · pill radius · 1px border · 12px / 500</span></li>
+        <li><span class="k">Icon</span><span class="v">0.875rem, stroke 2, variant-specific glyph (decorative)</span></li>
+        <li><span class="k">Variants</span><span class="v">ok · warn · critical · info · neutral (color = <code>--fx-color-{ok|warn|critical|info|neutral}</code>, bg = <code>-bg</code>)</span></li>
+      </ul>
+    </section>
+
+    <!-- TABS -->
+    <section class="doc-section" id="tabs">
+      <h2>Tabs</h2>
+      <p class="doc-note">Underline tabs for in-module sections. Inactive tabs are muted text; the active tab gets default text and a 2px mint-strong bottom border that merges with the tablist divider (<code>margin-bottom: -1px</code>). Full ARIA tablist semantics with arrow-key roving focus.</p>
+      <div class="demo">
+        <div class="fx-tablist" role="tablist">
+          <button class="fx-tab fx-tab--active" role="tab" aria-selected="true">Headers</button>
+          <button class="fx-tab" role="tab" aria-selected="false">Content Security Policy</button>
+          <button class="fx-tab" role="tab" aria-selected="false">Violations</button>
+        </div>
+      </div>
+      <ul class="spec-list">
+        <li><span class="k">Tab</span><span class="v">padding <code>8px 16px</code> · Inter 500 · muted · 2px transparent bottom border</span></li>
+        <li><span class="k">: hover</span><span class="v">text → default</span></li>
+        <li><span class="k">: active</span><span class="v">text default · bottom border <code>--fx-color-primary-strong</code></span></li>
+        <li><span class="k">Tablist</span><span class="v">1px bottom border · gap 4px · horizontally scrollable</span></li>
+      </ul>
+    </section>
+
+    <!-- SAVE BAR -->
+    <section class="doc-section" id="savebar">
+      <h2>Save bar</h2>
+      <p class="doc-note">A sticky footer bar (<code>position: sticky; bottom: 0</code>) for form pages: a live status line on the left (with a warn dot when dirty), ghost + primary actions on the right. Status text goes green on save, red on error, and is announced via <code>aria-live="polite"</code>.</p>
+      <div class="demo demo--canvas">
+        <div class="fx-save-bar fx-save-bar--dirty">
+          <div class="fx-save-bar__status">
+            <span class="fx-save-bar__dirty-dot"></span>
+            <span class="fx-save-bar__status-text">You have unsaved changes.</span>
+          </div>
+          <div class="fx-save-bar__actions">
+            <button class="fx-btn fx-btn--ghost">Reset</button>
+            <button class="fx-btn fx-btn--primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+      <ul class="spec-list">
+        <li><span class="k">Bar</span><span class="v">sticky bottom · surface bg · 1px top border · shadow-md · padding <code>12px 24px</code></span></li>
+        <li><span class="k">Dirty dot</span><span class="v">8px <code>--fx-color-warn</code> circle</span></li>
+        <li><span class="k">Status colors</span><span class="v">muted (idle) · <code>--fx-color-ok</code> (saved) · <code>--fx-color-critical</code> (error)</span></li>
+      </ul>
+    </section>
+
+    <!-- TOAST -->
+    <section class="doc-section" id="toast">
+      <h2>Toasts</h2>
+      <p class="doc-note">Transient notifications, teleported to <code>&lt;body&gt;</code> and pinned bottom-right (<code>right/bottom: --fx-space-5</code>, z-index 40). Same status color system as pills, with shadow-lg for lift. Auto-dismiss after 5s, pause on hover/focus, dismissible. Enters with a 4px downward slide + fade.</p>
+      <div class="demo demo--canvas demo-col">
+        <div class="fx-toast fx-toast--success"><span class="fx-toast__message">Settings saved.</span><button class="fx-toast__close" aria-label="Dismiss"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l8 8M14 6l-8 8"/></svg></button></div>
+        <div class="fx-toast fx-toast--error"><span class="fx-toast__message">Could not reach the server. Try again.</span><button class="fx-toast__close" aria-label="Dismiss"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l8 8M14 6l-8 8"/></svg></button></div>
+        <div class="fx-toast fx-toast--warning"><span class="fx-toast__message">Some headers were skipped.</span><button class="fx-toast__close" aria-label="Dismiss"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l8 8M14 6l-8 8"/></svg></button></div>
+        <div class="fx-toast fx-toast--info"><span class="fx-toast__message">Backend pinged successfully.</span><button class="fx-toast__close" aria-label="Dismiss"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l8 8M14 6l-8 8"/></svg></button></div>
+      </div>
+      <ul class="spec-list">
+        <li><span class="k">Shape</span><span class="v">inline-flex · padding <code>12px 16px</code> · radius md · shadow-lg · max-width 28rem</span></li>
+        <li><span class="k">Variants</span><span class="v">success · error · warning · info (bg <code>-bg</code>, text + border same hue)</span></li>
+        <li><span class="k">Behaviour</span><span class="v">5s auto-dismiss · pause on hover/focus · <code>role=status</code>/<code>alert</code></span></li>
+      </ul>
+    </section>
+
+    <!-- PANEL -->
+    <section class="doc-section" id="panel">
+      <h2>Cards &amp; panels</h2>
+      <p class="doc-note">The base container: white surface, 1px border, radius lg, shadow-sm, padding <code>--fx-space-5</code>, flex column with 16px gaps. Cards are used only where they're the right affordance, never nested. Nested "wells" (e.g. the ping row) drop to the canvas background with radius md.</p>
+      <div class="demo demo--canvas">
+        <section class="fx-panel">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <h3 style="margin:0;font-family:var(--fx-font-heading);font-size:var(--fx-font-size-xl);font-weight:500;">Turnstile</h3>
+            <span class="fx-pill fx-pill--info"><svg class="fx-pill__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8v5M10 5.5v.5"/></svg><span>Coming in Phase 2</span></span>
+          </div>
+          <p style="margin:0;color:var(--fx-color-text-muted);max-width:62ch;">Cloudflare Turnstile CAPTCHA on WP and plugin forms, with per-form toggles and stats.</p>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;background:var(--fx-color-canvas);border:1px solid var(--fx-color-border);border-radius:var(--fx-radius-md);">
+            <button class="fx-btn fx-btn--primary">Ping backend</button>
+            <span style="font-size:var(--fx-font-size-sm);color:var(--fx-color-text-muted);">Not yet pinged</span>
+          </div>
+          <p style="margin:0;font-size:var(--fx-font-size-sm);color:var(--fx-color-text-dim);"><code style="font-family:var(--fx-font-mono);background:var(--fx-color-elevated);padding:2px 4px;border-radius:var(--fx-radius-sm);font-size:var(--fx-font-size-xs);">turnstile</code></p>
+        </section>
+      </div>
+      <ul class="spec-list">
+        <li><span class="k">Panel</span><span class="v">surface bg · 1px border · radius lg · shadow-sm · padding 24px · flex column gap 16px</span></li>
+        <li><span class="k">Nested well</span><span class="v">canvas bg · 1px border · radius md · padding <code>12px 16px</code></span></li>
+        <li><span class="k">Loading state</span><span class="v">1px <em>dashed</em> border · muted text · radius lg</span></li>
+        <li><span class="k">Inline code</span><span class="v">mono · elevated bg · radius sm · padding <code>2px 4px</code></span></li>
+      </ul>
+    </section>
+
+    <!-- TOKENS -->
+    <section class="doc-section" id="tokens">
+      <h2>Token CSS — copy &amp; paste</h2>
+      <p class="doc-note">The full token set. Paste this into your plugin's admin stylesheet, changing the scope selector to your mount id (or <code>:root</code> if the SPA owns the whole screen). Then set base typography on the same selector as shown at the bottom.</p>
+      <pre class="code" id="tokenBlock"><button class="copy-btn" data-copy="tokenBlock">Copy</button><span class="c">/* Fanxie WP Core — design tokens. Scope to your admin mount node. */</span>
+<span class="n">#your-plugin-admin</span> {
+  <span class="c">/* Brand (mint) */</span>
+  <span class="p">--fx-color-primary</span>: <span class="n">#00e298</span>;
+  <span class="p">--fx-color-primary-strong</span>: <span class="n">#00a870</span>;
+  <span class="p">--fx-color-primary-hover</span>: <span class="n">#00c785</span>;
+  <span class="p">--fx-color-primary-active</span>: <span class="n">#008a5c</span>;
+  <span class="p">--fx-color-primary-soft</span>: <span class="n">#e6fbf4</span>;
+  <span class="p">--fx-color-button-primary</span>: <span class="n">#00e298</span>;
+  <span class="p">--fx-color-button-primary-hover</span>: <span class="n">#00c785</span>;
+  <span class="p">--fx-color-button-primary-active</span>: <span class="n">#00a870</span>;
+  <span class="p">--fx-color-button-primary-text</span>: <span class="n">#000000</span>;
+  <span class="p">--fx-color-accent</span>: <span class="n">#66f5c4</span>;
+  <span class="p">--fx-color-accent-soft</span>: <span class="n">#d6fbed</span>;
+
+  <span class="c">/* Neutrals */</span>
+  <span class="p">--fx-color-canvas</span>: <span class="n">#f7f7f5</span>;
+  <span class="p">--fx-color-surface</span>: <span class="n">#ffffff</span>;
+  <span class="p">--fx-color-elevated</span>: <span class="n">#eeeeed</span>;
+  <span class="p">--fx-color-border</span>: <span class="n">#d4d4d8</span>;
+  <span class="p">--fx-color-border-strong</span>: <span class="n">#a1a1aa</span>;
+  <span class="p">--fx-color-text</span>: <span class="n">#1c1c1f</span>;
+  <span class="p">--fx-color-text-muted</span>: <span class="n">#52525b</span>;
+  <span class="p">--fx-color-text-dim</span>: <span class="n">#a1a1aa</span>;
+  <span class="p">--fx-color-text-inverse</span>: <span class="n">#ffffff</span>;
+
+  <span class="c">/* Status */</span>
+  <span class="p">--fx-color-ok</span>: <span class="n">#00a870</span>;   <span class="p">--fx-color-ok-bg</span>: <span class="n">#e6fbf4</span>;
+  <span class="p">--fx-color-warn</span>: <span class="n">#b45309</span>; <span class="p">--fx-color-warn-bg</span>: <span class="n">#fff7ed</span>;
+  <span class="p">--fx-color-critical</span>: <span class="n">#d92d2d</span>; <span class="p">--fx-color-critical-bg</span>: <span class="n">#fff1f1</span>;
+  <span class="p">--fx-color-info</span>: <span class="n">#0f766e</span>; <span class="p">--fx-color-info-bg</span>: <span class="n">#ecfdf5</span>;
+  <span class="p">--fx-color-neutral</span>: <span class="n">#52525b</span>; <span class="p">--fx-color-neutral-bg</span>: <span class="n">#eeeeed</span>;
+  <span class="p">--fx-color-focus-ring</span>: <span class="n">#00a870</span>;
+
+  <span class="c">/* Spacing (4px grid) */</span>
+  <span class="p">--fx-space-1</span>: <span class="n">0.25rem</span>; <span class="p">--fx-space-2</span>: <span class="n">0.5rem</span>;
+  <span class="p">--fx-space-3</span>: <span class="n">0.75rem</span>; <span class="p">--fx-space-4</span>: <span class="n">1rem</span>;
+  <span class="p">--fx-space-5</span>: <span class="n">1.5rem</span>;  <span class="p">--fx-space-6</span>: <span class="n">2rem</span>;
+  <span class="p">--fx-space-7</span>: <span class="n">3rem</span>;
+
+  <span class="c">/* Radius */</span>
+  <span class="p">--fx-radius-sm</span>: <span class="n">4px</span>;  <span class="p">--fx-radius-md</span>: <span class="n">6px</span>;
+  <span class="p">--fx-radius-lg</span>: <span class="n">8px</span>;  <span class="p">--fx-radius-xl</span>: <span class="n">12px</span>;
+  <span class="p">--fx-radius-pill</span>: <span class="n">999px</span>;
+
+  <span class="c">/* Shadow */</span>
+  <span class="p">--fx-shadow-sm</span>: <span class="n">0 1px 2px rgba(0,0,0,.04)</span>;
+  <span class="p">--fx-shadow-md</span>: <span class="n">0 4px 8px rgba(0,0,0,.06)</span>;
+  <span class="p">--fx-shadow-lg</span>: <span class="n">0 12px 32px rgba(0,0,0,.1)</span>;
+  <span class="p">--fx-shadow-glow</span>: <span class="n">0 0 20px rgba(0,226,152,.25)</span>;
+
+  <span class="c">/* Type */</span>
+  <span class="p">--fx-font-heading</span>: <span class="n">'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif</span>;
+  <span class="p">--fx-font-body</span>: <span class="n">'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif</span>;
+  <span class="p">--fx-font-mono</span>: <span class="n">ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace</span>;
+  <span class="p">--fx-font-weight-regular</span>: <span class="n">400</span>; <span class="p">--fx-font-weight-medium</span>: <span class="n">500</span>; <span class="p">--fx-font-weight-semibold</span>: <span class="n">600</span>;
+  <span class="p">--fx-font-size-xs</span>: <span class="n">0.75rem</span>;   <span class="p">--fx-font-size-sm</span>: <span class="n">0.8125rem</span>;
+  <span class="p">--fx-font-size-md</span>: <span class="n">0.875rem</span>; <span class="p">--fx-font-size-lg</span>: <span class="n">1rem</span>;
+  <span class="p">--fx-font-size-xl</span>: <span class="n">1.125rem</span>; <span class="p">--fx-font-size-2xl</span>: <span class="n">1.375rem</span>;
+  <span class="p">--fx-font-size-3xl</span>: <span class="n">1.75rem</span>;
+  <span class="p">--fx-line-height-tight</span>: <span class="n">1.2</span>; <span class="p">--fx-line-height-snug</span>: <span class="n">1.375</span>; <span class="p">--fx-line-height-normal</span>: <span class="n">1.5</span>;
+
+  <span class="c">/* Motion */</span>
+  <span class="p">--fx-transition-fast</span>: <span class="n">120ms ease</span>;
+  <span class="p">--fx-transition-base</span>: <span class="n">200ms ease</span>;
+
+  <span class="c">/* Layout */</span>
+  <span class="p">--fx-sidebar-width</span>: <span class="n">16rem</span>;
+  <span class="p">--fx-sidebar-width-collapsed</span>: <span class="n">3.5rem</span>;
+  <span class="p">--fx-max-content-width</span>: <span class="n">64rem</span>;
+
+  <span class="c">/* Base typography — apply on the same node */</span>
+  <span class="p">font-family</span>: <span class="n">var(--fx-font-body)</span>;
+  <span class="p">font-size</span>: <span class="n">var(--fx-font-size-md)</span>;
+  <span class="p">line-height</span>: <span class="n">var(--fx-line-height-normal)</span>;
+  <span class="p">color</span>: <span class="n">var(--fx-color-text)</span>;
+  <span class="p">background</span>: <span class="n">var(--fx-color-canvas)</span>;
+  <span class="p">-webkit-font-smoothing</span>: <span class="n">antialiased</span>;
+}</pre>
+      <p class="doc-note">Fonts are loaded with <a href="https://fontsource.org">@fontsource</a> (self-hosted, GDPR-safe): <code>@import '@fontsource/inter/400.css'</code> … <code>/500 /600</code> and <code>@fontsource/lexend/500.css /600 /800</code>.</p>
+    </section>
+
+    <!-- GUARDRAILS -->
+    <section class="doc-section" id="guardrails">
+      <h2>Implementation guardrails</h2>
+      <p class="doc-note">The conventions that keep this system consistent and wp.org-compliant. Carry these over, not just the colors.</p>
+      <ul class="spec-list">
+        <li><span class="k">Scope everything</span><span class="v">Tokens + all styles live under one mount id (<code>#fanxie-wp-core-admin</code>) so nothing leaks into WP admin chrome. Components use <code>&lt;style scoped&gt;</code>.</span></li>
+        <li><span class="k">Light mode only</span><span class="v">No dark theme. Don't add <code>prefers-color-scheme</code> palettes.</span></li>
+        <li><span class="k">Self-hosted fonts</span><span class="v">No CDN at runtime — bundle Lexend + Inter via @fontsource.</span></li>
+        <li><span class="k">Focus ring</span><span class="v"><code>:focus-visible</code> → 2px <code>--fx-color-focus-ring</code> outline, 2px offset. UA ring suppressed on nav; mouse click shows nothing, keyboard shows the mint ring.</span></li>
+        <li><span class="k">Contrast</span><span class="v">Body ≥4.5:1. Use <code>text</code>/<code>text-muted</code> for real copy; <code>text-dim</code> only for captions/decoration. Status colors are pre-darkened for AA on white.</span></li>
+        <li><span class="k">Never color-only</span><span class="v">Pills/toasts pair color with an icon + SR-only prefix.</span></li>
+        <li><span class="k">Native labels</span><span class="v">Every control has a visible <code>&lt;label&gt;</code>; placeholders never substitute.</span></li>
+        <li><span class="k">Reduced motion</span><span class="v">Global <code>@media (prefers-reduced-motion: reduce)</code> collapses all durations.</span></li>
+        <li><span class="k">SR-only utility</span><span class="v"><code>.fx-visually-hidden</code> for names assistive tech needs but that shouldn't paint.</span></li>
+        <li><span class="k">Icons</span><span class="v">Lucide, tree-shaken imports, stroke-width 1.75, <code>currentColor</code>.</span></li>
+        <li><span class="k">No arbitrary values</span><span class="v">Compose from tokens — spacing, radius, type, and color all come from <code>--fx-*</code>.</span></li>
+      </ul>
+      <div class="callout" style="margin-top:var(--fx-space-5)">
+        <strong>Source of truth.</strong> This document was generated from <code>assets/admin/src/styles/main.css</code>, <code>App.vue</code>, <code>config/modules.ts</code>, and the shared components in <code>assets/admin/src/components/</code>. If those change, regenerate.
+      </div>
+    </section>
+
+    <footer style="padding-top:var(--fx-space-5); border-top:1px solid var(--fx-color-border); color:var(--fx-color-text-dim); font-size:var(--fx-font-size-sm);">
+      Fanxie WP Core · Admin design system · Built by Fanxie Lab
+    </footer>
+
+  </main>
+</div>
+
+<script>
+// Mobile drawer toggle
+(function () {
+  var btn = document.getElementById('menuBtn');
+  var nav = document.getElementById('docNav');
+  if (btn && nav) {
+    btn.addEventListener('click', function () {
+      var open = nav.classList.toggle('is-open');
+      btn.setAttribute('aria-expanded', String(open));
+    });
+    nav.addEventListener('click', function (e) {
+      if (e.target.closest('a')) { nav.classList.remove('is-open'); btn.setAttribute('aria-expanded', 'false'); }
+    });
+  }
+})();
+
+// Toggle demo
+document.querySelectorAll('[data-toggle]').forEach(function (t) {
+  t.addEventListener('click', function () {
+    t.setAttribute('aria-checked', t.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+  });
+});
+
+// Copy buttons
+document.querySelectorAll('.copy-btn').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var el = document.getElementById(b.getAttribute('data-copy'));
+    if (!el) return;
+    var text = el.innerText.replace(/^Copy\s*/, '');
+    navigator.clipboard.writeText(text).then(function () {
+      var prev = b.textContent; b.textContent = 'Copied ✓';
+      setTimeout(function () { b.textContent = prev; }, 1500);
+    });
+  });
+});
+
+// Scroll-spy for the doc sidebar
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.doc-nav__link'));
+  var map = {};
+  links.forEach(function (l) { var id = l.getAttribute('href').slice(1); if (id) map[id] = l; });
+  var sections = Object.keys(map).map(function (id) { return document.getElementById(id); }).filter(Boolean);
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        links.forEach(function (l) { l.classList.remove('is-active'); });
+        var active = map[en.target.id];
+        if (active) active.classList.add('is-active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+  sections.forEach(function (s) { obs.observe(s); });
+})();
+</script>
+</body>
+</html>

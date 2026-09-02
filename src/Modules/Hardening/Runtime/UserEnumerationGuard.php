@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
  *      with login slugs. We 401 unauthenticated callers before the core
  *      controller runs.
  *
- * Both behaviours are independently toggleable via the module config.
+ * Both behaviors are independently toggleable via the module config.
  */
 final class UserEnumerationGuard {
 
