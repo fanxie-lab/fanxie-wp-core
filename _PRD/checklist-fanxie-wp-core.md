@@ -120,14 +120,32 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 - [ ] Tests: verifier mock, each integration renders + validates, fail-open vs fail-closed
 
 ### 2.2 Environment Health (PRD §7)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] Version checks (WP, PHP, MySQL/MariaDB, SSL, HTTPS) with hardcoded support matrix
-- [ ] Cron health (overdue events, `DISABLE_WP_CRON` presence, real-cron recommendation block)
-- [ ] Debug mode scan (`WP_DEBUG`, `WP_DEBUG_DISPLAY`, `SCRIPT_DEBUG`, PHP `display_errors`)
-- [ ] Inactive plugin + inactive non-default theme detection
-- [ ] Abandoned plugin check via wp.org API (cached 24h) — critical at 2y, warning at 1y
-- [ ] Dashboard widget summarising status
-- [ ] Vue tab: grouped cards (red/yellow/green), copy-paste fix snippets
-- [ ] Tests: matrix edge cases, wp.org API timeout/error handling, snapshot of widget render
+- [x] Version checks (WP, PHP, MySQL/MariaDB, SSL, HTTPS) — **date-driven** support matrix, not hardcoded version comparisons (see note below)
+- [x] Cron health (overdue events, `DISABLE_WP_CRON` presence, stale `doing_cron` lock, real-cron recommendation block)
+- [x] Debug mode scan (`WP_DEBUG`, `WP_DEBUG_DISPLAY`, `WP_DEBUG_LOG` in the web root, `SCRIPT_DEBUG`, PHP `display_errors`, `error_reporting`)
+- [x] Inactive plugin + inactive non-default theme detection
+- [x] Abandoned plugin check via wp.org API (cached 24h, batched, on by default with a `wporg_scan_enabled` opt-out) — critical at 2y, warning at 1y
+- [x] `readme.txt` **External services** disclosure for api.wordpress.org (required for wp.org review)
+- [x] Dashboard widget summarising status (renders from cache only — never builds a report or makes a request)
+- [x] Vue tab: grouped cards (red/yellow/green), copy-paste fix snippets, all 11 settings exposed, `unknown` as a first-class state
+- [x] Tests: matrix edge cases + boundary dates, wp.org API timeout/`is_wp_error`/`not_on_wporg` handling, SSL socket failure, threshold clamping + inverted-pair rule, AJAX surface, widget render
+
+**Threshold validation:** the four numeric settings are clamped server-side to
+ranges declared once in `EnvironmentHealth::THRESHOLD_RANGES`, which also feeds
+the defaults and publishes `min`/`max` to the admin UI so the browser's bounds
+are read from the server rather than duplicated in TypeScript. `save-config` is
+a plain AJAX endpoint, so the browser cannot be the validation layer: a bare
+`absint` accepted `0` (which breaks the cron and SSL checks silently) and any
+ceiling. `abandoned_critical_days < abandoned_warning_days` is resolved by
+raising critical to match.
+
+**Support-matrix decision (diverges from PRD §7.2):** the PRD's thresholds
+("warning < 8.2, critical < 8.1") were stale by the time the module was built.
+`SupportMatrix` instead stores each branch's published *active* and *security*
+end dates and derives status by comparing them against now, so verdicts age
+correctly on their own. Branches absent from the matrix report `unknown` rather
+than a guess, and `SupportMatrix::REVIEWED_ON` records when the tables were last
+checked against php.net and endoflife.date.
 
 ---
 

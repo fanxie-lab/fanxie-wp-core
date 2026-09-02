@@ -91,6 +91,14 @@ const liveModuleRoutes: Record<string, RouteRecordRaw> = {
     name: 'login-protection',
     component: () => import('@/modules/LoginProtection/LoginProtection.vue'),
   },
+  // Environment Health is a read-mostly report: grouped check cards plus a
+  // single scan setting. One top-level view, no sub-tabs.
+  'environment-health': {
+    path: '/environment-health',
+    name: 'environment-health',
+    component: () =>
+      import('@/modules/EnvironmentHealth/EnvironmentHealth.vue'),
+  },
 };
 
 /** Build a placeholder route for a module id. */

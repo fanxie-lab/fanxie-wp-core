@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
-import { Lock, RefreshCw, Copy, Check } from 'lucide-vue-next';
-import { SaveBar, StatusPill, Toast, Toggle } from '@/components';
+import { computed, onMounted, watch } from 'vue';
+import { Lock, RefreshCw } from 'lucide-vue-next';
+import { CodeSnippet, SaveBar, StatusPill, Toast, Toggle } from '@/components';
 import type { StatusPillVariant, ToastVariant, SaveStatus } from '@/components';
 import { useHardeningStore } from './stores/hardening';
 import ChecklistItem from './components/ChecklistItem.vue';
@@ -234,27 +234,20 @@ const applicationPasswordsSummary = computed<string>(() => {
   return `In use by ${String(count)} ${noun} across ${String(users.length)} ${userNoun}: ${who}. These are site-wide, not just your account.`;
 });
 
-// --- wp-config snippet copy-to-clipboard -----------------------------------
+// --- Remediation snippets ---------------------------------------------------
+// Copy affordance, its visible confirmation and its live-region announcement
+// all live in the shared CodeSnippet primitive (@/components). We only need to
+// surface a failure toast when the clipboard is unavailable or denied.
 const WP_CONFIG_SNIPPET = "define( 'DISALLOW_FILE_EDIT', true );";
-const snippetCopied = ref<boolean>(false);
-let snippetCopyTimer: ReturnType<typeof setTimeout> | null = null;
+const NGINX_README_SNIPPET = `location ~* /(readme\\.html|license\\.txt)$ {
+    deny all;
+}`;
+const NGINX_UPLOADS_SNIPPET = `location ~* /wp-content/uploads/.*\\.php$ {
+    deny all;
+}`;
 
-async function copySnippet(): Promise<void> {
-  try {
-    await navigator.clipboard.writeText(WP_CONFIG_SNIPPET);
-    snippetCopied.value = true;
-    if (snippetCopyTimer !== null) {
-      clearTimeout(snippetCopyTimer);
-    }
-    snippetCopyTimer = setTimeout(() => {
-      snippetCopied.value = false;
-    }, 2000);
-  } catch {
-    store.pushToast(
-      'Copy to clipboard failed. Select the snippet and copy manually.',
-      'error',
-    );
-  }
+function onSnippetCopyFailed(message: string): void {
+  store.pushToast(message, 'error');
 }
 
 // --- Event handlers --------------------------------------------------------
@@ -583,12 +576,13 @@ onMounted(() => {
               >
                 {{ readmeServerGuidance }}
               </p>
-              <pre
+              <CodeSnippet
                 v-if="store.checks?.server_type === 'nginx'"
-                class="fx-hardening__snippet"
-              ><code>location ~* /(readme\.html|license\.txt)$ {
-    deny all;
-}</code></pre>
+                :code="NGINX_README_SNIPPET"
+                language="nginx"
+                context="your nginx server block"
+                @copy-failed="onSnippetCopyFailed"
+              />
             </template>
           </ChecklistItem>
         </div>
@@ -647,11 +641,12 @@ onMounted(() => {
                 nginx detected — a <code>.htaccess</code> file will not be
                 evaluated. Add this to your server block instead:
               </p>
-              <pre
-                class="fx-hardening__snippet"
-              ><code>location ~* /wp-content/uploads/.*\.php$ {
-    deny all;
-}</code></pre>
+              <CodeSnippet
+                :code="NGINX_UPLOADS_SNIPPET"
+                language="nginx"
+                context="your nginx server block"
+                @copy-failed="onSnippetCopyFailed"
+              />
             </template>
             <p v-else class="fx-hardening__server-note-message">
               IIS detected — the <code>.htaccess</code> file has no effect. Add
@@ -742,37 +737,12 @@ onMounted(() => {
                   <code>wp-config.php</code> near the other
                   <code>define()</code> calls:
                 </p>
-                <div class="fx-hardening__snippet-row">
-                  <pre
-                    class="fx-hardening__snippet"
-                  ><code>{{ WP_CONFIG_SNIPPET }}</code></pre>
-                  <button
-                    type="button"
-                    class="fx-hardening__copy-button"
-                    :aria-label="
-                      snippetCopied
-                        ? 'Snippet copied'
-                        : 'Copy wp-config snippet'
-                    "
-                    @click="() => void copySnippet()"
-                  >
-                    <Check
-                      v-if="snippetCopied"
-                      :size="14"
-                      :stroke-width="1.75"
-                      aria-hidden="true"
-                      focusable="false"
-                    />
-                    <Copy
-                      v-else
-                      :size="14"
-                      :stroke-width="1.75"
-                      aria-hidden="true"
-                      focusable="false"
-                    />
-                    <span>{{ snippetCopied ? 'Copied' : 'Copy' }}</span>
-                  </button>
-                </div>
+                <CodeSnippet
+                  :code="WP_CONFIG_SNIPPET"
+                  language="php"
+                  context="wp-config.php"
+                  @copy-failed="onSnippetCopyFailed"
+                />
               </div>
             </template>
           </ChecklistItem>
@@ -1089,58 +1059,6 @@ onMounted(() => {
   border-radius: var(--fx-radius-sm);
   font-family: var(--fx-font-mono);
   font-size: 0.9em;
-}
-
-.fx-hardening__snippet-row {
-  display: flex;
-  align-items: center;
-  gap: var(--fx-space-2);
-  flex-wrap: wrap;
-}
-
-.fx-hardening__snippet {
-  margin: 0;
-  padding: var(--fx-space-2) var(--fx-space-3);
-  background: var(--fx-color-elevated);
-  border: 1px solid var(--fx-color-border);
-  border-radius: var(--fx-radius-md);
-  font-family: var(--fx-font-mono);
-  font-size: var(--fx-font-size-sm);
-  overflow-x: auto;
-  flex: 1 1 auto;
-}
-
-.fx-hardening__snippet code {
-  font-family: inherit;
-}
-
-.fx-hardening__copy-button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--fx-space-1);
-  padding: var(--fx-space-1) var(--fx-space-2);
-  border: 1px solid var(--fx-color-border);
-  border-radius: var(--fx-radius-md);
-  background: var(--fx-color-surface);
-  color: var(--fx-color-text);
-  font-family: var(--fx-font-body);
-  font-size: var(--fx-font-size-sm);
-  cursor: pointer;
-  transition:
-    border-color var(--fx-transition-fast),
-    background var(--fx-transition-fast);
-}
-
-.fx-hardening__copy-button:hover {
-  border-color: var(--fx-color-border-strong);
-  background: var(--fx-color-elevated);
-}
-
-.fx-hardening__copy-button:focus,
-.fx-hardening__copy-button:focus-visible {
-  outline: none;
-  border-color: var(--fx-color-primary-strong);
-  box-shadow: 0 0 0 3px var(--fx-color-primary-soft);
 }
 
 .fx-hardening__ap-note {

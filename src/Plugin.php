@@ -11,6 +11,7 @@ namespace FanxieLab\WPCore;
 
 use FanxieLab\WPCore\Admin\AjaxRouter;
 use FanxieLab\WPCore\Admin\SettingsPage;
+use FanxieLab\WPCore\Modules\EnvironmentHealth\EnvironmentHealth;
 use FanxieLab\WPCore\Modules\Hardening\Hardening;
 use FanxieLab\WPCore\Modules\LoginProtection\BanRepository;
 use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
@@ -250,6 +251,9 @@ final class Plugin {
 		$login_protection = new LoginProtection( $ajax_router );
 		$registry->register( $login_protection );
 
+		$environment_health = new EnvironmentHealth( $ajax_router );
+		$registry->register( $environment_health );
+
 		$settings_page = new SettingsPage( $registry );
 
 		$this->services[ ModuleRegistry::class ]  = $registry;
@@ -258,6 +262,8 @@ final class Plugin {
 		$this->services[ SecurityHeaders::class ] = $security_headers;
 		$this->services[ Hardening::class ]       = $hardening;
 		$this->services[ LoginProtection::class ] = $login_protection;
+
+		$this->services[ EnvironmentHealth::class ] = $environment_health;
 	}
 
 	/**

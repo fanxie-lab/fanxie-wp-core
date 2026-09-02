@@ -1,6 +1,7 @@
 // Barrel export for shared component primitives.
 // Prefer named imports from '@/components' over deep paths.
 
+export { default as CodeSnippet } from './CodeSnippet.vue';
 export { default as ConfirmDialog } from './ConfirmDialog.vue';
 export { default as Toggle } from './Toggle.vue';
 export { default as TextField } from './TextField.vue';
