@@ -1,58 +1,114 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
 import { Activity, RefreshCw } from 'lucide-vue-next';
-import { HelpText, SaveBar, StatusPill, Toast, Toggle } from '@/components';
-import type { SaveStatus, ToastVariant } from '@/components';
+import { StatusPill, Toast } from '@/components';
+import type { ToastVariant } from '@/components';
 import { useEnvironmentHealthStore } from './stores/environmentHealth';
-import CheckGroupCard from './components/CheckGroupCard.vue';
 import HealthSummary from './components/HealthSummary.vue';
-import ThresholdField from './components/ThresholdField.vue';
-import { abandonedBandsInverted, statusPill } from './format';
+import { statusPill } from './format';
 
 /**
  * Environment Health module root (PRD §7).
  *
- * Single scrollable view:
- *   1. Header — overall status pill + Refresh
- *   2. Counts summary + "last checked" stamp
- *   3. One card per CheckGroup (versions / cron / debug / plugins_themes)
- *   4. Scan settings (wp.org abandoned-plugin scan) + SaveBar
+ * Shell only — it owns everything that stays put across both sub-tabs:
+ *   - the page header, overall status pill and Re-run control
+ *   - HealthSummary (counts + "last checked")
+ *   - the tablist, the routed panel, and the Toast region
  *
- * Every `label` / `summary` / `detail` string is rendered exactly as PHP sent
- * it — those are already translated server-side. Only this file's own chrome
- * (headings, buttons, empty states) is authored here.
+ * HealthSummary is pinned here rather than living inside ChecksView on
+ * purpose: the OK/warning/critical counts stay on screen while the user is
+ * over on Settings adjusting a threshold, so a critical finding can never be
+ * scrolled away from or tabbed out of view.
+ *
+ * `load()` runs once here, on the shell's mount. Switching tabs swaps the
+ * routed child but never remounts the shell, so no tab switch refetches.
+ *
+ * Tab semantics mirror SecurityHeaders exactly (the house pattern): RouterLink
+ * in `custom` slot mode rendered as `role="tab"` inside a `role="tablist"`, so
+ * each tab stays a real, deep-linkable link while keeping keyboard arrow nav,
+ * aria-selected and a roving tabindex.
  */
+
+type TabId = 'checks' | 'settings';
+
+interface Tab {
+  id: TabId;
+  label: string;
+  routeName: string;
+}
+
+const TABS: readonly Tab[] = [
+  { id: 'checks', label: 'Checks', routeName: 'environment-health.checks' },
+  {
+    id: 'settings',
+    label: 'Settings',
+    routeName: 'environment-health.settings',
+  },
+] as const;
 
 const store = useEnvironmentHealthStore();
+const route = useRoute();
+const router = useRouter();
 
-// Static ids wiring each HelpText to the switch it describes. Passed through
-// Toggle's `describedby` prop, never as a raw aria-describedby — that would
-// land on the wrapper <div> instead of the <button role="switch">
-// (CLAUDE.md §3.4). Single instance per screen, so plain strings are safe.
-const HELP_IDS = {
-  checksVersions: 'fx-eh-checks-versions-help',
-  checksCron: 'fx-eh-checks-cron-help',
-  checksDebug: 'fx-eh-checks-debug-help',
-  checksPluginsThemes: 'fx-eh-checks-plugins-themes-help',
-  wporgScan: 'fx-eh-wporg-scan-help',
-  sslCheck: 'fx-eh-ssl-check-help',
-  dashboardWidget: 'fx-eh-dashboard-widget-help',
-} as const;
-
-/**
- * The abandoned-plugin bands are the one rule the server cannot catch: each
- * number passes `absint` on its own, but a critical cut-off below the warning
- * cut-off means nothing is ever flagged critical. Block the save rather than
- * let a silently dead setting be written.
- */
-const bandsInverted = computed<boolean>(() => {
-  const t = store.config?.thresholds;
-  if (!t) return false;
-  return abandonedBandsInverted(
-    t.abandoned_warning_days,
-    t.abandoned_critical_days,
-  );
+/** The active tab is derived from the current route name. */
+const activeTab = computed<TabId>(() => {
+  const match = TABS.find((t) => route.name === t.routeName);
+  return match?.id ?? 'checks';
 });
+
+const tabButtons = ref<Record<TabId, HTMLAnchorElement | null>>({
+  checks: null,
+  settings: null,
+});
+
+function setTabRef(id: TabId, el: Element | null): void {
+  tabButtons.value[id] = el instanceof HTMLAnchorElement ? el : null;
+}
+
+async function focusTab(id: TabId): Promise<void> {
+  await nextTick();
+  tabButtons.value[id]?.focus();
+}
+
+function onTabKeydown(event: KeyboardEvent, id: TabId): void {
+  const idx = TABS.findIndex((t) => t.id === id);
+  if (idx === -1) return;
+
+  let nextIdx: number | null = null;
+  switch (event.key) {
+    case 'ArrowRight':
+      nextIdx = (idx + 1) % TABS.length;
+      break;
+    case 'ArrowLeft':
+      nextIdx = (idx - 1 + TABS.length) % TABS.length;
+      break;
+    case 'Home':
+      nextIdx = 0;
+      break;
+    case 'End':
+      nextIdx = TABS.length - 1;
+      break;
+    default:
+      return;
+  }
+
+  event.preventDefault();
+  const nextTab = TABS[nextIdx];
+  if (nextTab) {
+    void router
+      .push({ name: nextTab.routeName })
+      .then(() => focusTab(nextTab.id));
+  }
+}
+
+function panelId(tab: TabId): string {
+  return `fx-eh-panel-${tab}`;
+}
+
+function tabId(tab: TabId): string {
+  return `fx-eh-tab-${tab}`;
+}
 
 const headerPill = computed(() => {
   if (!store.report) {
@@ -63,12 +119,6 @@ const headerPill = computed(() => {
     };
   }
   return statusPill(store.overallStatus);
-});
-
-const saveStatus = computed<SaveStatus>(() => {
-  if (store.loading.saving) return 'saving';
-  if (store.error) return 'error';
-  return 'idle';
 });
 
 const toastVariant = computed<ToastVariant>(() => {
@@ -110,18 +160,6 @@ watch(
 
 function onRefresh(): void {
   void store.refresh();
-}
-
-function onSave(): void {
-  void store.save();
-}
-
-function onReset(): void {
-  store.reset();
-}
-
-function onCopyFailed(message: string): void {
-  store.pushToast(message, 'error');
 }
 
 onMounted(() => {
@@ -185,6 +223,16 @@ onMounted(() => {
       {{ refreshAnnouncement }}
     </span>
 
+    <!--
+      Pinned across both tabs — see the component docblock. Rendered as soon as
+      a report exists so the counts survive a tab switch.
+    -->
+    <HealthSummary
+      v-if="store.report"
+      :counts="store.counts"
+      :generated-at="store.report.generated_at"
+    />
+
     <p
       v-if="store.loading.initial && !store.report"
       class="fx-eh__panel"
@@ -209,209 +257,48 @@ onMounted(() => {
       </button>
     </div>
 
-    <template v-else-if="store.report">
-      <HealthSummary
-        :counts="store.counts"
-        :generated-at="store.report.generated_at"
-      />
-
-      <p v-if="store.isEmptyReport" class="fx-eh__panel">
-        No checks ran. This usually means every check was disabled — re-run the
-        checks, or enable the wp.org scan below.
-      </p>
-
-      <div v-else class="fx-eh__groups" :aria-busy="store.loading.refreshing">
-        <CheckGroupCard
-          v-for="bucket in store.checksByGroup"
-          :key="bucket.group"
-          :group="bucket.group"
-          :checks="bucket.checks"
-          @copy-failed="onCopyFailed"
-        />
-      </div>
-    </template>
-
-    <section
-      v-if="store.config"
-      class="fx-eh__section"
-      aria-labelledby="fx-eh-checks-heading"
-    >
-      <header class="fx-eh__section-header">
-        <h3 id="fx-eh-checks-heading" class="fx-eh__section-title">
-          Which checks run
-        </h3>
-        <p class="fx-eh__section-hint">
-          Turning a group off removes its card from the report entirely — it
-          does not mark the checks as passing.
-        </p>
-      </header>
-
-      <div class="fx-eh__field">
-        <Toggle
-          v-model="store.config.checks.versions"
-          label="Check software versions"
-          :describedby="HELP_IDS.checksVersions"
-        />
-        <HelpText :id="HELP_IDS.checksVersions">
-          WordPress, PHP, the database server, the TLS certificate, and whether
-          the site is served over HTTPS.
-        </HelpText>
+    <div v-else class="fx-eh__tabs">
+      <div
+        role="tablist"
+        aria-label="Environment Health sections"
+        class="fx-eh__tablist"
+      >
+        <RouterLink
+          v-for="tab in TABS"
+          :key="tab.id"
+          :to="{ name: tab.routeName }"
+          custom
+        >
+          <template #default="{ href, navigate }">
+            <a
+              :id="tabId(tab.id)"
+              :ref="(el) => setTabRef(tab.id, el as Element | null)"
+              :href="href"
+              role="tab"
+              class="fx-eh__tab"
+              :class="{ 'fx-eh__tab--active': activeTab === tab.id }"
+              :aria-selected="activeTab === tab.id"
+              :aria-controls="panelId(tab.id)"
+              :tabindex="activeTab === tab.id ? 0 : -1"
+              @click="navigate"
+              @keydown="onTabKeydown($event, tab.id)"
+            >
+              {{ tab.label }}
+            </a>
+          </template>
+        </RouterLink>
       </div>
 
-      <div class="fx-eh__field">
-        <Toggle
-          v-model="store.config.checks.cron"
-          label="Check scheduled tasks"
-          :describedby="HELP_IDS.checksCron"
-        />
-        <HelpText :id="HELP_IDS.checksCron">
-          Detects a wedged cron lock and events that are running late.
-        </HelpText>
-      </div>
-
-      <div class="fx-eh__field">
-        <Toggle
-          v-model="store.config.checks.debug"
-          label="Check debug settings"
-          :describedby="HELP_IDS.checksDebug"
-        />
-        <HelpText :id="HELP_IDS.checksDebug">
-          Finds debug switches left on in production, including a debug log
-          written inside the web root.
-        </HelpText>
-      </div>
-
-      <div class="fx-eh__field">
-        <Toggle
-          v-model="store.config.checks.plugins_themes"
-          label="Check plugins and themes"
-          :describedby="HELP_IDS.checksPluginsThemes"
-        />
-        <HelpText :id="HELP_IDS.checksPluginsThemes">
-          Inactive plugins, unused themes, and — when the wordpress.org check
-          below is on — plugins that look abandoned.
-        </HelpText>
-      </div>
-    </section>
-
-    <section
-      v-if="store.config"
-      class="fx-eh__section"
-      aria-labelledby="fx-eh-settings"
-    >
-      <header class="fx-eh__section-header">
-        <h3 id="fx-eh-settings" class="fx-eh__section-title">
-          Outbound requests and display
-        </h3>
-        <p class="fx-eh__section-hint">
-          The two checks below are the only ones that talk to anything outside
-          this server.
-        </p>
-      </header>
-
-      <div class="fx-eh__field">
-        <Toggle
-          v-model="store.config.wporg_scan_enabled"
-          label="Check plugin freshness on wordpress.org"
-          :describedby="HELP_IDS.wporgScan"
-        />
-        <HelpText :id="HELP_IDS.wporgScan">
-          Sends the slug of each active plugin to
-          <code>api.wordpress.org</code> to read its last-updated date, a few at
-          a time on a daily schedule, cached for 24 hours. Nothing about you or
-          your visitors is sent. Turn this off to stop the requests and discard
-          everything already cached — abandoned-plugin rows will then report
-          that they could not be checked. Plugins not listed on wordpress.org
-          (premium or custom) are never scanned.
-        </HelpText>
-      </div>
-
-      <div class="fx-eh__field">
-        <Toggle
-          v-model="store.config.ssl_check_enabled"
-          label="Check the TLS certificate"
-          :describedby="HELP_IDS.sslCheck"
-        />
-        <HelpText :id="HELP_IDS.sslCheck">
-          Opens one short-lived connection to this site to read its certificate
-          expiry date, at most twice a day. Hosts that block outbound
-          connections will report &ldquo;unknown&rdquo; rather than a false
-          alarm, so leaving this on is safe even where it cannot succeed.
-        </HelpText>
-      </div>
-
-      <div class="fx-eh__field">
-        <Toggle
-          v-model="store.config.dashboard_widget"
-          label="Show the dashboard widget"
-          :describedby="HELP_IDS.dashboardWidget"
-        />
-        <HelpText :id="HELP_IDS.dashboardWidget">
-          Mirrors this report onto the main wp-admin dashboard as a summary
-          widget. Turning it off changes nothing about which checks run.
-        </HelpText>
-      </div>
-    </section>
-
-    <section
-      v-if="store.config"
-      class="fx-eh__section"
-      aria-labelledby="fx-eh-thresholds"
-    >
-      <header class="fx-eh__section-header">
-        <h3 id="fx-eh-thresholds" class="fx-eh__section-title">Thresholds</h3>
-        <p class="fx-eh__section-hint">
-          These decide where a check tips from OK into a warning or a critical
-          finding. Raising a number makes the report quieter; lowering it makes
-          the report louder. Neither changes anything about your site.
-        </p>
-      </header>
-
-      <div class="fx-eh__fields-grid">
-        <ThresholdField
-          v-model="store.config.thresholds.ssl_expiry_warning_days"
-          field-key="ssl_expiry_warning_days"
-          label="Warn this many days before the certificate expires"
-          help="Below this many days of validity left, the TLS row turns into a warning. Most certificates auto-renew about 30 days out, so a smaller number can hide a renewal that has quietly stopped working."
-          unit="days"
-        />
-        <ThresholdField
-          v-model="store.config.thresholds.cron_overdue_minutes"
-          field-key="cron_overdue_minutes"
-          label="Treat an event as overdue after this many minutes"
-          help="A scheduled event still unrun this long past its due time is reported as overdue. Sites with little traffic run cron less often, so a low number here reports lateness that is normal for them."
-          unit="minutes"
-        />
-        <ThresholdField
-          v-model="store.config.thresholds.abandoned_warning_days"
-          field-key="abandoned_warning_days"
-          label="Warn when a plugin has not been updated in this many days"
-          help="A plugin whose last wordpress.org release is older than this is flagged as possibly abandoned. Only applies while the wordpress.org check above is on."
-          unit="days"
-        />
-        <ThresholdField
-          v-model="store.config.thresholds.abandoned_critical_days"
-          field-key="abandoned_critical_days"
-          label="Flag as critical after this many days without an update"
-          help="The harder cut-off for the same check. It must be larger than the warning figure above, or nothing ever reaches critical."
-          unit="days"
-        />
-      </div>
-
-      <HelpText v-if="bandsInverted" id="fx-eh-bands-error" tone="warn">
-        The critical cut-off is lower than the warning cut-off, so no plugin
-        would ever be flagged critical. Raise it above the warning figure to
-        save.
-      </HelpText>
-
-      <SaveBar
-        :dirty="store.isDirty"
-        :status="saveStatus"
-        :disabled="store.loading.saving || bandsInverted"
-        @save="onSave"
-        @reset="onReset"
-      />
-    </section>
+      <section
+        :id="panelId(activeTab)"
+        role="tabpanel"
+        :aria-labelledby="tabId(activeTab)"
+        class="fx-eh__panel-region"
+        :tabindex="0"
+      >
+        <RouterView />
+      </section>
+    </div>
 
     <Teleport to="body">
       <div v-if="store.toast" class="fx-eh__toast-region" aria-live="polite">
@@ -539,6 +426,53 @@ onMounted(() => {
   }
 }
 
+.fx-eh__tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fx-space-4);
+}
+
+.fx-eh__tablist {
+  display: flex;
+  gap: var(--fx-space-1);
+  border-bottom: 1px solid var(--fx-color-border);
+  overflow-x: auto;
+}
+
+.fx-eh__tab {
+  padding: var(--fx-space-2) var(--fx-space-4);
+  border: none;
+  background: transparent;
+  color: var(--fx-color-text-muted);
+  font-family: var(--fx-font-body);
+  font-size: var(--fx-font-size-md);
+  font-weight: var(--fx-font-weight-medium);
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  /* Align the 2px active underline with the tablist's own border so the
+   * active tab appears to merge with the content panel below. */
+  margin-bottom: -1px;
+  transition:
+    color var(--fx-transition-fast),
+    border-color var(--fx-transition-fast);
+}
+
+.fx-eh__tab:hover {
+  color: var(--fx-color-text);
+}
+
+.fx-eh__tab--active {
+  color: var(--fx-color-text);
+  border-bottom-color: var(--fx-color-primary-strong);
+}
+
+.fx-eh__panel-region {
+  outline: none;
+}
+
 .fx-eh__panel {
   display: flex;
   flex-direction: column;
@@ -567,59 +501,6 @@ onMounted(() => {
 .fx-eh__panel-body {
   margin: 0;
   font-size: var(--fx-font-size-sm);
-}
-
-.fx-eh__groups {
-  display: flex;
-  flex-direction: column;
-  gap: var(--fx-space-5);
-}
-
-.fx-eh__section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--fx-space-3);
-  padding: var(--fx-space-5);
-  background: var(--fx-color-surface);
-  border: 1px solid var(--fx-color-border);
-  border-radius: var(--fx-radius-lg);
-  box-shadow: var(--fx-shadow-sm);
-}
-
-.fx-eh__section-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--fx-space-1);
-}
-
-.fx-eh__section-title {
-  margin: 0;
-  font-family: var(--fx-font-heading);
-  font-size: var(--fx-font-size-xl);
-  font-weight: var(--fx-font-weight-medium);
-  color: var(--fx-color-text);
-}
-
-.fx-eh__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--fx-space-2);
-}
-
-.fx-eh__section-hint {
-  margin: 0;
-  color: var(--fx-color-text-muted);
-  font-size: var(--fx-font-size-sm);
-  max-width: 62ch;
-}
-
-/* Two columns on wide viewports so four short numeric fields do not become a
-   tall single-file column; collapses to one column below the card's comfort
-   width. */
-.fx-eh__fields-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  gap: var(--fx-space-4);
 }
 
 .fx-eh__toast-region {

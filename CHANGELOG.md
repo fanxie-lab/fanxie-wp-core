@@ -65,6 +65,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `min`/`max`. `unknown` is a first-class state (dashed neutral border, "Couldn't
   check"), visually distinct from both healthy and critical, for hosts that block
   the outbound TLS probe.
+- Environment Health admin tab is split into `Checks` and `Settings` sub-tabs
+  (deep-linkable, following the SecurityHeaders parent/children route pattern).
+  The page header, "last checked" timestamp, Re-run control, and the
+  OK/warning/critical counts stay pinned in the parent shell, so the health
+  verdict remains visible while settings are being changed. Each tab lazy-loads
+  as its own chunk. Leaving the Settings tab with unsaved edits now prompts
+  through the shared `ConfirmDialog` — behind a tab the SaveBar is no longer
+  always on screen, so dirty state could otherwise be lost silently; discarding
+  resets the store rather than leaving the edits to reappear or be saved later.
 - Shared `CodeSnippet` component promoted out of Environment Health and adopted by
   Hardening, which fixes a pre-existing accessibility bug: Hardening's copy button
   confirmed only via a silent icon swap, with no `aria-live` announcement.
