@@ -1,6 +1,7 @@
 // Barrel export for shared component primitives.
 // Prefer named imports from '@/components' over deep paths.
 
+export { default as ConfirmDialog } from './ConfirmDialog.vue';
 export { default as Toggle } from './Toggle.vue';
 export { default as TextField } from './TextField.vue';
 export { default as Select } from './Select.vue';
@@ -15,3 +16,4 @@ export type { SaveStatus } from './SaveBar.vue';
 export type { StatusPillVariant } from './StatusPill.vue';
 export type { ToastVariant } from './Toast.vue';
 export type { SelectOption, SelectOptionGroup } from './Select.vue';
+export type { ConfirmTone } from './ConfirmDialog.vue';

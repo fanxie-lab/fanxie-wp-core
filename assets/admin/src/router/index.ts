@@ -83,6 +83,14 @@ const liveModuleRoutes: Record<string, RouteRecordRaw> = {
     name: 'hardening',
     component: () => import('@/modules/Hardening/Hardening.vue'),
   },
+  // Login Protection is a single top-level view (no sub-tabs) — the attempt
+  // limiter, lockout log, hide-login, password policy, and session sections
+  // all live in one scrollable page driven by the shared store.
+  'login-protection': {
+    path: '/login-protection',
+    name: 'login-protection',
+    component: () => import('@/modules/LoginProtection/LoginProtection.vue'),
+  },
 };
 
 /** Build a placeholder route for a module id. */

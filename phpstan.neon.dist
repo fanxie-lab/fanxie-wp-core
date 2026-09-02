@@ -17,6 +17,13 @@ parameters:
     bootstrapFiles:
         - tests/phpstan-bootstrap.php
 
+    # Symbol-only sources (not analysed): the `WP_CLI` facade is not part of
+    # `php-stubs/wordpress-stubs`, so point PHPStan at the hand-written stub the
+    # unit suite already uses. This lets the analyser resolve `WP_CLI` in the
+    # module's CLI command without pulling in a full wp-cli-stubs dependency.
+    scanFiles:
+        - tests/stubs/wp-cli.php
+
     # Paths analysed. Composer bootstrap file + uninstall handler + everything
     # under `src/`. Tests are deliberately NOT in scope: unit tests depend on
     # Brain Monkey's dynamic function redefinition, integration tests depend on

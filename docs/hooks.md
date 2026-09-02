@@ -292,6 +292,35 @@ Last updated for Phase 1.2.
 
 ---
 
+## Login Protection
+
+### `fanxie_wp_core_login_protection_prune`
+
+- **Type:** Action (WP-Cron event — flat name, not slash-namespaced)
+- **Since:** 0.1.0-dev
+- **Fires:** Daily via `wp_schedule_event()`. The module's handler prunes the
+  `fanxie_core_login_log` table beyond the configured retention window and
+  deletes expired rows from `fanxie_core_login_bans`.
+- **Params:** none.
+- **Note:** hook into this to run additional login-log/ban cleanup on the same
+  daily schedule.
+
+### AJAX sub-actions
+
+All routed through the shared `fanxie_wp_core` admin-ajax action (nonce
+`fanxie_wp_core_admin` + capability `manage_fanxie_wp_core` enforced by
+`AjaxRouter`): `login_protection/get-config`, `save-config`, `get-log`,
+`get-bans`, `add-ban`, `remove-ban`, `clear-lockout`.
+
+### Recovery constant
+
+- **`FX_CORE_LOGIN_SLUG`** — define in `wp-config.php` to override the stored
+  custom login slug (recovers access if you're locked out); when set, the admin
+  UI shows the slug read-only. Reveal the active slug with `wp fx-core login
+  reveal`; clear a lockout/ban with `wp fx-core login unlock <ip|username>`.
+
+---
+
 ## Adding a new hook
 
 When you introduce a new action or filter:

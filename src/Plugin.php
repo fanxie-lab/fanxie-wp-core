@@ -12,6 +12,9 @@ namespace FanxieLab\WPCore;
 use FanxieLab\WPCore\Admin\AjaxRouter;
 use FanxieLab\WPCore\Admin\SettingsPage;
 use FanxieLab\WPCore\Modules\Hardening\Hardening;
+use FanxieLab\WPCore\Modules\LoginProtection\BanRepository;
+use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
+use FanxieLab\WPCore\Modules\LoginProtection\LoginProtection;
 use FanxieLab\WPCore\Modules\ModuleRegistry;
 use FanxieLab\WPCore\Modules\SecurityHeaders\SecurityHeaders;
 use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
@@ -40,7 +43,7 @@ final class Plugin {
 	 *
 	 * @var string
 	 */
-	public const DB_VERSION = '1';
+	public const DB_VERSION = '2';
 
 	/**
 	 * Custom capability that gates every admin action.
@@ -107,8 +110,9 @@ final class Plugin {
 			update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
 		}
 
-		// Ensure module-owned tables exist before any hooks fire.
-		( new ViolationRepository() )->install();
+		// Ensure module-owned tables exist before any hooks fire. The same
+		// routine backs the runtime upgrade check (see self::maybe_upgrade()).
+		self::install_tables();
 
 		// Hardening: drop protection files into uploads (idempotent).
 		// Uses the current option value so a user who's toggled either uploads
@@ -168,6 +172,41 @@ final class Plugin {
 	}
 
 	/**
+	 * Install / upgrade every module-owned custom table.
+	 *
+	 * Each repository's `install()` is itself version-gated (per-table
+	 * `SCHEMA_VERSION_OPTION`) and idempotent, so this is safe to call on both
+	 * activation and the runtime upgrade check without duplicating work.
+	 */
+	private static function install_tables(): void {
+		( new ViolationRepository() )->install();
+		( new LoginLogRepository() )->install();
+		( new BanRepository() )->install();
+	}
+
+	/**
+	 * Self-healing, version-gated schema upgrade check.
+	 *
+	 * Custom tables are created on `activate()`, but activation does not run when
+	 * an already-active plugin is updated to new code — so a table added in a
+	 * later release would never exist on upgraded sites. This closes that gap: on
+	 * every boot it compares the stored DB version against {@see self::DB_VERSION}
+	 * and, when they differ (including a brand-new/upgraded site where the option
+	 * is unset and `get_option()` returns `false`), (re)installs the tables and
+	 * records the new version. When the versions already match it is a single
+	 * `get_option()` and nothing else — `install_tables()` is never run
+	 * unconditionally.
+	 */
+	public function maybe_upgrade(): void {
+		if ( (string) get_option( self::DB_VERSION_OPTION ) === self::DB_VERSION ) {
+			return;
+		}
+
+		self::install_tables();
+		update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
+	}
+
+	/**
 	 * Retrieve a registered service.
 	 *
 	 * @template T of object
@@ -208,6 +247,9 @@ final class Plugin {
 		$hardening = new Hardening( $ajax_router );
 		$registry->register( $hardening );
 
+		$login_protection = new LoginProtection( $ajax_router );
+		$registry->register( $login_protection );
+
 		$settings_page = new SettingsPage( $registry );
 
 		$this->services[ ModuleRegistry::class ]  = $registry;
@@ -215,12 +257,22 @@ final class Plugin {
 		$this->services[ SettingsPage::class ]    = $settings_page;
 		$this->services[ SecurityHeaders::class ] = $security_headers;
 		$this->services[ Hardening::class ]       = $hardening;
+		$this->services[ LoginProtection::class ] = $login_protection;
 	}
 
 	/**
 	 * Wire WordPress hooks owned by the core bootstrap.
 	 */
 	private function register_hooks(): void {
+		// Self-heal the schema on upgraded sites. `boot()` already runs on
+		// `plugins_loaded`, so re-hooking `maybe_upgrade` onto the same hook is
+		// unreliable — a callback added at the priority currently being dispatched
+		// is not guaranteed to fire this request (PHP iterates a copy of the
+		// priority bucket). Calling it directly here runs it exactly once per
+		// request, synchronously during boot and well before any login handling,
+		// which is precisely the guarantee this migration needs.
+		$this->maybe_upgrade();
+
 		add_action( 'init', [ $this, 'load_textdomain' ] );
 		add_action( 'init', [ $this, 'boot_modules' ], 5 );
 

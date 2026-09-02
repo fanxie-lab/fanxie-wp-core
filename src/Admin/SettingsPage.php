@@ -173,12 +173,12 @@ final class SettingsPage {
 			 * `wp_add_inline_script( ..., 'before' )`.
 			 *
 			 * Rationale: our `script_loader_tag` filter rewrites the enqueued
-			 * module tags to add `type="module" crossorigin`. WordPress passes
-			 * the filter a `$tag` value that already has inline-before + base
-			 * tag + inline-after concatenated into a single string, so any
-			 * wholesale rewrite silently drops the bootstrap. Emitting the
-			 * bootstrap here guarantees it is in the DOM before any enqueued
-			 * script runs, independent of script strategy or tag-filter
+			 * script tags to add `type="module"` (plus `crossorigin` in dev).
+			 * WordPress passes the filter a `$tag` value that already has
+			 * inline-before + base tag + inline-after concatenated into a single
+			 * string, so any wholesale rewrite silently drops the bootstrap.
+			 * Emitting the bootstrap here guarantees it is in the DOM before any
+			 * enqueued script runs, independent of script strategy or tag-filter
 			 * rewrites applied to the handles.
 			 *
 			 * See: https://make.wordpress.org/core/2023/07/14/registering-scripts-with-async-and-defer-attributes-in-wordpress-6-3/
@@ -283,16 +283,24 @@ final class SettingsPage {
 			FANXIE_WP_CORE_VERSION
 		);
 
+		// No `strategy => 'defer'`: the tag is rewritten to `type="module"`
+		// below, and module scripts are deferred by default, so an explicit
+		// `defer` attribute would be redundant (and the wholesale rewrite drops
+		// it anyway).
 		wp_enqueue_script(
 			self::ASSET_HANDLE,
 			$dist_url . 'admin.js',
 			[],
 			FANXIE_WP_CORE_VERSION,
-			[
-				'in_footer' => true,
-				'strategy'  => 'defer',
-			]
+			[ 'in_footer' => true ]
 		);
+
+		// The production bundle is emitted by Vite as a native ES module
+		// (top-level `export{...}` + dynamic `import()` for lazy routes), so it
+		// MUST load with `type="module"`; a classic <script> tag triggers
+		// `SyntaxError: Unexpected token 'export'`. Unlike dev, the bundle is
+		// served same-origin from the site's own wp-content, so no crossorigin.
+		$this->register_module_tag_filter( [ self::ASSET_HANDLE ], false );
 	}
 
 	/**
@@ -322,41 +330,56 @@ final class SettingsPage {
 		);
 		// phpcs:enable WordPress.WP.EnqueuedResourceParameters.MissingVersion
 
-		$this->register_vite_tag_filter();
+		$this->register_module_tag_filter( [ self::VITE_CLIENT_HANDLE, self::ASSET_HANDLE ], true );
 	}
 
 	/**
-	 * Register the `script_loader_tag` filter that rewrites our two dev-mode
-	 * handles as native ES modules (`type="module" crossorigin`).
+	 * Register a `script_loader_tag` filter that rewrites the given handles as
+	 * native ES modules (`type="module"`).
 	 *
-	 * Idempotent — only registers on first call per request.
+	 * Shared by both enqueue branches because the bundle is ESM in both modes:
+	 *   - Dev serves the TypeScript entry + HMR client cross-origin from the
+	 *     Vite dev server, so those handles also need `crossorigin`.
+	 *   - Prod serves the built `dist/admin.js` same-origin from wp-content, so
+	 *     `crossorigin` is unnecessary and is omitted for clarity.
+	 *
+	 * Idempotent — only registers on first call per request. A request only ever
+	 * runs one branch (dev XOR prod), so the single guard is sufficient.
+	 *
+	 * @param array<int, string> $handles     Script handles to rewrite as modules.
+	 * @param bool               $crossorigin Whether to add the `crossorigin` attribute.
 	 */
-	private function register_vite_tag_filter(): void {
+	private function register_module_tag_filter( array $handles, bool $crossorigin ): void {
 		if ( self::$vite_tag_filter_registered ) {
 			return;
 		}
 
 		self::$vite_tag_filter_registered = true;
 
+		// Built as an attribute fragment so the closure can interpolate it
+		// verbatim (empty string in prod, ` crossorigin` in dev).
+		$crossorigin_attr = $crossorigin ? ' crossorigin' : '';
+
 		/*
-		 * Rewrite the enqueued module tags to add `type="module" crossorigin`.
+		 * Rewrite the enqueued module tags to add `type="module"` (plus
+		 * `crossorigin` in dev).
 		 *
-		 * Since the `window.fanxieWPCore` bootstrap is no longer attached to
-		 * these handles via `wp_add_inline_script( ..., 'before' )` — it is
-		 * emitted directly in `render()` instead — there is no inline-before
-		 * payload that a wholesale rewrite would drop. The filter can safely
-		 * return a freshly-built tag.
+		 * The `window.fanxieWPCore` bootstrap is emitted directly in `render()`
+		 * — not attached to these handles via `wp_add_inline_script(..., 'before')`
+		 * — so there is no inline-before payload that a wholesale rewrite would
+		 * drop. The filter can safely return a freshly-built tag.
 		 */
 		add_filter(
 			'script_loader_tag',
-			static function ( $tag, $handle, $src ) {
-				if ( ! in_array( $handle, [ self::VITE_CLIENT_HANDLE, self::ASSET_HANDLE ], true ) ) {
+			static function ( $tag, $handle, $src ) use ( $handles, $crossorigin_attr ) {
+				if ( ! in_array( $handle, $handles, true ) ) {
 					return $tag;
 				}
 
-				// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- rewriting an already-enqueued handle's tag to add `type="module" crossorigin` for Vite HMR; the script was registered via wp_enqueue_script() in enqueue_dev_assets().
+				// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- rewriting an already-enqueued handle's tag to add `type="module"` for our ESM bundle; the script was registered via wp_enqueue_script() in enqueue_assets()/enqueue_dev_assets().
 				$module_tag = sprintf(
-					'<script type="module" crossorigin src="%1$s" id="%2$s-js"></script>' . "\n",
+					'<script type="module"%1$s src="%2$s" id="%3$s-js"></script>' . "\n",
+					$crossorigin_attr,
 					esc_url( (string) $src ),
 					esc_attr( (string) $handle )
 				);
