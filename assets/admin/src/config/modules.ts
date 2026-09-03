@@ -15,11 +15,8 @@ import type { Component } from 'vue';
 // Tree-shake friendly: import only the icons we use, not the whole library.
 import {
   Activity,
-  Bot,
-  Cloud,
   Database,
   FileCode2,
-  ImageDown,
   KeyRound,
   Lock,
   ScrollText,
@@ -75,36 +72,12 @@ export const modules: readonly ModuleDef[] = [
     icon: KeyRound,
   },
   {
-    id: 'turnstile',
-    label: 'Turnstile',
-    phaseLabel: 'Phase 2',
-    description:
-      'Cloudflare Turnstile CAPTCHA on WP and plugin forms, with per-form toggles and stats.',
-    icon: Bot,
-  },
-  {
     id: 'asset-manager',
     label: 'Asset Manager',
     phaseLabel: 'Phase 4',
     description:
       'Defer/async/delay scripts, conditional unloads, heartbeat controls, emoji and embed toggles.',
     icon: FileCode2,
-  },
-  {
-    id: 'media-optimizer',
-    label: 'Media Optimizer',
-    phaseLabel: 'Phase 5',
-    description:
-      'On-upload compression, WebP + AVIF generation, picture-element rewriter, bulk processing.',
-    icon: ImageDown,
-  },
-  {
-    id: 'cloud-storage',
-    label: 'Cloud Storage',
-    phaseLabel: 'Phase 6',
-    description:
-      'Offload media to Cloudflare R2 or S3-compatible storage with URL rewriting and retention policies.',
-    icon: Cloud,
   },
   {
     id: 'environment-health',
@@ -136,17 +109,12 @@ export const groups: readonly GroupDef[] = [
   {
     id: 'security',
     label: 'Security',
-    moduleIds: [
-      'security-headers',
-      'hardening',
-      'login-protection',
-      'turnstile',
-    ],
+    moduleIds: ['security-headers', 'hardening', 'login-protection'],
   },
   {
     id: 'performance',
     label: 'Performance',
-    moduleIds: ['asset-manager', 'media-optimizer', 'cloud-storage'],
+    moduleIds: ['asset-manager'],
   },
   {
     id: 'maintenance',

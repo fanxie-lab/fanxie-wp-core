@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- Three modules cut from the v1.0 scope: **Turnstile** (PRD §6), **Media
+  Optimizer** (PRD §11) and **Cloud Storage / R2 offload** (PRD §12). None had
+  been built, so this removes only their sidebar entries, mock bootstrap keys and
+  `readme.txt` copy — no PHP, no options, no tables. The PRD sections are kept
+  and marked `DEFERRED` so the specs survive for a future version. Rationale is
+  recorded per-module in `_PRD/checklist-fanxie-wp-core.md`; in short: Turnstile
+  was the only module that would have forced a runtime third-party script into
+  the plugin, Media Optimizer is the most commoditised category on wp.org and the
+  only one that mutates user files irreversibly, and Cloud Storage depended on
+  Media Optimizer while carrying the largest blast radius of anything in the PRD.
+  The shipping set is now seven modules: Security Headers, Hardening, Login
+  Protection, Environment Health, Database Maintenance, Activity Log and Asset
+  Manager.
+
 ### Changed
 - Author-enumeration guard no longer raises "Array to string conversion" on an
   array-form probe (`?author[]=1`). Both call sites cast `$_GET['author']` to a

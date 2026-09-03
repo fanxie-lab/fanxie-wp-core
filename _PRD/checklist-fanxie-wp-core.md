@@ -106,18 +106,18 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 
 ---
 
-## Phase 2 — Bot Protection & Environment Visibility  *(PRD §6, §7)*
+## Phase 2 — Environment Visibility  *(PRD §7)*
 
-### 2.1 Turnstile (PRD §6)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] Config: site key + secret key via option **or** `FANXIE_TURNSTILE_*` constants
-- [ ] Verifier service with fail-open/closed toggle, timeout, WP_Error handling
-- [ ] Native form integrations: login, register, lost-password, comments
-- [ ] WooCommerce integrations (guarded by `class_exists( 'WooCommerce' )`)
-- [ ] Form plugin integrations: CF7, WPForms, Gravity, Ninja, Formidable — all guarded, auto-detected
-- [ ] Cache-bypass headers on protected pages; guidance banner when caching plugins detected
-- [ ] Success/failure stats (7-day rolling transient)
-- [ ] Vue tab: key entry (redacts if defined by constants), per-form toggles, test-mode switch, stats chart
-- [ ] Tests: verifier mock, each integration renders + validates, fail-open vs fail-closed
+### 2.1 Turnstile (PRD §6)  — **DEFERRED to a future version** *(decided 2026-09-03)*
+- [-] Entire module deferred. Not built, not in the admin sidebar, not in `readme.txt`.
+  Cloudflare Turnstile is well served by existing free plugins, it is the only
+  module that would have forced a runtime third-party script (and a second
+  "External services" disclosure) into a plugin whose whole pitch is that it
+  phones home for one thing only, and its value is concentrated in form-plugin
+  integrations (CF7/WPForms/Gravity/Ninja/Formidable/Woo) that each need their
+  own compatibility surface to maintain. PRD §6 is retained as the spec.
+  Re-open by restoring the module def in `assets/admin/src/config/modules.ts`
+  and the `security` group's `moduleIds`.
 
 ### 2.2 Environment Health (PRD §7)  *(→ wordpress-development-expert + frontend-expert)*
 - [x] Version checks (WP, PHP, MySQL/MariaDB, SSL, HTTPS) — **date-driven** support matrix, not hardcoded version comparisons (see note below)
@@ -191,52 +191,76 @@ checked against php.net and endoflife.date.
 
 ---
 
-## Phase 5 — Performance: Media Optimizer  *(PRD §11)*
+## Phase 5 — Performance: Media Optimizer  *(PRD §11)* — **DEFERRED** *(decided 2026-09-03)*
 
-*(→ wordpress-development-expert + frontend-expert)*
-- [ ] Imagick detection + GD fallback path with quality warning
-- [ ] On-upload compression with backup of original
-- [ ] WebP + AVIF generation, metadata stored in postmeta
-- [ ] `<img>` → `<picture>` rewriter with `srcset` preservation
-- [ ] Action Scheduler bulk processor (max 3 concurrent jobs)
-- [ ] WP-CLI `wp fanxie media optimize` + `--dry-run`
-- [ ] Media library column: status + savings %
-- [ ] Media detail modal: sizes, formats, re-optimise action
-- [ ] Vue tab: global quality sliders, bulk progress bar, skip rules (large/small/mime)
-- [ ] Tests: encoder selection, format availability detection, picture rewriter fidelity
+- [-] Entire phase deferred to a future version. Not built, not in the admin
+  sidebar, not in `readme.txt`. Image optimization is the most crowded, most
+  commoditised category on wp.org, it is the only planned module that mutates
+  user files irreversibly (so it carries the highest support burden per line
+  shipped), and its Imagick/GD/AVIF matrix makes it the least predictable thing
+  to test across shared hosts. PRD §11 is retained as the spec.
 
----
+## Phase 6 — Cloud Storage (R2/S3 Offload)  *(PRD §12)* — **DEFERRED** *(decided 2026-09-03)*
 
-## Phase 6 — Cloud Storage (R2/S3 Offload)  *(PRD §12)*
-
-*(→ wordpress-development-expert + frontend-expert)*
-- [ ] Config UI + `wp-config.php` constant override (bucket, endpoint, key, secret, CDN domain)
-- [ ] Pluggable adapter (`CloudStorageAdapter` interface) — R2 reference impl, S3 compatible
-- [ ] On-upload offload after optimization completes
-- [ ] Attachment URL + content filter rewriter
-- [ ] Local file retention policy (keep / grace period / immediate delete)
-- [ ] WP-CLI `wp fanxie storage offload --dry-run`
-- [ ] Migration helper (previously-uploaded media catch-up)
-- [ ] Vue tab: connection test, bulk progress, retention selector
-- [ ] Tests: adapter contract, URL rewriter, retry/backoff on failure, dry-run integrity
-
----
+- [-] Entire phase deferred to a future version. Not built, not in the admin
+  sidebar, not in `readme.txt`. It depended on Media Optimizer (offload was
+  specified to run *after* optimization completes), it would have required
+  bundling an S3 SDK into a GPL wp.org release, and an offload that goes wrong
+  detaches a site from its own media library — the highest-blast-radius feature
+  in the PRD. PRD §12 is retained as the spec.
 
 ## Phase 7 — wp.org Submission  *(PRD §15 phase 7)*
 
-- [ ] **BLOCKER — plugin name/slug contains "wp".** wordpress.org bans the term
-  outright in both the plugin name ("Fanxie WP Core") and the slug
-  (`fanxie-wp-core`); Plugin Check reports it as `trademarked_term` and it is a
-  hard rejection at submission, not a negotiable warning. Deferred from Phase 2
-  by explicit decision — cheapest to fix while unreleased (no site has stored
-  options under the old prefix, so no migration is owed), and the cost grows with
-  every module added. Rename surface to map before deciding: plugin name +
-  `Plugin Name:` header, slug/directory, text domain (every `__()` call),
-  `readme.txt`, PSR-4 namespace root `FanxieLab\WPCore`, option prefix
-  `fanxie_wp_core_*`, table prefix `fanxie_core_*`, hook prefix
-  `fanxie_wp_core/`, capability `manage_fanxie_wp_core`, bootstrap constants
-  `FANXIE_WP_CORE_*`, the `fx-core` CLI root (already compliant), CI workflows,
-  and the repo name.
+- [ ] **RENAME — "Fanxie WP Core" → "Fanxie Warden"** *(name chosen 2026-09-03; rename not yet executed)*
+  wordpress.org bans the term "wp" outright in both the plugin name and the
+  slug; Plugin Check reports it as `trademarked_term` and it is a hard rejection
+  at submission, not a negotiable warning. Cheapest to fix while unreleased — no
+  site has stored options under the old prefix, so no data migration is owed.
+
+  **Chosen name:** **Fanxie Warden**, slug `fanxie-warden`. Slug verified free
+  against the wp.org plugin API on 2026-09-03 (a slug held by an unpublished
+  pending submission would not show up there — reconfirm at submit time).
+  Rejected alternatives and why: *Fanxie Core* (accurate but says nothing, and
+  after the Phase 5/6 deferrals the plugin is no longer a catch-all "core");
+  *Bastion / Bulwark / Fortify / Rampart* (security-only — they undersell
+  Environment Health, Database Maintenance and Activity Log); *Sentry*
+  (Sentry.io trademark in dev tooling); *Bedrock* (Roots); *Groundwork* (slug
+  permanently closed on wp.org since 2013); *Watchtower* (live plugin);
+  *Sitewright* (good, but drops brand equity). "Warden" was picked because it
+  carries both guard **and** caretaker, which is exactly the shipping scope.
+
+  **Rename surface — public (must change, this is what wp.org polices):**
+  - Plugin name + `Plugin Name:` header in the bootstrap file
+  - Slug / plugin directory / bootstrap filename → `fanxie-warden.php`
+  - Text domain `fanxie-wp-core` → `fanxie-warden` on every `__()` / `esc_html__()` /
+    `_n()` / `_x()` call, plus the `Text Domain:` header and `languages/*.pot`
+  - `readme.txt` title line and description
+  - Repo name
+
+  **Rename surface — internal (optional; decided: CHANGE for readability, since
+  nothing has shipped and no migration is owed):**
+  - PSR-4 namespace root `FanxieLab\WPCore` → `FanxieLab\Warden` (+ `composer.json`
+    autoload map, `phpstan.neon.dist`, `phpunit.xml.dist`, `tests/` namespaces)
+  - Bootstrap constants `FANXIE_WP_CORE_{VERSION,PATH,URL}` → `FANXIE_WARDEN_*`
+  - Option prefix `fanxie_wp_core_*` → `fanxie_warden_*`
+  - Hook prefix `fanxie_wp_core/` → `fanxie_warden/` (+ `docs/hooks.md`)
+  - AJAX action prefix `fanxie_wp_core_<action>` → `fanxie_warden_<action>`
+  - REST namespace `fanxie-wp-core/v1` → `fanxie-warden/v1`
+  - Capability `manage_fanxie_wp_core` → `manage_fanxie_warden`
+  - Admin menu slug + asset handles (`fanxie-wp-core-admin`), SPA mount node id,
+    and the `window.fanxieWPCore` bootstrap global → `window.fanxieWarden`
+  - CI workflows, `phpcs.xml.dist` prefix/text-domain rules, Playwright selectors
+
+  **Deliberately NOT changed:**
+  - Custom table prefix `{$wpdb->prefix}fanxie_core_*` — already free of "wp",
+    already shipped in three modules' `dbDelta` schemas, and invisible to wp.org
+    review. Renaming buys nothing and risks a broken install path.
+  - WP-CLI root command `fx-core` — already compliant, already documented in
+    `docs/hooks.md` and the recovery instructions emailed on a login-slug change.
+  - Override constants `FX_CORE_*` — already compliant; users may already have
+    `FX_CORE_LOGIN_SLUG` in a `wp-config.php`.
+- [ ] Verify the rename left no `fanxie-wp-core` / `fanxie_wp_core` / `WPCore` /
+  `FANXIE_WP_CORE` strings outside the three deliberate exceptions above
 - [ ] Full Plugin Check **zero** errors/warnings on complete plugin
 - [ ] Build a distribution archive that excludes `tests/`, `.github/`, `node_modules/`,
   and dev configs — most Plugin Check findings against the dev checkout come from

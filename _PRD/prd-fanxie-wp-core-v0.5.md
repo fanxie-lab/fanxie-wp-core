@@ -296,6 +296,11 @@ Protect the login system from brute-force attacks without requiring 2FA (deferre
 
 ## 6. Module: Turnstile (Cloudflare CAPTCHA)
 
+> **DEFERRED — not in the v1.0 release (decided 2026-09-03).** This section is
+> retained as a written spec for a future version; nothing in it is built and
+> the module does not appear in the admin UI. See
+> [`checklist-fanxie-wp-core.md`](./checklist-fanxie-wp-core.md) for the rationale.
+
 ### 6.1 Purpose
 
 Protect forms from bots using Cloudflare Turnstile — privacy-friendly, GDPR-compliant, no tracking cookies, free tier available.
@@ -1001,6 +1006,11 @@ add_action( 'wp_default_scripts', function( $scripts ) {
 
 ## 11. Module: Media Optimizer
 
+> **DEFERRED — not in the v1.0 release (decided 2026-09-03).** This section is
+> retained as a written spec for a future version; nothing in it is built and
+> the module does not appear in the admin UI. See
+> [`checklist-fanxie-wp-core.md`](./checklist-fanxie-wp-core.md) for the rationale.
+
 ### 11.1 Purpose
 
 Reduce image file sizes through compression and modern format conversion (WebP, AVIF).
@@ -1016,6 +1026,11 @@ Reduce image file sizes through compression and modern format conversion (WebP, 
 ---
 
 ## 12. Module: Cloud Storage (R2 Offload)
+
+> **DEFERRED — not in the v1.0 release (decided 2026-09-03).** This section is
+> retained as a written spec for a future version; nothing in it is built and
+> the module does not appear in the admin UI. See
+> [`checklist-fanxie-wp-core.md`](./checklist-fanxie-wp-core.md) for the rationale.
 
 ### 12.1 Purpose
 

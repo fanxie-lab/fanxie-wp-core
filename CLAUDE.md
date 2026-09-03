@@ -14,7 +14,7 @@ Progress lives in [`_PRD/checklist-fanxie-wp-core.md`](./_PRD/checklist-fanxie-w
 - **Author:** Fanxie Lab
 - **Destination:** WordPress.org public release (day-one wp.org compliance)
 - **Quality bar:** Plugin Check passes with **100%** (zero errors, zero warnings) before any release is cut.
-  - *Scaffold-phase concession:* during Phase 0–6 the CI job `plugin-check` (see `.github/workflows/ci.yml`) is configured with `wp-plugin-check-ignore-warnings: true` so expected scaffolding-era warnings (missing banner/icon, placeholder screenshots, `Stable tag: 0.1.0-dev`) do not block PRs. Phase 7 (wp.org submission) flips this flag to `false`; warnings become hard-fail. Expected warnings are catalogued in [`docs/plugin-check-notes.md`](./docs/plugin-check-notes.md).
+  - *Scaffold-phase concession:* during Phase 0–4 the CI job `plugin-check` (see `.github/workflows/ci.yml`) is configured with `wp-plugin-check-ignore-warnings: true` so expected scaffolding-era warnings (missing banner/icon, placeholder screenshots, `Stable tag: 0.1.0-dev`) do not block PRs. Phase 7 (wp.org submission) flips this flag to `false`; warnings become hard-fail. Expected warnings are catalogued in [`docs/plugin-check-notes.md`](./docs/plugin-check-notes.md).
 
 ---
 
@@ -49,7 +49,7 @@ The user has set explicit agent ownership. When the scope is clear, delegate; do
 - **Custom tables:** prefix `{$wpdb->prefix}fanxie_core_` (e.g., `wp_fanxie_core_csp_violations`, `wp_fanxie_core_login_log`, `wp_fanxie_core_login_bans`, `wp_fanxie_core_activity_log`). Install via `dbDelta`, version-tracked (one `fanxie_wp_core_<...>_version` option per table).
 - **Hooks API:** prefix custom hooks `fanxie_wp_core/` (e.g., `fanxie_wp_core/module/registered`). Documented in `docs/hooks.md`. (Exception: WP-Cron event names are flat, e.g. `fanxie_wp_core_login_protection_prune`.)
 - **Capabilities:** gate admin actions behind a dedicated cap `manage_fanxie_wp_core` (mapped to `manage_options` by default, overridable via filter).
-- **User-facing constants & CLI naming:** wp-config **override constants** use the `FX_CORE_*` prefix (e.g. `FX_CORE_LOGIN_SLUG`, `FX_CORE_DELETE_ALL_DATA`, `FX_CORE_TURNSTILE_*`); the **WP-CLI root command is `fx-core`** (e.g. `wp fx-core login reveal`). Internal bootstrap constants stay `FANXIE_WP_CORE_*` (VERSION/PATH/URL) and option/table/hook prefixes are unchanged. Applies to all modules.
+- **User-facing constants & CLI naming:** wp-config **override constants** use the `FX_CORE_*` prefix (e.g. `FX_CORE_LOGIN_SLUG`, `FX_CORE_DELETE_ALL_DATA`); the **WP-CLI root command is `fx-core`** (e.g. `wp fx-core login reveal`). Internal bootstrap constants stay `FANXIE_WP_CORE_*` (VERSION/PATH/URL) and option/table/hook prefixes are unchanged. Applies to all modules.
 
 ### 3.2 Security
 
@@ -92,9 +92,9 @@ The user has set explicit agent ownership. When the scope is clear, delegate; do
   ```
 - **Build output:** `assets/admin/dist/` — checked in for wp.org (with unminified source in `assets/admin/src/`, satisfying PRD §2.4 "no minified code without unminified source").
 - **Enqueue:** admin assets load **only on the plugin's settings screens** (screen ID check). Never on the frontend, never globally.
-- **No CDN dependencies at runtime.** Turnstile's script (external by design, PRD §6.4.1) is the only allowed exception and is documented.
+- **No CDN dependencies at runtime.** No exceptions — every asset the admin SPA loads ships with the plugin.
 - **Bridging to PHP:** hydrate initial state via `wp_add_inline_script( 'fanxie-admin', 'window.fanxieWPCore = ' . wp_json_encode( $bootstrap ), 'before' )`. Do not echo JSON into the DOM.
-- **AJAX over REST for the admin UI**, per user direction. Each action = one `admin-ajax.php` action registered as `fanxie_wp_core_<action>`. REST routes reserved for external integrations (Turnstile report endpoint, future webhooks).
+- **AJAX over REST for the admin UI**, per user direction. Each action = one `admin-ajax.php` action registered as `fanxie_wp_core_<action>`. REST routes reserved for external integrations (the CSP report endpoint, future webhooks).
 - **Accessibility:** WCAG 2.1 AA. Every interactive element keyboard-reachable, labelled, and screen-reader tested. Settings forms use native labels, not placeholder-as-label.
 - **Setting help is a standard, not a one-off.** Every setting exposes an explanation: simple toggles via the accessible `Tooltip` primitive (keyboard-focusable ⓘ), complex or risky settings via inline `HelpText`. To wire `HelpText` to a `Toggle` for screen readers, pass the help element's id through the Toggle's `describedby` prop (a raw `aria-describedby` on `<Toggle>` falls through to its wrapper `<div>`, not the switch). All current and future modules follow this pattern.
 

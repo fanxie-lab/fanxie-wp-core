@@ -12,7 +12,7 @@ Modular security, hardening, maintenance, and performance toolkit — replaces 5
 
 == Description ==
 
-Fanxie WP Core consolidates the infrastructure fixes every WordPress site needs — security headers, hardening, login protection, bot mitigation, environment health, database maintenance, activity logging, asset management, media optimization, and cloud-storage offload — into a single modular plugin. Each module can be enabled independently and has zero runtime cost when disabled, so you only pay for what you use.
+Fanxie WP Core consolidates the infrastructure fixes every WordPress site needs — security headers, hardening, login protection, environment health, database maintenance, activity logging, and asset management — into a single modular plugin. Each module can be enabled independently and has zero runtime cost when disabled, so you only pay for what you use.
 
 Built for Fanxie Lab client deployments and released openly for the wider WordPress community. The plugin is opinionated in defaults, conservative in destructive operations, and transparent about trade-offs (every potentially-disruptive toggle ships with a clear warning and a dry-run path where applicable).
 
@@ -21,13 +21,10 @@ Built for Fanxie Lab client deployments and released openly for the wider WordPr
 * Security Headers — HSTS, CSP (report-only by default), X-Frame-Options, Referrer-Policy, Permissions-Policy, and more.
 * Hardening — user enumeration protection, XML-RPC control, version hiding, uploads directory PHP execution lockdown, DISALLOW_FILE_EDIT surfacing, application-password toggle.
 * Login Protection — tiered lockouts, custom login slug, strong password enforcement, role-aware session timeout.
-* Turnstile — Cloudflare CAPTCHA integration for native, WooCommerce, and major form-plugin endpoints.
 * Environment Health — version checks, cron health, debug-mode scanner, inactive plugin/theme detection, abandoned plugin warnings.
 * Database Maintenance — revisions, transients, orphaned meta, auto-drafts, trash, and spam cleanup with Action Scheduler.
 * Activity Log — auditable custom-table log of admin actions with CSV export and auto-pruning.
 * Asset Manager — script defer/async/delay engine, conditional unloading, image dimension injection, Heartbeat / emoji / embed controls.
-* Media Optimizer — on-upload compression, WebP/AVIF generation, `<picture>` rewriting.
-* Cloud Storage — R2/S3 offload with URL rewriting and retention policies.
 
 == External services ==
 
