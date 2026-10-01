@@ -172,7 +172,6 @@ final class SettingsPageTest extends TestCase {
 		// branch requires a live Vite hot-file on disk, which a unit test should
 		// not fabricate). `true` => crossorigin.
 		$method = new \ReflectionMethod( SettingsPage::class, 'register_module_tag_filter' );
-		$method->setAccessible( true );
 		$method->invoke( $page, [ SettingsPage::VITE_CLIENT_HANDLE, SettingsPage::ASSET_HANDLE ], true );
 
 		$this->assertIsCallable( $captured );
@@ -198,7 +197,6 @@ final class SettingsPageTest extends TestCase {
 	 */
 	private function set_private_property( object $target, string $property, mixed $value ): void {
 		$reflection = new \ReflectionProperty( $target, $property );
-		$reflection->setAccessible( true );
 		$reflection->setValue( $target, $value );
 	}
 
@@ -208,11 +206,10 @@ final class SettingsPageTest extends TestCase {
 	 */
 	private function reset_tag_filter_guard(): void {
 		$guard = new \ReflectionProperty( SettingsPage::class, 'vite_tag_filter_registered' );
-		$guard->setAccessible( true );
 		$guard->setValue( null, false );
 	}
 
-	public function test_register_menu_adds_top_level_fx_core_menu(): void {
+	public function test_register_menu_adds_top_level_fx_warden_menu(): void {
 		// ModuleRegistry is `final`, so Mockery cannot mock it; register_menu()
 		// never touches the registry, so a real (empty) instance is sufficient.
 		$page = new SettingsPage( new ModuleRegistry() );

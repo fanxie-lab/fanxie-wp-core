@@ -80,7 +80,6 @@ final class LoginProtectionBootTest extends WP_UnitTestCase {
 		$this->module->register_hooks();
 
 		$prop = new ReflectionProperty( AjaxRouter::class, 'handlers' );
-		$prop->setAccessible( true );
 		$handlers = $prop->getValue( $this->router );
 
 		$this->assertIsArray( $handlers );

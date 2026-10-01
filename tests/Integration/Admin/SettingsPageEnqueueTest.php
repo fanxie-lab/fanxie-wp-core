@@ -116,7 +116,6 @@ final class SettingsPageEnqueueTest extends WP_UnitTestCase {
 	 */
 	private function reset_tag_filter_guard(): void {
 		$guard = new ReflectionProperty( SettingsPage::class, 'vite_tag_filter_registered' );
-		$guard->setAccessible( true );
 		$guard->setValue( null, false );
 	}
 }
