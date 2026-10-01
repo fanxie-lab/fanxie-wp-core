@@ -82,7 +82,7 @@ final class DbCommandTest extends TestCase {
 	/**
 	 * @dataProvider invalid_flags
 	 *
-	 * @param string                $method Command method.
+	 * @param string                     $method Command method.
 	 * @param array<string, string|bool> $assoc  Flags.
 	 */
 	public function test_out_of_range_flags_error( string $method, array $assoc ): void {

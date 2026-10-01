@@ -189,13 +189,14 @@ final class ExpiredTransientsTask implements CleanupTask {
 					)
 				);
 
+				$fetched = count( $names );
 				$removed = 0;
 				foreach ( $names as $name ) {
 					if ( delete_option( (string) $name ) ) {
 						++$removed;
 					}
 				}
-			} while ( $removed > 0 && count( $names ) >= $limit );
+			} while ( $removed > 0 && $fetched >= $limit );
 		}
 	}
 }

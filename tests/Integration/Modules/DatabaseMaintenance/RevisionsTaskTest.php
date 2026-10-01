@@ -136,4 +136,19 @@ final class RevisionsTaskTest extends DatabaseMaintenanceTestCase {
 		$this->assertNotNull( get_post( $autosave ), 'Autosave must survive a keep=0 purge.' );
 		$this->assertSame( 0, $task->count() );
 	}
+
+	public function test_sample_label_is_raw_plain_text(): void {
+		$a = $this->post_with_revisions( 4 );
+		wp_update_post(
+			[
+				'ID'          => $a,
+				'post_title'  => 'Tom & Jerry\'s "big" -- day',
+				'post_status' => 'private',
+			]
+		);
+
+		$sample = ( new RevisionsTask( 1 ) )->sample( 10 );
+
+		$this->assertSame( 'Tom & Jerry\'s "big" -- day', $sample[0]['label'] );
+	}
 }

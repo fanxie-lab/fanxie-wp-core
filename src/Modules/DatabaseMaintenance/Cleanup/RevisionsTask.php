@@ -144,14 +144,9 @@ final class RevisionsTask implements CleanupTask {
 			if ( count( $out ) >= $n ) {
 				break;
 			}
-			$title    = get_the_title( $parent_id );
 			$modified = get_post_modified_time( 'c', true, $parent_id );
 			$out[]    = [
-				'label'  => '' !== $title ? $title : sprintf(
-					/* translators: %d: post ID */
-					__( 'Post #%d', 'fanxie-warden' ),
-					$parent_id
-				),
+				'label'  => $this->post_label( $parent_id ),
 				'detail' => sprintf(
 					/* translators: 1: revisions that will be removed, 2: revisions stored */
 					__( '%1$d of %2$d revisions', 'fanxie-warden' ),

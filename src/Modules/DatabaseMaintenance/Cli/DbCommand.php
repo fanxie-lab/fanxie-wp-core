@@ -343,7 +343,7 @@ final class DbCommand {
 		$bar     = \WP_CLI\Utils\make_progress_bar( __( 'Cleaning', 'fanxie-warden' ), $total );
 
 		foreach ( $tasks as $task ) {
-			$result   = $this->runner->run( $task, null, CleanupRunner::DEFAULT_BATCH, static fn ( BatchResult $b ) => $bar->tick( $b->deleted + count( $b->failed ) ) );
+			$result = $this->runner->run( $task, null, CleanupRunner::DEFAULT_BATCH, static fn ( BatchResult $b ) => $bar->tick( $b->deleted + count( $b->failed ) ) );
 			if ( $result->busy ) {
 				WP_CLI::warning(
 					sprintf(

@@ -44,7 +44,9 @@ trait DeletesById {
 	 * @param int $id Post ID.
 	 */
 	protected function post_label( int $id ): string {
-		$title = get_the_title( $id );
+		// Raw title: get_the_title() texturizes and prefixes "Private: "; sample labels are plain text.
+		$raw   = get_post_field( 'post_title', $id, 'raw' );
+		$title = html_entity_decode( is_string( $raw ) ? $raw : '', ENT_QUOTES | ENT_HTML5, 'UTF-8' ); // kses stores "&" as "&amp;" for restricted users.
 
 		/* translators: %d: post ID */
 		return '' !== $title ? $title : sprintf( __( 'Untitled #%d', 'fanxie-warden' ), $id );

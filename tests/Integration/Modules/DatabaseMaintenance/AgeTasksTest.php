@@ -121,4 +121,46 @@ final class AgeTasksTest extends DatabaseMaintenanceTestCase {
 		$this->assertNotNull( get_comment( $young ) );
 		$this->assertNotNull( get_comment( $ham ) );
 	}
+
+	/**
+	 * Sample labels are plain text: no texturized quotes, no "Private:" prefix, no HTML entities.
+	 */
+	public function test_post_label_is_raw_plain_text(): void {
+		$id = self::factory()->post->create(
+			[
+				'post_title'  => 'Tom & Jerry\'s "big" -- day',
+				'post_status' => 'private',
+			]
+		);
+
+		$labeller = new class() {
+			use \FanxieLab\Warden\Modules\DatabaseMaintenance\Cleanup\DeletesById;
+
+			public function label( int $id ): string {
+				return $this->post_label( $id );
+			}
+		};
+
+		$this->assertSame( 'Tom & Jerry\'s "big" -- day', $labeller->label( $id ) );
+	}
+
+	/**
+	 * Spam sample detail is plain text without the &hellip; entity.
+	 */
+	public function test_spam_sample_detail_has_no_html_entities(): void {
+		$post = self::factory()->post->create();
+		self::factory()->comment->create(
+			[
+				'comment_post_ID'  => $post,
+				'comment_approved' => 'spam',
+				'comment_content'  => str_repeat( 'word ', 40 ),
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', time() - 40 * DAY_IN_SECONDS ),
+			]
+		);
+
+		$sample = ( new SpamCommentsTask( 15 ) )->sample( 10 );
+
+		$this->assertStringEndsWith( '…', $sample[0]['detail'] );
+		$this->assertStringNotContainsString( '&hellip;', $sample[0]['detail'] );
+	}
 }

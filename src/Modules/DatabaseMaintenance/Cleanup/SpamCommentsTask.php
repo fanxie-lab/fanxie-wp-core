@@ -96,7 +96,7 @@ final class SpamCommentsTask implements CleanupTask {
 			}
 			$out[] = [
 				'label'  => '' !== $comment->comment_author ? $comment->comment_author : __( 'Anonymous', 'fanxie-warden' ),
-				'detail' => wp_trim_words( wp_strip_all_tags( $comment->comment_content ), 12 ),
+				'detail' => html_entity_decode( wp_trim_words( wp_strip_all_tags( $comment->comment_content ), 12, '…' ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
 				'date'   => gmdate( 'c', (int) strtotime( $comment->comment_date_gmt . ' UTC' ) ),
 			];
 		}
