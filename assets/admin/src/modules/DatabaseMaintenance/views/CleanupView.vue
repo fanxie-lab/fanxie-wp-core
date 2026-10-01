@@ -258,9 +258,9 @@ function formatDate(iso: string): string {
           Cancel
         </button>
         <button
+          ref="selectedBtn"
           type="button"
           class="fx-db-btn"
-          ref="selectedBtn"
           data-action="purge-selected"
           :disabled="selected.size === 0 || busy"
           @click="ask([...selected], 'selected')"
@@ -268,9 +268,9 @@ function formatDate(iso: string): string {
           Purge Selected
         </button>
         <button
+          ref="allBtn"
           type="button"
           class="fx-db-btn fx-db-btn--primary"
-          ref="allBtn"
           data-action="purge-all"
           :disabled="store.purgeableIds.length === 0 || busy"
           @click="ask(store.purgeableIds, 'all')"
