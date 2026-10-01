@@ -10,6 +10,7 @@ import {
 } from '@/components';
 import type { SaveStatus } from '@/components';
 import { useDatabaseMaintenanceStore } from '../stores/databaseMaintenance';
+import { formatSiteTime } from '../format';
 import { RANGES, type TaskId } from '../types';
 
 const store = useDatabaseMaintenanceStore();
@@ -78,18 +79,28 @@ const saveStatus = computed<SaveStatus>(() =>
 );
 
 const nextRunText = computed(() =>
-  store.nextRun ? new Date(store.nextRun).toLocaleString() : null,
+  store.nextRun ? formatSiteTime(store.nextRun) : null,
 );
 
 const lockedText = computed(() => {
   const v = store.revisionsConstant;
   if (v === null) return '';
-  const meaning =
-    v === false || v === 0
-      ? 'revisions are disabled'
-      : `${String(v)} revisions are kept per post`;
+  let meaning: string;
+  if (v === false || v === 0) {
+    meaning = 'revisions are disabled';
+  } else if (v === true || v < 0) {
+    meaning = 'unlimited revisions are kept';
+  } else {
+    meaning = `${String(v)} revisions are kept per post`;
+  }
   return `Your wp-config.php sets WP_POST_REVISIONS, so ${meaning}. Remove that line to manage the limit here.`;
 });
+
+const keepHelp = computed(() =>
+  store.isLocked
+    ? 'How many revisions the purge keeps per post. 0 removes all revisions.'
+    : 'How many revisions the purge keeps per post, and the cap when "Limit stored revisions" is on. 0 removes all revisions.',
+);
 
 function setHour(value: string): void {
   if (s.value) s.value.schedule_hour = Number(value);
@@ -123,11 +134,10 @@ function setHour(value: string): void {
           id="fx-db-revisions-keep"
           v-model="s.revisions_keep"
           label="Revisions to keep per post"
-          help="Also used by the revision purge. 0 removes all revisions."
+          :help="keepHelp"
           unit="revisions"
           :min="RANGES.revisions_keep.min"
           :max="RANGES.revisions_keep.max"
-          :disabled="store.isLocked"
         />
       </div>
     </fieldset>
@@ -189,6 +199,7 @@ function setHour(value: string): void {
           <Select
             v-model="s.schedule_frequency"
             label="Frequency"
+            help="Weekly suits most sites; daily is for busy sites with lots of comments or edits."
             :options="frequencyOptions"
           />
         </div>
@@ -196,6 +207,7 @@ function setHour(value: string): void {
           <Select
             :model-value="String(s.schedule_hour)"
             label="Time of day (site timezone)"
+            help="Runs at the start of this hour in the site's timezone (Settings → General). WordPress's scheduler needs a site visit to trigger, so it may start a little later."
             :options="hourOptions"
             @update:model-value="setHour"
           />

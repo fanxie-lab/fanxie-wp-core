@@ -40,14 +40,36 @@ describe('SettingsView', () => {
     ).toBeDefined();
   });
 
-  it('locks the keep-N field and explains why when WP_POST_REVISIONS is set', async () => {
+  it('keeps the keep-N field editable when WP_POST_REVISIONS is set', async () => {
     const { wrapper } = await mountSettings(
       makeConfig({ revisions_constant: 5 }),
     );
     expect(
       wrapper.get('[data-field="revisions_keep"] input').attributes('disabled'),
-    ).toBeDefined();
+    ).toBeUndefined();
     expect(wrapper.text()).toContain('WP_POST_REVISIONS');
+  });
+
+  it.each([
+    [-1, 'unlimited revisions are kept'],
+    [true, 'unlimited revisions are kept'],
+    [false, 'revisions are disabled'],
+    [0, 'revisions are disabled'],
+    [5, '5 revisions are kept per post'],
+  ])('locked help for constant %s says "%s"', async (constant, text) => {
+    const { wrapper } = await mountSettings(
+      makeConfig({ revisions_constant: constant }),
+    );
+    expect(
+      wrapper.get('[data-field="revision_limit_enabled"]').text(),
+    ).toContain(text);
+  });
+
+  it('keep-N help says it controls how many the purge keeps', async () => {
+    const { wrapper } = await mountSettings();
+    expect(wrapper.get('[data-field="revisions_keep"]').text()).toMatch(
+      /purge keeps/i,
+    );
   });
 
   it('does not lock revision controls without the constant', async () => {
@@ -88,6 +110,35 @@ describe('SettingsView', () => {
       }),
     );
     expect(wrapper.text()).toMatch(/Next run/);
+  });
+
+  it('renders the next run in site time, not the browser zone', async () => {
+    const { wrapper } = await mountSettings(
+      makeConfig({
+        settings: makeSettings({ schedule_enabled: true }),
+        next_run: '2026-10-04T03:00:00-05:00',
+      }),
+    );
+    expect(wrapper.text()).toContain(
+      'Next run: Sun, Oct 4, 03:00 (site time, UTC\u221205:00)',
+    );
+  });
+
+  it('explains the frequency and time-of-day selects', async () => {
+    const { wrapper } = await mountSettings(
+      makeConfig({ settings: makeSettings({ schedule_enabled: true }) }),
+    );
+    for (const field of ['schedule_frequency', 'schedule_hour']) {
+      const el = wrapper.get(`[data-field="${field}"]`);
+      const id = el.get('select').attributes('aria-describedby');
+      expect(id).toBeTruthy();
+      expect(el.get(`#${id!.split(' ')[0]!}`).text().length).toBeGreaterThan(
+        10,
+      );
+    }
+    expect(wrapper.get('[data-field="schedule_hour"]').text()).toContain(
+      'site visit',
+    );
   });
 
   it('every toggle has an accessible explanation', async () => {

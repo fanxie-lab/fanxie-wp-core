@@ -254,7 +254,7 @@ describe('CleanupView', () => {
   });
 
   it('refreshes counts before confirming so the dialog shows the fresh number', async () => {
-    vi.spyOn(client, 'ajax').mockImplementation((action: string) =>
+    vi.spyOn(client, 'ajax').mockImplementation(() =>
       Promise.resolve(makeStatus({ 'spam-comments': 999 })),
     );
     const { wrapper } = await mountCleanup();
