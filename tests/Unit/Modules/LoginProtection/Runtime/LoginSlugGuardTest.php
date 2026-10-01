@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  * redirect + exit) are exercised through the real WordPress hooks in the
  * integration suite; here we assert the decision surface only.
  *
- * Constant-dependent cases (`FX_CORE_LOGIN_SLUG`, `DOING_AJAX`, `DOING_CRON`,
+ * Constant-dependent cases (`FX_WARDEN_LOGIN_SLUG`, `DOING_AJAX`, `DOING_CRON`,
  * `REST_REQUEST`) run in isolated processes so a constant defined by one test
  * can never leak into another test — or another test file — in the shared unit
  * process.
@@ -123,7 +123,7 @@ final class LoginSlugGuardTest extends TestCase {
 	 * @preserveGlobalState disabled
 	 */
 	public function test_constant_overrides_stored_slug(): void {
-		define( 'FX_CORE_LOGIN_SLUG', 'Constant Gate' );
+		define( 'FX_WARDEN_LOGIN_SLUG', 'Constant Gate' );
 		$guard = $this->guard( [ 'enabled' => true, 'slug' => 'stored-login' ] );
 		$this->assertSame( 'constant-gate', $guard->effective_slug() );
 		$this->assertTrue( $guard->is_active() );
@@ -137,7 +137,7 @@ final class LoginSlugGuardTest extends TestCase {
 	 * @preserveGlobalState disabled
 	 */
 	public function test_reserved_constant_falls_back_to_stored_slug(): void {
-		define( 'FX_CORE_LOGIN_SLUG', 'wp-admin' );
+		define( 'FX_WARDEN_LOGIN_SLUG', 'wp-admin' );
 		$guard = $this->guard( [ 'enabled' => true, 'slug' => 'stored-login' ] );
 		$this->assertSame( 'stored-login', $guard->effective_slug() );
 	}

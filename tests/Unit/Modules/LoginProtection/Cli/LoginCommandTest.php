@@ -207,7 +207,7 @@ final class LoginCommandTest extends TestCase {
 	 * @preserveGlobalState disabled
 	 */
 	public function test_reveal_reports_slug_source_as_constant_when_defined(): void {
-		define( 'FX_CORE_LOGIN_SLUG', 'wpconfig-slug' );
+		define( 'FX_WARDEN_LOGIN_SLUG', 'wpconfig-slug' );
 
 		Functions\when( 'sanitize_title' )->returnArg( 1 );
 		Functions\when( 'get_option' )->justReturn( '' );
@@ -224,6 +224,6 @@ final class LoginCommandTest extends TestCase {
 
 		$text = \WP_CLI::all_text();
 		$this->assertStringContainsString( 'wpconfig-slug', $text );
-		$this->assertStringContainsString( 'FX_CORE_LOGIN_SLUG', $text );
+		$this->assertStringContainsString( 'FX_WARDEN_LOGIN_SLUG', $text );
 	}
 }

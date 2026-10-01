@@ -12,7 +12,7 @@ namespace FanxieLab\Warden\Modules\LoginProtection;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Data layer for `{$wpdb->prefix}fanxie_core_login_bans`.
+ * Data layer for `{$wpdb->prefix}fx_warden_login_bans`.
  *
  * Holds active persistent bans, looked up on every gated login attempt. A ban
  * is keyed by a `(subject_type, subject_value)` pair — e.g. `('ip', '203.0.113.9')`
@@ -41,7 +41,7 @@ final class BanRepository implements BanStore {
 	 *
 	 * @var string
 	 */
-	public const TABLE_BASENAME = 'fanxie_core_login_bans';
+	public const TABLE_BASENAME = 'fx_warden_login_bans';
 
 	/**
 	 * Fully-qualified table name, resolved once at construction.

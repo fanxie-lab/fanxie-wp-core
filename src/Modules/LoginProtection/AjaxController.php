@@ -351,11 +351,11 @@ final class AjaxController {
 	}
 
 	/**
-	 * Where the active login slug comes from: the `FX_CORE_LOGIN_SLUG` wp-config
+	 * Where the active login slug comes from: the `FX_WARDEN_LOGIN_SLUG` wp-config
 	 * constant (when defined and non-empty) or the stored setting.
 	 */
 	private function slug_source(): string {
-		if ( defined( 'FX_CORE_LOGIN_SLUG' ) && '' !== (string) constant( 'FX_CORE_LOGIN_SLUG' ) ) {
+		if ( defined( 'FX_WARDEN_LOGIN_SLUG' ) && '' !== (string) constant( 'FX_WARDEN_LOGIN_SLUG' ) ) {
 			return 'constant';
 		}
 		return 'stored';

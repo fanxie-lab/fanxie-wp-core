@@ -106,7 +106,7 @@ syntax and a `_comment` key fails with `"_comment" is not a configuration option
 | `port is already allocated` | Use `.wp-env.override.json` to change the port (see §5). |
 | Weird state — plugin won't activate, DB stuck, migrations wrong | `npm run env:destroy && npm run env:start` (destroys containers + volumes; uploads are lost). |
 | Only the DB needs resetting | `npm run env:clean` or the scoped `env:clean:dev` / `env:clean:tests`. |
-| WordPress says "Invalid Plugin" for `fanxie-warden` | Expected until Phase 0.1 adds the plugin bootstrap file. |
+| WordPress says "Invalid Plugin" for the `fanxie-wp-core` plugin folder | Expected until Phase 0.1 adds the plugin bootstrap file. |
 | `wp-env` hangs on "Starting WordPress..." | Stop it (Ctrl-C), then `docker ps -a` and remove stale containers, or `npm run env:destroy`. |
 | PHPUnit: `phpunit: not found` | Expected until Composer setup lands (Phase 0). |
 

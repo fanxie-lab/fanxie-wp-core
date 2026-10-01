@@ -124,7 +124,7 @@ if ( ! class_exists( 'WP_CLI', false ) ) {
 		 * reached under a live `WP_CLI` runtime, never inside the test process, so
 		 * the stub records nothing.
 		 *
-		 * @param string               $name    Command name (e.g. `fx-core login`).
+		 * @param string               $name    Command name (e.g. `fx-warden login`).
 		 * @param object|string        $handler Command implementation (instance or class name).
 		 * @param array<string, mixed> $args    Optional registration arguments.
 		 */

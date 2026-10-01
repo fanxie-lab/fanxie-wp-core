@@ -49,7 +49,7 @@ export interface LoginProtectionConfig {
 }
 
 /**
- * Where the active login slug originates: the `FX_CORE_LOGIN_SLUG` wp-config
+ * Where the active login slug originates: the `FX_WARDEN_LOGIN_SLUG` wp-config
  * constant (`constant`) or the stored setting (`stored`).
  */
 export type SlugSource = 'constant' | 'stored';

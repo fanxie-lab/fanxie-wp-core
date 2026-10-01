@@ -12,7 +12,7 @@ namespace FanxieLab\Warden\Modules\SecurityHeaders;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Data layer for `{$wpdb->prefix}fanxie_core_csp_violations`.
+ * Data layer for `{$wpdb->prefix}fx_warden_csp_violations`.
  *
  * Responsibilities:
  *   - `install()` — create/upgrade the table via `dbDelta`, gated by a
@@ -45,7 +45,7 @@ final class ViolationRepository {
 	 *
 	 * @var string
 	 */
-	public const TABLE_BASENAME = 'fanxie_core_csp_violations';
+	public const TABLE_BASENAME = 'fx_warden_csp_violations';
 
 	/**
 	 * Fully-qualified table name, resolved once at construction.

@@ -17,12 +17,12 @@ use WP_CLI;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * `wp fx-core login <subcommand>` — break-glass recovery from the shell.
+ * `wp fx-warden login <subcommand>` — break-glass recovery from the shell.
  *
  * Two operator lifelines that never depend on being able to log in:
  *
  *   - `reveal` prints the effective hidden-login slug and where it comes from,
- *     so an administrator who forgot it (or set the `FX_CORE_LOGIN_SLUG` escape
+ *     so an administrator who forgot it (or set the `FX_WARDEN_LOGIN_SLUG` escape
  *     hatch in `wp-config.php`) can find their way back to the login screen.
  *   - `unlock <subject>` clears the transient lockouts and persistent bans for
  *     an IP address or username, freeing a locked-out account without touching
@@ -49,14 +49,14 @@ final class LoginCommand {
 	/**
 	 * Reveal the effective hidden-login slug and its source.
 	 *
-	 * Prints the slug in force, whether it comes from the `FX_CORE_LOGIN_SLUG`
+	 * Prints the slug in force, whether it comes from the `FX_WARDEN_LOGIN_SLUG`
 	 * wp-config constant or the stored plugin settings, and the full login URL.
 	 * When no slug resolves, reports that the default `wp-login.php` is in use.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Show the hidden login slug and URL.
-	 *     $ wp fx-core login reveal
+	 *     $ wp fx-warden login reveal
 	 *
 	 * @param array<int, string>    $args       Positional arguments (unused).
 	 * @param array<string, string> $assoc_args Associative arguments (unused).
@@ -136,10 +136,10 @@ final class LoginCommand {
 	 * ## EXAMPLES
 	 *
 	 *     # Free a locked-out IP address.
-	 *     $ wp fx-core login unlock 203.0.113.7
+	 *     $ wp fx-warden login unlock 203.0.113.7
 	 *
 	 *     # Preview what unlocking a username would clear.
-	 *     $ wp fx-core login unlock admin --dry-run
+	 *     $ wp fx-warden login unlock admin --dry-run
 	 *
 	 * @param array<int, string>    $args       Positional arguments: `[ 0 => subject ]`.
 	 * @param array<string, string> $assoc_args Associative arguments: supports `dry-run`.
@@ -252,8 +252,8 @@ final class LoginCommand {
 	 * and the admin UI agree on the reported source.
 	 */
 	private function slug_source_label(): string {
-		if ( defined( 'FX_CORE_LOGIN_SLUG' ) && '' !== (string) constant( 'FX_CORE_LOGIN_SLUG' ) ) {
-			return __( 'FX_CORE_LOGIN_SLUG constant (wp-config.php)', 'fanxie-warden' );
+		if ( defined( 'FX_WARDEN_LOGIN_SLUG' ) && '' !== (string) constant( 'FX_WARDEN_LOGIN_SLUG' ) ) {
+			return __( 'FX_WARDEN_LOGIN_SLUG constant (wp-config.php)', 'fanxie-warden' );
 		}
 
 		return __( 'stored plugin settings', 'fanxie-warden' );

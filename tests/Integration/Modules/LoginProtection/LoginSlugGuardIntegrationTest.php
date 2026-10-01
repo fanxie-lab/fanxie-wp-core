@@ -148,8 +148,8 @@ final class LoginSlugGuardIntegrationTest extends WP_UnitTestCase {
 	}
 
 	public function test_constant_overrides_stored_slug_end_to_end(): void {
-		if ( ! defined( 'FX_CORE_LOGIN_SLUG' ) ) {
-			define( 'FX_CORE_LOGIN_SLUG', 'constant-gate' );
+		if ( ! defined( 'FX_WARDEN_LOGIN_SLUG' ) ) {
+			define( 'FX_WARDEN_LOGIN_SLUG', 'constant-gate' );
 		}
 		$guard = $this->active_guard( [ 'slug' => 'stored-login' ] );
 

@@ -369,7 +369,7 @@ final class LoginProtection extends ModuleBase {
 		);
 
 		if ( defined( 'WP_CLI' ) && constant( 'WP_CLI' ) ) {
-			\WP_CLI::add_command( 'fx-core login', new LoginCommand( $config, $bans ) );
+			\WP_CLI::add_command( 'fx-warden login', new LoginCommand( $config, $bans ) );
 		}
 	}
 }

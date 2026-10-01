@@ -8,7 +8,7 @@
  * Data removal is **opt-in**. Nothing is wiped unless one of the following
  * is true:
  *
- *   1. The `FX_CORE_DELETE_ALL_DATA` constant is defined and truthy
+ *   1. The `FX_WARDEN_DELETE_ALL_DATA` constant is defined and truthy
  *      (typically added to `wp-config.php` for site-owner control).
  *   2. The stored option `fanxie_warden_delete_on_uninstall` equals `'yes'`
  *      (set via the admin UI).
@@ -19,7 +19,7 @@
  * When wipe is authorised we:
  *   - Delete every option whose name starts with `fanxie_warden_`
  *     (both regular + site transients for consistency).
- *   - Drop every custom table matching `{$wpdb->prefix}fanxie_core_%`.
+ *   - Drop every custom table matching `{$wpdb->prefix}fx_warden_%`.
  *   - Remove the `manage_fanxie_warden` capability from every role.
  *
  * We intentionally do *not* touch user meta: no core module stores user-keyed
@@ -40,7 +40,7 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
  */
 $fanxie_warden_should_delete = false;
 
-if ( defined( 'FX_CORE_DELETE_ALL_DATA' ) && FX_CORE_DELETE_ALL_DATA ) {
+if ( defined( 'FX_WARDEN_DELETE_ALL_DATA' ) && FX_WARDEN_DELETE_ALL_DATA ) {
 	$fanxie_warden_should_delete = true;
 }
 
@@ -111,7 +111,7 @@ if ( is_multisite() ) {
  * 2. Custom tables.
  * -----------------------------------------------------------------------------
  */
-$fanxie_warden_table_prefix = $wpdb->prefix . 'fanxie_core_';
+$fanxie_warden_table_prefix = $wpdb->prefix . 'fx_warden_';
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- SHOW TABLES has no WordPress API wrapper; it is the only way to discover which of this plugin's tables were ever created, and the answer is invalidated by the DROP TABLE loop directly below it.
 $fanxie_warden_tables = $wpdb->get_col(
 	$wpdb->prepare(

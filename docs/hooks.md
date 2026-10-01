@@ -29,7 +29,7 @@ Last updated for Phase 2.2.
 
 - **Type:** Action
 - **Since:** 0.1.0-dev
-- **Fires:** Inside `ViolationRepository::record()` after a CSP violation has been inserted or deduped into `{$wpdb->prefix}fanxie_core_csp_violations`.
+- **Fires:** Inside `ViolationRepository::record()` after a CSP violation has been inserted or deduped into `{$wpdb->prefix}fx_warden_csp_violations`.
 - **Params:**
   - `FanxieLab\Warden\Modules\SecurityHeaders\ViolationRecord $record` — the violation that was just persisted.
 - **Example:**
@@ -282,7 +282,7 @@ Last updated for Phase 2.2.
 - **Fires:** Inside `uninstall.php` after the user opt-in flag has been resolved.
 - **Params:**
   - `bool $should_delete` — whether the plugin should wipe its options and custom tables
-    (resolved from the `FX_CORE_DELETE_ALL_DATA` constant, else the
+    (resolved from the `FX_WARDEN_DELETE_ALL_DATA` constant, else the
     `fanxie_warden_delete_on_uninstall` option).
 - **Returns:** `bool` — overrides the opt-in decision programmatically.
 - **Example:**
@@ -301,8 +301,8 @@ Last updated for Phase 2.2.
 - **Type:** Action (WP-Cron event — flat name, not slash-namespaced)
 - **Since:** 0.1.0-dev
 - **Fires:** Daily via `wp_schedule_event()`. The module's handler prunes the
-  `fanxie_core_login_log` table beyond the configured retention window and
-  deletes expired rows from `fanxie_core_login_bans`.
+  `fx_warden_login_log` table beyond the configured retention window and
+  deletes expired rows from `fx_warden_login_bans`.
 - **Params:** none.
 - **Note:** hook into this to run additional login-log/ban cleanup on the same
   daily schedule.
@@ -316,10 +316,10 @@ All routed through the shared `fanxie_warden` admin-ajax action (nonce
 
 ### Recovery constant
 
-- **`FX_CORE_LOGIN_SLUG`** — define in `wp-config.php` to override the stored
+- **`FX_WARDEN_LOGIN_SLUG`** — define in `wp-config.php` to override the stored
   custom login slug (recovers access if you're locked out); when set, the admin
-  UI shows the slug read-only. Reveal the active slug with `wp fx-core login
-  reveal`; clear a lockout/ban with `wp fx-core login unlock <ip|username>`.
+  UI shows the slug read-only. Reveal the active slug with `wp fx-warden login
+  reveal`; clear a lockout/ban with `wp fx-warden login unlock <ip|username>`.
 
 ---
 
@@ -363,14 +363,14 @@ setting — which also discards every cached result.
 
 ## wp-config override constants
 
-Site owners set these in `wp-config.php`. They all use the `FX_CORE_*` prefix;
+Site owners set these in `wp-config.php`. They all use the `FX_WARDEN_*` prefix;
 `FANXIE_WARDEN_*` constants are internal bootstrap values (VERSION/PATH/URL/FILE
 and the minimum PHP/WP floors) and are not part of the public contract.
 
 | Constant | Effect |
 |---|---|
-| `FX_CORE_LOGIN_SLUG` | Overrides the custom login slug (lockout recovery). |
-| `FX_CORE_DELETE_ALL_DATA` | When truthy, opts into wiping every option and custom table on uninstall. Equivalent to the admin setting; either one is sufficient. |
+| `FX_WARDEN_LOGIN_SLUG` | Overrides the custom login slug (lockout recovery). |
+| `FX_WARDEN_DELETE_ALL_DATA` | When truthy, opts into wiping every option and custom table on uninstall. Equivalent to the admin setting; either one is sufficient. |
 
 ---
 

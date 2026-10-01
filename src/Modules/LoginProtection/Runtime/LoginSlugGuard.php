@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * administrator out. The design is therefore built around fail-safe recovery
  * and never touching request types that must always resolve:
  *
- *   - The `FX_CORE_LOGIN_SLUG` wp-config constant is the escape hatch. It wins
+ *   - The `FX_WARDEN_LOGIN_SLUG` wp-config constant is the escape hatch. It wins
  *     over the stored slug, so an administrator who forgets or loses the slug
  *     can drop one line in `wp-config.php` (or the CLI reveal in Task 9) and
  *     regain access without database surgery.
@@ -91,16 +91,16 @@ final class LoginSlugGuard {
 	/**
 	 * The active login slug, sanitised, with the wp-config constant winning.
 	 *
-	 * `FX_CORE_LOGIN_SLUG` (run through `sanitize_title()` and the reserved
+	 * `FX_WARDEN_LOGIN_SLUG` (run through `sanitize_title()` and the reserved
 	 * check) takes precedence over the stored slug whenever it yields a valid
 	 * value; otherwise resolution falls back to the stored slug. Returns an
 	 * empty string when neither source yields a usable slug.
 	 *
-	 * Kept public: the `wp fx-core login reveal` CLI (Task 9) reads it.
+	 * Kept public: the `wp fx-warden login reveal` CLI (Task 9) reads it.
 	 */
 	public function effective_slug(): string {
-		if ( defined( 'FX_CORE_LOGIN_SLUG' ) ) {
-			$from_constant = $this->normalize_slug( (string) constant( 'FX_CORE_LOGIN_SLUG' ) );
+		if ( defined( 'FX_WARDEN_LOGIN_SLUG' ) ) {
+			$from_constant = $this->normalize_slug( (string) constant( 'FX_WARDEN_LOGIN_SLUG' ) );
 			if ( '' !== $from_constant ) {
 				return $from_constant;
 			}

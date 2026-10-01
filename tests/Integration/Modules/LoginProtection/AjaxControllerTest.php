@@ -92,7 +92,7 @@ final class LoginProtectionAjaxControllerTest extends LoginProtectionTableTestCa
 		$this->assertArrayHasKey( 'hide_login_active', $result );
 		$this->assertIsArray( $result['config'] );
 		$this->assertArrayHasKey( 'hide_login', $result['config'] );
-		// No FX_CORE_LOGIN_SLUG constant in the test runtime.
+		// No FX_WARDEN_LOGIN_SLUG constant in the test runtime.
 		$this->assertSame( 'stored', $result['slug_source'] );
 		// Hide-login ships disabled, so it is not enforcing at defaults.
 		$this->assertFalse( $result['hide_login_active'], 'Hide-login is inactive at defaults.' );

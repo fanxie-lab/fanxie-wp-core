@@ -14,9 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   namespace `FanxieLab\Warden`, constants `FANXIE_WARDEN_*`, and the
   `fanxie_warden` prefix on options, hooks, AJAX actions, nonces, cron events and
   the `manage_fanxie_warden` capability; REST namespace `fanxie-warden/v1`; admin
-  global `window.fanxieWarden`. Unchanged on purpose: `fanxie_core_*` tables, the
-  `wp fx-core` CLI root and `FX_CORE_*` override constants. Nothing had shipped,
-  so no data migration is provided.
+  global `window.fanxieWarden`. The user-facing names follow too: custom tables
+  are now `{prefix}fx_warden_*`, the WP-CLI root is `wp fx-warden`, and wp-config
+  override constants are `FX_WARDEN_*` (e.g. `FX_WARDEN_LOGIN_SLUG`,
+  `FX_WARDEN_DELETE_ALL_DATA`). Nothing had shipped, so no data migration is
+  provided — existing dev installs should be wiped and reinstalled.
 
 ### Removed
 - Three modules cut from the v1.0 scope: **Turnstile** (PRD §6), **Media

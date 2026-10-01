@@ -12,7 +12,7 @@ namespace FanxieLab\Warden\Modules\LoginProtection;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Data layer for `{$wpdb->prefix}fanxie_core_login_log`.
+ * Data layer for `{$wpdb->prefix}fx_warden_login_log`.
  *
  * The login event history that powers the admin log viewer and feeds the
  * attempt-limiting heuristics. Mirrors the structure of
@@ -45,7 +45,7 @@ final class LoginLogRepository implements LoginLogRecorder {
 	 *
 	 * @var string
 	 */
-	public const TABLE_BASENAME = 'fanxie_core_login_log';
+	public const TABLE_BASENAME = 'fx_warden_login_log';
 
 	/**
 	 * Fully-qualified table name, resolved once at construction.

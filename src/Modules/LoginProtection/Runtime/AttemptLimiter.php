@@ -157,7 +157,7 @@ final class AttemptLimiter {
 	 *
 	 * A static, config-independent entry point (the transient keys derive only
 	 * from the subject, never from settings) shared by the admin
-	 * `login_protection/clear-lockout` AJAX action and the `wp fx-core login
+	 * `login_protection/clear-lockout` AJAX action and the `wp fx-warden login
 	 * unlock` CLI command. `$type` accepts the module's canonical subject types
 	 * — `ip` or `username` — and maps `username` onto the internal `user`
 	 * counter dimension so callers speak the same vocabulary the bans + log use.
@@ -182,7 +182,7 @@ final class AttemptLimiter {
 	 *
 	 * The read-seam companion to {@see self::clear_subject()}: both derive their
 	 * key from the single private {@see self::lock_key()} builder, so the lock-key
-	 * format has exactly one source of truth. Used by the `wp fx-core login unlock
+	 * format has exactly one source of truth. Used by the `wp fx-warden login unlock
 	 * --dry-run` CLI report to inspect lock state without reconstructing the
 	 * private key scheme.
 	 *

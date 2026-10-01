@@ -234,7 +234,7 @@ describe('<LoginProtection> — Hide Login', () => {
     expect(slug.attributes('disabled')).toBeDefined();
     expect((slug.element as HTMLInputElement).value).toBe('locked-slug');
     // The constant is named in an accessible explanation on screen.
-    expect(wrapper.text()).toContain('FX_CORE_LOGIN_SLUG');
+    expect(wrapper.text()).toContain('FX_WARDEN_LOGIN_SLUG');
   });
 
   it('surfaces the recovery note (wp-config constant + CLI reveal)', async () => {
@@ -244,8 +244,8 @@ describe('<LoginProtection> — Hide Login', () => {
     });
 
     const text = wrapper.text();
-    expect(text).toContain('FX_CORE_LOGIN_SLUG');
-    expect(text).toContain('wp fx-core login reveal');
+    expect(text).toContain('FX_WARDEN_LOGIN_SLUG');
+    expect(text).toContain('wp fx-warden login reveal');
   });
 
   it('wires the enable toggle to a HelpText via aria-describedby', async () => {
