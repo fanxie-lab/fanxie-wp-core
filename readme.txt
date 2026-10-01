@@ -22,7 +22,7 @@ Built for Fanxie Lab client deployments and released openly for the wider WordPr
 * Hardening — user enumeration protection, XML-RPC control, version hiding, uploads directory PHP execution lockdown, DISALLOW_FILE_EDIT surfacing, application-password toggle.
 * Login Protection — tiered lockouts, custom login slug, strong password enforcement, role-aware session timeout.
 * Environment Health — version checks, cron health, debug-mode scanner, inactive plugin/theme detection, abandoned plugin warnings.
-* Database Maintenance — revisions, transients, orphaned meta, auto-drafts, trash, and spam cleanup with Action Scheduler.
+* Database Maintenance — revisions, transients, orphaned meta, auto-drafts, trash, and spam cleanup with an optional WP-Cron schedule and a WP-CLI command.
 * Activity Log — auditable custom-table log of admin actions with CSV export and auto-pruning.
 * Asset Manager — script defer/async/delay engine, conditional unloading, image dimension injection, Heartbeat / emoji / embed controls.
 
