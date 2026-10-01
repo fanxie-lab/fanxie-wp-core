@@ -26,7 +26,7 @@ final class DatabaseMaintenance extends ModuleBase {
 	 *
 	 * @param AjaxRouter $ajax_router Shared AJAX router.
 	 */
-	public function __construct( private readonly AjaxRouter $ajax_router ) {} // @phpstan-ignore property.onlyWritten
+	public function __construct( private readonly AjaxRouter $ajax_router ) {}
 
 	/**
 	 * Module slug.
@@ -131,7 +131,37 @@ final class DatabaseMaintenance extends ModuleBase {
 	 */
 	public function register_hooks(): void {
 		add_filter( 'wp_revisions_to_keep', [ $this, 'filter_revisions_to_keep' ], 10, 1 );
+
+		( new AjaxController( $this ) )->register( $this->ajax_router );
 	}
+
+	/**
+	 * Task factory bound to the current settings.
+	 */
+	public function task_factory(): Cleanup\TaskFactory {
+		return new Cleanup\TaskFactory( $this->settings() );
+	}
+
+	/**
+	 * Batch runner.
+	 */
+	public function runner(): Cleanup\CleanupRunner {
+		return new Cleanup\CleanupRunner();
+	}
+
+	/**
+	 * Next scheduled run as ISO 8601. Replaced in Task 9 to read the cron event.
+	 *
+	 * @phpstan-ignore return.unusedType (placeholder until Task 9)
+	 */
+	public function next_run_iso(): ?string {
+		return null;
+	}
+
+	/**
+	 * Settings-saved hook. Replaced in Task 9 to reschedule cron.
+	 */
+	public function on_settings_saved(): void {}
 
 	/**
 	 * Apply the revision cap unless wp-config already sets one.

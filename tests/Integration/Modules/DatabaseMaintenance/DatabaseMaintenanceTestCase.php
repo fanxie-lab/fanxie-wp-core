@@ -53,9 +53,10 @@ abstract class DatabaseMaintenanceTestCase extends WP_UnitTestCase {
 	 *
 	 * @param string               $sub_action Router sub-action slug.
 	 * @param array<string, mixed> $payload    Extra POST fields.
+	 * @param string|null          $nonce      Nonce override; a valid one when null.
 	 * @return array<string, mixed>
 	 */
-	protected function dispatch( string $sub_action, array $payload = [] ): array {
+	protected function dispatch( string $sub_action, array $payload = [], ?string $nonce = null ): array {
 		wp_set_current_user( $this->admin_user_id );
 
 		$_POST = array_merge(
@@ -63,7 +64,7 @@ abstract class DatabaseMaintenanceTestCase extends WP_UnitTestCase {
 			[
 				'action'      => AjaxRouter::AJAX_ACTION,
 				'_action'     => $sub_action,
-				'_ajax_nonce' => wp_create_nonce( AjaxRouter::NONCE_ACTION ),
+				'_ajax_nonce' => $nonce ?? wp_create_nonce( AjaxRouter::NONCE_ACTION ),
 			]
 		);
 
