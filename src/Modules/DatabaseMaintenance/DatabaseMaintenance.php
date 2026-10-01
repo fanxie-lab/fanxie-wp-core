@@ -191,9 +191,11 @@ final class DatabaseMaintenance extends ModuleBase {
 	/**
 	 * Apply the revision cap unless wp-config already sets one.
 	 *
-	 * @param int $num Revisions to keep.
+	 * @param mixed $num Revisions to keep (an earlier callback may have returned a non-int).
 	 */
-	public function filter_revisions_to_keep( int $num ): int {
+	public function filter_revisions_to_keep( mixed $num ): int {
+		$num = is_numeric( $num ) ? (int) $num : -1;
+
 		if ( null !== self::revisions_constant() ) {
 			return $num;
 		}

@@ -56,4 +56,15 @@ final class DatabaseMaintenanceRevisionsTest extends TestCase {
 		$this->assertNull( DatabaseMaintenance::revisions_constant() );
 		$this->assertSame( 5, $module->filter_revisions_to_keep( -1 ) );
 	}
+
+	/**
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_a_non_int_value_from_an_earlier_callback_does_not_fatal(): void {
+		define( 'WP_POST_REVISIONS', true );
+		$module = new DatabaseMaintenance( new AjaxRouter() );
+
+		$this->assertSame( 5, $module->filter_revisions_to_keep( null ) );
+	}
 }

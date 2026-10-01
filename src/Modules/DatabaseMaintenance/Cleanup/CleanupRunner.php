@@ -20,7 +20,7 @@ final class CleanupRunner {
 
 	public const LOCK_PREFIX   = 'fanxie_warden_db_lock_';
 	public const LOCK_TTL      = 60;
-	public const DEFAULT_BATCH = 500;
+	public const DEFAULT_BATCH = 100;
 
 	/**
 	 * Clock function for testing (injects time).
