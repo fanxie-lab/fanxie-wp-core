@@ -11,6 +11,7 @@ namespace FanxieLab\Warden;
 
 use FanxieLab\Warden\Admin\AjaxRouter;
 use FanxieLab\Warden\Admin\SettingsPage;
+use FanxieLab\Warden\Modules\DatabaseMaintenance\DatabaseMaintenance;
 use FanxieLab\Warden\Modules\EnvironmentHealth\EnvironmentHealth;
 use FanxieLab\Warden\Modules\Hardening\Hardening;
 use FanxieLab\Warden\Modules\LoginProtection\BanRepository;
@@ -254,6 +255,9 @@ final class Plugin {
 		$environment_health = new EnvironmentHealth( $ajax_router );
 		$registry->register( $environment_health );
 
+		$database_maintenance = new DatabaseMaintenance( $ajax_router );
+		$registry->register( $database_maintenance );
+
 		$settings_page = new SettingsPage( $registry );
 
 		$this->services[ ModuleRegistry::class ]  = $registry;
@@ -263,7 +267,8 @@ final class Plugin {
 		$this->services[ Hardening::class ]       = $hardening;
 		$this->services[ LoginProtection::class ] = $login_protection;
 
-		$this->services[ EnvironmentHealth::class ] = $environment_health;
+		$this->services[ EnvironmentHealth::class ]   = $environment_health;
+		$this->services[ DatabaseMaintenance::class ] = $database_maintenance;
 	}
 
 	/**
