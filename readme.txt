@@ -58,6 +58,10 @@ No module is enabled out of the box. Each module ships with conservative default
 
 No, not by default. The plugin leaves all options and tables intact on uninstall unless you explicitly opt in via the admin setting or by defining `FX_WARDEN_DELETE_ALL_DATA` in `wp-config.php`. This protects you from accidentally wiping configuration when re-installing.
 
+= Why is the revision limit greyed out? =
+
+Your wp-config.php sets `WP_POST_REVISIONS`, which takes precedence. Remove it to manage the limit here.
+
 == Screenshots ==
 
 1. Settings page overview with per-module toggles. (placeholder)

@@ -89,6 +89,16 @@ if ( is_array( $fanxie_warden_option_names ) ) {
 	}
 }
 
+// Database Maintenance per-task lock transients (`fanxie_warden_db_lock_*`).
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- one-shot uninstall sweep; see above.
+$wpdb->query(
+	$wpdb->prepare(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+		$wpdb->esc_like( '_transient_fanxie_warden_' ) . '%',
+		$wpdb->esc_like( '_transient_timeout_fanxie_warden_' ) . '%'
+	)
+);
+
 // Multisite: mirror cleanup for network options.
 if ( is_multisite() ) {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- network-option equivalent of the sweep above: no core API enumerates sitemeta by key prefix, and the rows are deleted immediately after.
