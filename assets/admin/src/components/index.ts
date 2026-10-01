@@ -5,6 +5,7 @@ export { default as CodeSnippet } from './CodeSnippet.vue';
 export { default as ConfirmDialog } from './ConfirmDialog.vue';
 export { default as Toggle } from './Toggle.vue';
 export { default as TextField } from './TextField.vue';
+export { default as NumberField } from './NumberField.vue';
 export { default as Select } from './Select.vue';
 export { default as SaveBar } from './SaveBar.vue';
 export { default as StatusPill } from './StatusPill.vue';
