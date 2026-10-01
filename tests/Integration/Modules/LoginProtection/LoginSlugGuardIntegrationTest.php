@@ -2,14 +2,14 @@
 /**
  * Integration tests for the Login Protection hide-login slug guard.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Integration\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Integration\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\LoginSlugGuard;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\LoginSlugGuard;
 use WP_UnitTestCase;
 
 /**

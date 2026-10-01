@@ -2,19 +2,19 @@
 /**
  * Unit tests for HeaderEmitter.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\SecurityHeaders
+ * @package FanxieLab\Warden\Tests\Unit\Modules\SecurityHeaders
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\SecurityHeaders;
+namespace FanxieLab\Warden\Tests\Unit\Modules\SecurityHeaders;
 
 use Brain\Monkey;
 use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\SecurityHeaders\HeaderEmitter;
-use FanxieLab\WPCore\Modules\SecurityHeaders\SecurityHeaders;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\SecurityHeaders\HeaderEmitter;
+use FanxieLab\Warden\Modules\SecurityHeaders\SecurityHeaders;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -67,7 +67,7 @@ final class HeaderEmitterTest extends TestCase {
 	private function make_emitter( array $settings, bool $is_ssl = true, array $existing = [], ?array &$sink = null ): HeaderEmitter {
 		Functions\when( 'get_option' )->alias(
 			static function ( $key, $default_value = false ) use ( $settings ) {
-				if ( 'fanxie_wp_core_security-headers_settings' === $key ) {
+				if ( 'fanxie_warden_security-headers_settings' === $key ) {
 					return $settings;
 				}
 				return $default_value;
@@ -205,7 +205,7 @@ final class HeaderEmitterTest extends TestCase {
 		// injected resolver) and not double-send.
 		$emitter = $this->make_emitter( $config, true, [ 'Strict-Transport-Security: max-age=99' ] );
 
-		Filters\expectApplied( 'fanxie_wp_core/security_headers/headers' )
+		Filters\expectApplied( 'fanxie_warden/security_headers/headers' )
 			->once()
 			->andReturnUsing( static fn ( array $h ): array => $h );
 
@@ -221,7 +221,7 @@ final class HeaderEmitterTest extends TestCase {
 			'csp'     => [ 'mode' => 'off' ],
 		];
 
-		Filters\expectApplied( 'fanxie_wp_core/security_headers/headers' )
+		Filters\expectApplied( 'fanxie_warden/security_headers/headers' )
 			->once()
 			->andReturnUsing(
 				static function ( array $headers ): array {
@@ -253,10 +253,10 @@ final class HeaderEmitterTest extends TestCase {
 			],
 		];
 
-		Filters\expectApplied( 'fanxie_wp_core/security_headers/csp_emit_context' )
+		Filters\expectApplied( 'fanxie_warden/security_headers/csp_emit_context' )
 			->atLeast()->once()
 			->andReturnFirstArg();
-		Filters\expectApplied( 'fanxie_wp_core/security_headers/headers' )
+		Filters\expectApplied( 'fanxie_warden/security_headers/headers' )
 			->andReturnFirstArg();
 
 		$sink    = [];
@@ -284,10 +284,10 @@ final class HeaderEmitterTest extends TestCase {
 			],
 		];
 
-		Filters\expectApplied( 'fanxie_wp_core/security_headers/csp_emit_context' )
+		Filters\expectApplied( 'fanxie_warden/security_headers/csp_emit_context' )
 			->atLeast()->once()
 			->andReturnFirstArg();
-		Filters\expectApplied( 'fanxie_wp_core/security_headers/headers' )
+		Filters\expectApplied( 'fanxie_warden/security_headers/headers' )
 			->andReturnFirstArg();
 
 		$sink    = [];
@@ -309,10 +309,10 @@ final class HeaderEmitterTest extends TestCase {
 			],
 		];
 
-		Filters\expectApplied( 'fanxie_wp_core/security_headers/csp_emit_context' )
+		Filters\expectApplied( 'fanxie_warden/security_headers/csp_emit_context' )
 			->atLeast()->once()
 			->andReturn( true );
-		Filters\expectApplied( 'fanxie_wp_core/security_headers/headers' )
+		Filters\expectApplied( 'fanxie_warden/security_headers/headers' )
 			->andReturnFirstArg();
 
 		$sink    = [];

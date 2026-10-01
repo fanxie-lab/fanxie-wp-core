@@ -24,7 +24,7 @@ function makeConfig(): SecurityHeadersConfig {
       directives: {
         'default-src': ["'self'"],
       },
-      report_uri: 'https://example.test/wp-json/fanxie-wp-core/v1/csp-report',
+      report_uri: 'https://example.test/wp-json/fanxie-warden/v1/csp-report',
     },
   };
 }

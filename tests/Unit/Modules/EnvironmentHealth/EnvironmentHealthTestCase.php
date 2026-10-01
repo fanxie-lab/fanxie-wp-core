@@ -2,16 +2,16 @@
 /**
  * Shared unit-test harness for the Environment Health module.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
 use PHPUnit\Framework\TestCase;
 use WP_Theme;
 use wpdb;

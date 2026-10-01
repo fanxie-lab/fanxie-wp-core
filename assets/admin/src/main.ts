@@ -4,7 +4,7 @@ import App from '@/App.vue';
 import { router } from '@/router';
 import '@/styles/main.css';
 
-const MOUNT_ID = 'fanxie-wp-core-admin';
+const MOUNT_ID = 'fanxie-warden-admin';
 
 function renderBootstrapError(mountEl: HTMLElement, message: string): void {
   // We can't trust the Vue app to mount when the bootstrap is missing, so
@@ -20,7 +20,7 @@ function renderBootstrapError(mountEl: HTMLElement, message: string): void {
     'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
   const heading = document.createElement('strong');
-  heading.textContent = 'Fanxie WP Core failed to initialise.';
+  heading.textContent = 'Fanxie Warden failed to initialise.';
 
   const body = document.createElement('p');
   body.style.margin = '8px 0 0';
@@ -36,15 +36,15 @@ function bootstrap(): void {
     // Nothing we can do without a mount node. Log for devs.
     // eslint-disable-next-line no-console
     console.error(
-      `[fanxie-wp-core] Mount node #${MOUNT_ID} not found in the DOM.`,
+      `[fanxie-warden] Mount node #${MOUNT_ID} not found in the DOM.`,
     );
     return;
   }
 
-  if (!window.fanxieWPCore) {
+  if (!window.fanxieWarden) {
     // eslint-disable-next-line no-console
     console.error(
-      '[fanxie-wp-core] window.fanxieWPCore is missing. The PHP bootstrap did not run, or the inline script was stripped.',
+      '[fanxie-warden] window.fanxieWarden is missing. The PHP bootstrap did not run, or the inline script was stripped.',
     );
     renderBootstrapError(
       mountEl,

@@ -2,18 +2,18 @@
 /**
  * Security Headers module entry point.
  *
- * @package FanxieLab\WPCore\Modules\SecurityHeaders
+ * @package FanxieLab\Warden\Modules\SecurityHeaders
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\SecurityHeaders;
+namespace FanxieLab\Warden\Modules\SecurityHeaders;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\ModuleBase;
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPolicy;
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPresetLibrary;
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspReportController;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\ModuleBase;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspPolicy;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspPresetLibrary;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspReportController;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -40,7 +40,7 @@ final class SecurityHeaders extends ModuleBase {
 	 *
 	 * @var string
 	 */
-	public const PRUNE_HOOK = 'fanxie_wp_core_csp_violations_prune';
+	public const PRUNE_HOOK = 'fanxie_warden_csp_violations_prune';
 
 	/**
 	 * Constructor.
@@ -66,7 +66,7 @@ final class SecurityHeaders extends ModuleBase {
 	 * Translatable display name.
 	 */
 	public function name(): string {
-		return __( 'Security Headers', 'fanxie-wp-core' );
+		return __( 'Security Headers', 'fanxie-warden' );
 	}
 
 	/**
@@ -148,22 +148,22 @@ final class SecurityHeaders extends ModuleBase {
 			// HSTS.
 			[
 				'id'        => 'headers.hsts.enabled',
-				'label'     => __( 'Enable Strict-Transport-Security', 'fanxie-wp-core' ),
+				'label'     => __( 'Enable Strict-Transport-Security', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Off by default. Only enable on a site that is fully and permanently HTTPS — once cached, browsers will refuse plain HTTP for the configured max-age.', 'fanxie-wp-core' ),
+				'help'      => __( 'Off by default. Only enable on a site that is fully and permanently HTTPS — once cached, browsers will refuse plain HTTP for the configured max-age.', 'fanxie-warden' ),
 			],
 			[
 				'id'        => 'headers.hsts.max_age',
-				'label'     => __( 'HSTS max-age (seconds)', 'fanxie-wp-core' ),
+				'label'     => __( 'HSTS max-age (seconds)', 'fanxie-warden' ),
 				'type'      => 'int',
 				'default'   => 31536000,
 				'sanitizer' => 'absint',
 			],
 			[
 				'id'        => 'headers.hsts.include_subdomains',
-				'label'     => __( 'Include subdomains', 'fanxie-wp-core' ),
+				'label'     => __( 'Include subdomains', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
@@ -172,14 +172,14 @@ final class SecurityHeaders extends ModuleBase {
 			// X-Frame-Options.
 			[
 				'id'        => 'headers.xfo.enabled',
-				'label'     => __( 'Enable X-Frame-Options', 'fanxie-wp-core' ),
+				'label'     => __( 'Enable X-Frame-Options', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
 				'id'        => 'headers.xfo.value',
-				'label'     => __( 'X-Frame-Options value', 'fanxie-wp-core' ),
+				'label'     => __( 'X-Frame-Options value', 'fanxie-warden' ),
 				'type'      => 'select',
 				'default'   => 'SAMEORIGIN',
 				'sanitizer' => 'text',
@@ -192,7 +192,7 @@ final class SecurityHeaders extends ModuleBase {
 			// X-Content-Type-Options.
 			[
 				'id'        => 'headers.xcto.enabled',
-				'label'     => __( 'Enable X-Content-Type-Options: nosniff', 'fanxie-wp-core' ),
+				'label'     => __( 'Enable X-Content-Type-Options: nosniff', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
@@ -201,14 +201,14 @@ final class SecurityHeaders extends ModuleBase {
 			// Referrer-Policy.
 			[
 				'id'        => 'headers.referrer.enabled',
-				'label'     => __( 'Enable Referrer-Policy', 'fanxie-wp-core' ),
+				'label'     => __( 'Enable Referrer-Policy', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
 				'id'        => 'headers.referrer.value',
-				'label'     => __( 'Referrer-Policy value', 'fanxie-wp-core' ),
+				'label'     => __( 'Referrer-Policy value', 'fanxie-warden' ),
 				'type'      => 'select',
 				'default'   => 'strict-origin-when-cross-origin',
 				'sanitizer' => 'text',
@@ -227,14 +227,14 @@ final class SecurityHeaders extends ModuleBase {
 			// Permissions-Policy.
 			[
 				'id'        => 'headers.permissions.enabled',
-				'label'     => __( 'Enable Permissions-Policy', 'fanxie-wp-core' ),
+				'label'     => __( 'Enable Permissions-Policy', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
 				'id'        => 'headers.permissions.value',
-				'label'     => __( 'Permissions-Policy value', 'fanxie-wp-core' ),
+				'label'     => __( 'Permissions-Policy value', 'fanxie-warden' ),
 				'type'      => 'text',
 				'default'   => 'camera=(), microphone=(), geolocation=()',
 				'sanitizer' => 'text',
@@ -243,15 +243,15 @@ final class SecurityHeaders extends ModuleBase {
 			// Cache-Control.
 			[
 				'id'        => 'headers.cache_control.enabled',
-				'label'     => __( 'Enable Cache-Control (non-authenticated pages)', 'fanxie-wp-core' ),
+				'label'     => __( 'Enable Cache-Control (non-authenticated pages)', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Off by default — a wrong value can break dynamic pages.', 'fanxie-wp-core' ),
+				'help'      => __( 'Off by default — a wrong value can break dynamic pages.', 'fanxie-warden' ),
 			],
 			[
 				'id'        => 'headers.cache_control.value',
-				'label'     => __( 'Cache-Control value', 'fanxie-wp-core' ),
+				'label'     => __( 'Cache-Control value', 'fanxie-warden' ),
 				'type'      => 'text',
 				'default'   => 'public, max-age=3600',
 				'sanitizer' => 'text',
@@ -260,34 +260,34 @@ final class SecurityHeaders extends ModuleBase {
 			// CSP.
 			[
 				'id'        => 'csp.mode',
-				'label'     => __( 'Content-Security-Policy mode', 'fanxie-wp-core' ),
+				'label'     => __( 'Content-Security-Policy mode', 'fanxie-warden' ),
 				'type'      => 'select',
 				'default'   => CspPolicy::MODE_REPORT_ONLY,
 				'sanitizer' => 'key',
 				'options'   => [
-					CspPolicy::MODE_OFF         => __( 'Off', 'fanxie-wp-core' ),
-					CspPolicy::MODE_REPORT_ONLY => __( 'Report only', 'fanxie-wp-core' ),
-					CspPolicy::MODE_ENFORCE     => __( 'Enforce', 'fanxie-wp-core' ),
+					CspPolicy::MODE_OFF         => __( 'Off', 'fanxie-warden' ),
+					CspPolicy::MODE_REPORT_ONLY => __( 'Report only', 'fanxie-warden' ),
+					CspPolicy::MODE_ENFORCE     => __( 'Enforce', 'fanxie-warden' ),
 				],
 			],
 			[
 				'id'        => 'csp.learning_mode',
-				'label'     => __( 'CSP learning mode (dual-emit)', 'fanxie-wp-core' ),
+				'label'     => __( 'CSP learning mode (dual-emit)', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Keep collecting violation reports while the policy is enforced.', 'fanxie-wp-core' ),
+				'help'      => __( 'Keep collecting violation reports while the policy is enforced.', 'fanxie-warden' ),
 			],
 			[
 				'id'                 => 'csp.directives',
-				'label'              => __( 'CSP directives', 'fanxie-wp-core' ),
+				'label'              => __( 'CSP directives', 'fanxie-warden' ),
 				'type'               => 'textarea',
 				'default'            => $this->default_csp_directives(),
 				'sanitizer_callback' => [ $this, 'sanitize_directives' ],
 			],
 			[
 				'id'        => 'csp.report_uri',
-				'label'     => __( 'CSP report-uri', 'fanxie-wp-core' ),
+				'label'     => __( 'CSP report-uri', 'fanxie-warden' ),
 				'type'      => 'text',
 				'default'   => $this->default_report_uri(),
 				'sanitizer' => 'url',

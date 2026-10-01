@@ -2,17 +2,17 @@
 /**
  * Unit tests for CspPresetLibrary.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\SecurityHeaders\Csp
+ * @package FanxieLab\Warden\Tests\Unit\Modules\SecurityHeaders\Csp
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\SecurityHeaders\Csp;
+namespace FanxieLab\Warden\Tests\Unit\Modules\SecurityHeaders\Csp;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPresetLibrary;
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\Preset;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspPresetLibrary;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\Preset;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -79,7 +79,7 @@ final class CspPresetLibraryTest extends TestCase {
 
 		Functions\when( 'apply_filters' )->alias(
 			static function ( string $hook, $value ) use ( $custom ) {
-				if ( 'fanxie_wp_core/security_headers/csp_presets' === $hook && is_array( $value ) ) {
+				if ( 'fanxie_warden/security_headers/csp_presets' === $hook && is_array( $value ) ) {
 					$value['custom']    = $custom;
 					$value['dropped']   = [ 'not a preset' ]; // wrong type, should be discarded.
 				}

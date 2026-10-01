@@ -2,14 +2,14 @@
 /**
  * Integration tests for the Login Protection per-role session timeout.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Integration\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Integration\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\SessionTimeout;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\SessionTimeout;
 use WP_UnitTestCase;
 
 /**

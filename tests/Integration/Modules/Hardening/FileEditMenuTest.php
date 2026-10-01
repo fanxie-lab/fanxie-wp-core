@@ -3,14 +3,14 @@
  * Integration test — `file_mod_allowed` removes the theme/plugin editors from
  * the WordPress admin menu when runtime enforcement is on.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\Hardening
+ * @package FanxieLab\Warden\Tests\Integration\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\Hardening;
+namespace FanxieLab\Warden\Tests\Integration\Modules\Hardening;
 
-use FanxieLab\WPCore\Modules\Hardening\Runtime\FileEditGuard;
+use FanxieLab\Warden\Modules\Hardening\Runtime\FileEditGuard;
 use WP_UnitTestCase;
 
 /**

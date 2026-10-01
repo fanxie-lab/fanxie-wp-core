@@ -22,10 +22,10 @@ interface AppState extends FanxieBootstrap {
 function snapshotBootstrap(): FanxieBootstrap {
   // `main.ts` verifies presence before the Vue app mounts, so by the time any
   // component instantiates this store the bootstrap is guaranteed.
-  const src = window.fanxieWPCore;
+  const src = window.fanxieWarden;
   if (!src) {
     throw new Error(
-      '[fanxie-wp-core] useAppStore was called before bootstrap was verified.',
+      '[fanxie-warden] useAppStore was called before bootstrap was verified.',
     );
   }
   return {

@@ -14,7 +14,7 @@ export interface LockoutTier {
   lockout_minutes: number;
 }
 
-/** Toggle payload persisted under `fanxie_wp_core_login_protection_settings`. */
+/** Toggle payload persisted under `fanxie_warden_login_protection_settings`. */
 export interface LoginProtectionConfig {
   attempts: {
     enabled: boolean;

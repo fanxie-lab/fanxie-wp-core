@@ -1,9 +1,9 @@
 {
-    "name": "fanxielab/fanxie-wp-core",
+    "name": "fanxielab/fanxie-warden",
     "description": "Modular WordPress security, hardening, maintenance, and performance toolkit by Fanxie Lab.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
-    "homepage": "https://fanxielab.com/plugins/fanxie-wp-core",
+    "homepage": "https://fanxielab.com/plugins/fanxie-warden",
     "authors": [
         {
             "name": "Fanxie Lab",
@@ -28,12 +28,12 @@
     },
     "autoload": {
         "psr-4": {
-            "FanxieLab\\WPCore\\": "src/"
+            "FanxieLab\\Warden\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "FanxieLab\\WPCore\\Tests\\": "tests/"
+            "FanxieLab\\Warden\\Tests\\": "tests/"
         }
     },
     "config": {

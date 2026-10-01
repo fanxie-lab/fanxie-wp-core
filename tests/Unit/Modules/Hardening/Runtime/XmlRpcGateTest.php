@@ -2,16 +2,16 @@
 /**
  * Unit tests for XmlRpcGate.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\XmlRpcGate;
+use FanxieLab\Warden\Modules\Hardening\Runtime\XmlRpcGate;
 use PHPUnit\Framework\TestCase;
 
 /**

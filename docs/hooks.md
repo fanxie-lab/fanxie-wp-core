@@ -1,6 +1,6 @@
-# Fanxie WP Core — Hooks Reference
+# Fanxie Warden — Hooks Reference
 
-Every custom action and filter exposed by the plugin lives here. Keep this file in sync with the code. Naming convention: `fanxie_wp_core/<area>/<verb>`.
+Every custom action and filter exposed by the plugin lives here. Keep this file in sync with the code. Naming convention: `fanxie_warden/<area>/<verb>`.
 
 Last updated for Phase 2.2.
 
@@ -8,34 +8,34 @@ Last updated for Phase 2.2.
 
 ## Actions
 
-### `fanxie_wp_core/module/registered`
+### `fanxie_warden/module/registered`
 
 - **Type:** Action
 - **Since:** 0.1.0
 - **Fires:** Immediately after a module has been added to `ModuleRegistry`, regardless of whether it is enabled.
 - **Params:**
-  - `FanxieLab\WPCore\Modules\ModuleBase $module` — the freshly-registered module instance.
+  - `FanxieLab\Warden\Modules\ModuleBase $module` — the freshly-registered module instance.
 - **Example:**
 
   ```php
-  add_action( 'fanxie_wp_core/module/registered', function ( $module ) {
+  add_action( 'fanxie_warden/module/registered', function ( $module ) {
       error_log( 'Fanxie module registered: ' . $module->id() );
   } );
   ```
 
 ---
 
-### `fanxie_wp_core/security_headers/violation_recorded`
+### `fanxie_warden/security_headers/violation_recorded`
 
 - **Type:** Action
 - **Since:** 0.1.0-dev
 - **Fires:** Inside `ViolationRepository::record()` after a CSP violation has been inserted or deduped into `{$wpdb->prefix}fanxie_core_csp_violations`.
 - **Params:**
-  - `FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRecord $record` — the violation that was just persisted.
+  - `FanxieLab\Warden\Modules\SecurityHeaders\ViolationRecord $record` — the violation that was just persisted.
 - **Example:**
 
   ```php
-  add_action( 'fanxie_wp_core/security_headers/violation_recorded', function ( $record ) {
+  add_action( 'fanxie_warden/security_headers/violation_recorded', function ( $record ) {
       // Forward critical directive violations to an external SIEM.
       if ( 'script-src' === $record->directive ) {
           my_siem_send( $record->to_array() );
@@ -47,18 +47,18 @@ Last updated for Phase 2.2.
 
 ## Filters
 
-### `fanxie_wp_core/admin/bootstrap`
+### `fanxie_warden/admin/bootstrap`
 
 - **Type:** Filter
 - **Since:** 0.1.0
-- **Fires:** Just before the bootstrap payload is serialised into `window.fanxieWPCore` for the Vue SPA.
+- **Fires:** Just before the bootstrap payload is serialised into `window.fanxieWarden` for the Vue SPA.
 - **Params:**
   - `array $bootstrap` — the payload. Keys include: `version`, `ajaxUrl`, `adminUrl`, `restUrl`, `nonce`, `assetsUrl`, `user`, `modules`, `i18n`.
 - **Returns:** `array` — the (possibly mutated) payload. Do **not** remove keys the frontend relies on.
 - **Example:**
 
   ```php
-  add_filter( 'fanxie_wp_core/admin/bootstrap', function ( array $bootstrap ): array {
+  add_filter( 'fanxie_warden/admin/bootstrap', function ( array $bootstrap ): array {
       $bootstrap['featureFlags'] = [ 'experimentalReports' => true ];
       return $bootstrap;
   } );
@@ -66,7 +66,7 @@ Last updated for Phase 2.2.
 
 ---
 
-### `fanxie_wp_core/ajax/sub_actions`
+### `fanxie_warden/ajax/sub_actions`
 
 - **Type:** Filter
 - **Since:** 0.1.0
@@ -77,7 +77,7 @@ Last updated for Phase 2.2.
 - **Example:**
 
   ```php
-  add_filter( 'fanxie_wp_core/ajax/sub_actions', function ( array $map ): array {
+  add_filter( 'fanxie_warden/ajax/sub_actions', function ( array $map ): array {
       $map['my_extension_status'] = [
           'callback' => 'my_extension_status_handler',
           'cap'      => 'manage_options',
@@ -88,7 +88,7 @@ Last updated for Phase 2.2.
 
 ---
 
-### `fanxie_wp_core/security_headers/headers`
+### `fanxie_warden/security_headers/headers`
 
 - **Type:** Filter
 - **Since:** 0.1.0-dev
@@ -100,7 +100,7 @@ Last updated for Phase 2.2.
 - **Example:**
 
   ```php
-  add_filter( 'fanxie_wp_core/security_headers/headers', function ( array $headers ): array {
+  add_filter( 'fanxie_warden/security_headers/headers', function ( array $headers ): array {
       $headers['X-Fanxie-Served-By'] = 'edge-eu-1';
       return $headers;
   } );
@@ -108,7 +108,7 @@ Last updated for Phase 2.2.
 
 ---
 
-### `fanxie_wp_core/security_headers/csp_directives`
+### `fanxie_warden/security_headers/csp_directives`
 
 - **Type:** Filter
 - **Since:** 0.1.0-dev
@@ -120,7 +120,7 @@ Last updated for Phase 2.2.
 - **Example:**
 
   ```php
-  add_filter( 'fanxie_wp_core/security_headers/csp_directives', function ( array $directives ): array {
+  add_filter( 'fanxie_warden/security_headers/csp_directives', function ( array $directives ): array {
       $directives['connect-src'][] = 'https://api.example.com';
       return $directives;
   } );
@@ -128,19 +128,19 @@ Last updated for Phase 2.2.
 
 ---
 
-### `fanxie_wp_core/security_headers/csp_presets`
+### `fanxie_warden/security_headers/csp_presets`
 
 - **Type:** Filter
 - **Since:** 0.1.0-dev
 - **Fires:** Inside `CspPresetLibrary::all()` — lets integrators add their own presets or replace built-in ones.
 - **Params:**
-  - `array<string, FanxieLab\WPCore\Modules\SecurityHeaders\Csp\Preset> $presets` — preset id → `Preset`.
+  - `array<string, FanxieLab\Warden\Modules\SecurityHeaders\Csp\Preset> $presets` — preset id → `Preset`.
 - **Returns:** `array<string, Preset>` — entries that are not `Preset` instances are silently dropped.
 - **Example:**
 
   ```php
-  add_filter( 'fanxie_wp_core/security_headers/csp_presets', function ( array $presets ): array {
-      $presets['hotjar'] = new \FanxieLab\WPCore\Modules\SecurityHeaders\Csp\Preset(
+  add_filter( 'fanxie_warden/security_headers/csp_presets', function ( array $presets ): array {
+      $presets['hotjar'] = new \FanxieLab\Warden\Modules\SecurityHeaders\Csp\Preset(
           'hotjar',
           'Hotjar',
           [ 'script-src' => [ 'https://static.hotjar.com' ] ],
@@ -151,7 +151,7 @@ Last updated for Phase 2.2.
 
 ---
 
-### `fanxie_wp_core/security_headers/csp_emit_context`
+### `fanxie_warden/security_headers/csp_emit_context`
 
 - **Type:** Filter
 - **Since:** 0.1.0-dev
@@ -164,7 +164,7 @@ Last updated for Phase 2.2.
 
   ```php
   // Site has a tailored admin CSP — opt back into emission on admin.
-  add_filter( 'fanxie_wp_core/security_headers/csp_emit_context', function ( bool $should_emit ): bool {
+  add_filter( 'fanxie_warden/security_headers/csp_emit_context', function ( bool $should_emit ): bool {
       if ( is_admin() ) {
           return true;
       }
@@ -174,7 +174,7 @@ Last updated for Phase 2.2.
 
 ---
 
-### `fanxie_wp_core/security_headers/rate_limit`
+### `fanxie_warden/security_headers/rate_limit`
 
 - **Type:** Filter
 - **Since:** 0.1.0-dev
@@ -186,14 +186,14 @@ Last updated for Phase 2.2.
 
   ```php
   // Loosen the limit to 200 reports per minute per IP.
-  add_filter( 'fanxie_wp_core/security_headers/rate_limit', function (): array {
+  add_filter( 'fanxie_warden/security_headers/rate_limit', function (): array {
       return [ 60, 200 ];
   } );
   ```
 
 ---
 
-### `fanxie_wp_core/hardening/should_block_author_enum`
+### `fanxie_warden/hardening/should_block_author_enum`
 
 - **Type:** Filter
 - **Since:** 0.2.0-dev
@@ -205,14 +205,14 @@ Last updated for Phase 2.2.
 
   ```php
   // Allow author archives on a public blog only for a specific path.
-  add_filter( 'fanxie_wp_core/hardening/should_block_author_enum', function ( bool $block ): bool {
+  add_filter( 'fanxie_warden/hardening/should_block_author_enum', function ( bool $block ): bool {
       return ! str_starts_with( $_SERVER['REQUEST_URI'] ?? '', '/authors/' );
   } );
   ```
 
 ---
 
-### `fanxie_wp_core/hardening/xmlrpc_allowed_ips`
+### `fanxie_warden/hardening/xmlrpc_allowed_ips`
 
 - **Type:** Filter
 - **Since:** 0.2.0-dev
@@ -225,7 +225,7 @@ Last updated for Phase 2.2.
 
   ```php
   // Pull the Jetpack IP list from a cached option at runtime.
-  add_filter( 'fanxie_wp_core/hardening/xmlrpc_allowed_ips', function ( array $ips ): array {
+  add_filter( 'fanxie_warden/hardening/xmlrpc_allowed_ips', function ( array $ips ): array {
       $dynamic = (array) get_option( 'my_jetpack_ip_cache', [] );
       return array_values( array_unique( array_merge( $ips, $dynamic ) ) );
   } );
@@ -233,7 +233,7 @@ Last updated for Phase 2.2.
 
 ---
 
-### `fanxie_wp_core/hardening/uploads_dir`
+### `fanxie_warden/hardening/uploads_dir`
 
 - **Type:** Filter
 - **Since:** 0.2.0-dev
@@ -244,7 +244,7 @@ Last updated for Phase 2.2.
 
 ---
 
-### `fanxie_wp_core/hardening/root_htaccess_path`
+### `fanxie_warden/hardening/root_htaccess_path`
 
 - **Type:** Filter
 - **Since:** 0.2.0-dev
@@ -256,14 +256,14 @@ Last updated for Phase 2.2.
 
   ```php
   // Point the writer at the parent-domain .htaccess on a subdir install.
-  add_filter( 'fanxie_wp_core/hardening/root_htaccess_path', static function (): string {
+  add_filter( 'fanxie_warden/hardening/root_htaccess_path', static function (): string {
       return '/var/www/html/.htaccess';
   } );
   ```
 
 ---
 
-### `fanxie_wp_core/hardening/login_error_message`
+### `fanxie_warden/hardening/login_error_message`
 
 - **Type:** Filter
 - **Since:** 0.2.0-dev
@@ -275,7 +275,7 @@ Last updated for Phase 2.2.
 
 ---
 
-### `fanxie_wp_core/uninstall/delete_data`
+### `fanxie_warden/uninstall/delete_data`
 
 - **Type:** Filter
 - **Since:** 0.1.0
@@ -283,20 +283,20 @@ Last updated for Phase 2.2.
 - **Params:**
   - `bool $should_delete` — whether the plugin should wipe its options and custom tables
     (resolved from the `FX_CORE_DELETE_ALL_DATA` constant, else the
-    `fanxie_wp_core_delete_on_uninstall` option).
+    `fanxie_warden_delete_on_uninstall` option).
 - **Returns:** `bool` — overrides the opt-in decision programmatically.
 - **Example:**
 
   ```php
   // Force a wipe regardless of the stored opt-in.
-  add_filter( 'fanxie_wp_core/uninstall/delete_data', '__return_true' );
+  add_filter( 'fanxie_warden/uninstall/delete_data', '__return_true' );
   ```
 
 ---
 
 ## Login Protection
 
-### `fanxie_wp_core_login_protection_prune`
+### `fanxie_warden_login_protection_prune`
 
 - **Type:** Action (WP-Cron event — flat name, not slash-namespaced)
 - **Since:** 0.1.0-dev
@@ -309,8 +309,8 @@ Last updated for Phase 2.2.
 
 ### AJAX sub-actions
 
-All routed through the shared `fanxie_wp_core` admin-ajax action (nonce
-`fanxie_wp_core_admin` + capability `manage_fanxie_wp_core` enforced by
+All routed through the shared `fanxie_warden` admin-ajax action (nonce
+`fanxie_warden_admin` + capability `manage_fanxie_warden` enforced by
 `AjaxRouter`): `login_protection/get-config`, `save-config`, `get-log`,
 `get-bans`, `add-ban`, `remove-ban`, `clear-lockout`.
 
@@ -325,7 +325,7 @@ All routed through the shared `fanxie_wp_core` admin-ajax action (nonce
 
 ## Environment Health
 
-### `fanxie_wp_core_environment_health_scan`
+### `fanxie_warden_environment_health_scan`
 
 - **Type:** Action (WP-Cron event — flat name, not slash-namespaced)
 - **Since:** 0.1.0-dev
@@ -341,8 +341,8 @@ All routed through the shared `fanxie_wp_core` admin-ajax action (nonce
 
 ### AJAX sub-actions
 
-All routed through the shared `fanxie_wp_core` admin-ajax action (nonce
-`fanxie_wp_core_admin` + capability `manage_fanxie_wp_core` enforced by
+All routed through the shared `fanxie_warden` admin-ajax action (nonce
+`fanxie_warden_admin` + capability `manage_fanxie_warden` enforced by
 `AjaxRouter`): `environment-health/get-report`, `refresh`, `get-config`,
 `save-config`. The three report-returning actions answer with the
 `HealthReport` payload (`generated_at`, `cached_until`, `counts`, `checks`);
@@ -364,7 +364,7 @@ setting — which also discards every cached result.
 ## wp-config override constants
 
 Site owners set these in `wp-config.php`. They all use the `FX_CORE_*` prefix;
-`FANXIE_WP_CORE_*` constants are internal bootstrap values (VERSION/PATH/URL/FILE
+`FANXIE_WARDEN_*` constants are internal bootstrap values (VERSION/PATH/URL/FILE
 and the minimum PHP/WP floors) and are not part of the public contract.
 
 | Constant | Effect |
@@ -379,6 +379,6 @@ and the minimum PHP/WP floors) and are not part of the public contract.
 When you introduce a new action or filter:
 
 1. Document it here using the same format (name, type, since, description, params, example).
-2. Prefix the name with `fanxie_wp_core/<area>/`.
+2. Prefix the name with `fanxie_warden/<area>/`.
 3. Add a `@since` docblock annotation at the hook's emission site.
 4. If it is part of a user-facing API surface, note the contract stability in your PR description.

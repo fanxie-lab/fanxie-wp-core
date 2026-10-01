@@ -2,12 +2,12 @@
 /**
  * Idempotent Apache `.htaccess` snippet writer for the WordPress root.
  *
- * @package FanxieLab\WPCore\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Modules\Hardening\Runtime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * Apache (and LiteSpeed) serve files like `readme.html` / `license.txt` as
  * static content, so a PHP `template_redirect` 404 can never run. To actually
  * block those URLs we need a server-layer rule. This writer drops an
- * idempotent snippet between `# BEGIN Fanxie WP Core` / `# END Fanxie WP Core`
+ * idempotent snippet between `# BEGIN Fanxie Warden` / `# END Fanxie Warden`
  * markers in the root `.htaccess`, mirroring how WordPress core manages its
  * own block via `save_mod_rewrite_rules()`.
  *
@@ -33,8 +33,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class RootHtaccessWriter {
 
-	public const MARKER_BEGIN = '# BEGIN Fanxie WP Core';
-	public const MARKER_END   = '# END Fanxie WP Core';
+	public const MARKER_BEGIN = '# BEGIN Fanxie Warden';
+	public const MARKER_END   = '# END Fanxie Warden';
 
 	/**
 	 * Snippet denying direct access to `readme.html` and `license.txt`.
@@ -67,7 +67,7 @@ final class RootHtaccessWriter {
 		}
 
 		/**
-		 * Filter: fanxie_wp_core/hardening/root_htaccess_path
+		 * Filter: fanxie_warden/hardening/root_htaccess_path
 		 *
 		 * Override the root `.htaccess` path resolved from `ABSPATH`.
 		 *
@@ -76,7 +76,7 @@ final class RootHtaccessWriter {
 		 * @param string $path Resolved absolute path.
 		 */
 		$default             = rtrim( defined( 'ABSPATH' ) ? (string) ABSPATH : '', '/\\' ) . '/.htaccess';
-		$this->htaccess_path = (string) apply_filters( 'fanxie_wp_core/hardening/root_htaccess_path', $default );
+		$this->htaccess_path = (string) apply_filters( 'fanxie_warden/hardening/root_htaccess_path', $default );
 	}
 
 	/**

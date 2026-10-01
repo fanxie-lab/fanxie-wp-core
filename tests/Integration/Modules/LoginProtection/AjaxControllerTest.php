@@ -2,19 +2,19 @@
 /**
  * Integration tests for the Login Protection AJAX controller.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Integration\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Integration\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\LoginProtection\AjaxController;
-use FanxieLab\WPCore\Modules\LoginProtection\BanRepository;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginProtection;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\LoginProtection\AjaxController;
+use FanxieLab\Warden\Modules\LoginProtection\BanRepository;
+use FanxieLab\Warden\Modules\LoginProtection\LoginLogRepository;
+use FanxieLab\Warden\Modules\LoginProtection\LoginProtection;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\AttemptLimiter;
 use WP_Error;
 
 /**
@@ -30,7 +30,7 @@ final class LoginProtectionAjaxControllerTest extends LoginProtectionTableTestCa
 	/**
 	 * Cron hook the controller schedules.
 	 */
-	private const PRUNE_HOOK = 'fanxie_wp_core_login_protection_prune';
+	private const PRUNE_HOOK = 'fanxie_warden_login_protection_prune';
 
 	private LoginProtection $module;
 
@@ -56,7 +56,7 @@ final class LoginProtectionAjaxControllerTest extends LoginProtectionTableTestCa
 		$this->controller = new AjaxController( $this->module, $this->log, $this->bans );
 
 		// Start every test from a clean stored config + no scheduled prune.
-		delete_option( 'fanxie_wp_core_login-protection_settings' );
+		delete_option( 'fanxie_warden_login-protection_settings' );
 		wp_clear_scheduled_hook( self::PRUNE_HOOK );
 
 		$this->sent_mail = [];
@@ -66,7 +66,7 @@ final class LoginProtectionAjaxControllerTest extends LoginProtectionTableTestCa
 	protected function tearDown(): void {
 		remove_filter( 'pre_wp_mail', [ $this, 'capture_mail' ], 10 );
 		wp_clear_scheduled_hook( self::PRUNE_HOOK );
-		delete_option( 'fanxie_wp_core_login-protection_settings' );
+		delete_option( 'fanxie_warden_login-protection_settings' );
 		parent::tearDown();
 	}
 
@@ -495,9 +495,9 @@ final class LoginProtectionAjaxControllerTest extends LoginProtectionTableTestCa
 
 	public function test_clear_lockout_deletes_ip_transients(): void {
 		$ip      = '203.0.113.55';
-		$cnt_key = 'fanxie_wp_core_lp_cnt_ip_' . md5( $ip );
-		$lock    = 'fanxie_wp_core_lp_lock_ip_' . md5( $ip );
-		$applied = 'fanxie_wp_core_lp_applied_ip_' . md5( $ip );
+		$cnt_key = 'fanxie_warden_lp_cnt_ip_' . md5( $ip );
+		$lock    = 'fanxie_warden_lp_lock_ip_' . md5( $ip );
+		$applied = 'fanxie_warden_lp_applied_ip_' . md5( $ip );
 
 		set_transient( $cnt_key, 5, HOUR_IN_SECONDS );
 		set_transient( $lock, 5, HOUR_IN_SECONDS );
@@ -517,7 +517,7 @@ final class LoginProtectionAjaxControllerTest extends LoginProtectionTableTestCa
 	}
 
 	public function test_clear_lockout_maps_username_to_user_dimension(): void {
-		$lock = 'fanxie_wp_core_lp_lock_user_' . md5( 'bob' );
+		$lock = 'fanxie_warden_lp_lock_user_' . md5( 'bob' );
 		set_transient( $lock, 1, HOUR_IN_SECONDS );
 
 		$this->controller->handle_clear_lockout(

@@ -29,10 +29,10 @@ npm run env:start
 
 1. Pull the required Docker images (first run only — takes a few minutes).
 2. Boot two WordPress sites — `development` and `tests` — each on its own MySQL instance.
-3. Install WordPress, activate **Fanxie WP Core** (this repo), **WooCommerce**, and **Plugin Check**.
+3. Install WordPress, activate **Fanxie Warden** (this repo), **WooCommerce**, and **Plugin Check**.
 4. Install the Twenty Twenty-Four and Twenty Twenty-Three themes.
 
-> **Expected first-boot warning:** until the plugin bootstrap file (`fanxie-wp-core.php`) exists, WordPress will either fail to activate the plugin or list it as "Invalid Plugin" on the Plugins screen. This is expected during Phase 0.0 and resolves itself once Phase 0.1 lands.
+> **Expected first-boot warning:** until the plugin bootstrap file (`fanxie-warden.php`) exists, WordPress will either fail to activate the plugin or list it as "Invalid Plugin" on the Plugins screen. This is expected during Phase 0.0 and resolves itself once Phase 0.1 lands.
 
 ---
 
@@ -106,7 +106,7 @@ syntax and a `_comment` key fails with `"_comment" is not a configuration option
 | `port is already allocated` | Use `.wp-env.override.json` to change the port (see §5). |
 | Weird state — plugin won't activate, DB stuck, migrations wrong | `npm run env:destroy && npm run env:start` (destroys containers + volumes; uploads are lost). |
 | Only the DB needs resetting | `npm run env:clean` or the scoped `env:clean:dev` / `env:clean:tests`. |
-| WordPress says "Invalid Plugin" for `fanxie-wp-core` | Expected until Phase 0.1 adds the plugin bootstrap file. |
+| WordPress says "Invalid Plugin" for `fanxie-warden` | Expected until Phase 0.1 adds the plugin bootstrap file. |
 | `wp-env` hangs on "Starting WordPress..." | Stop it (Ctrl-C), then `docker ps -a` and remove stale containers, or `npm run env:destroy`. |
 | PHPUnit: `phpunit: not found` | Expected until Composer setup lands (Phase 0). |
 

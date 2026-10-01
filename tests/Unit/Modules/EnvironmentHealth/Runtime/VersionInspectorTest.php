@@ -2,18 +2,18 @@
 /**
  * Unit tests for the version + transport checks.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\SslProbe;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\VersionInspector;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\SslProbe;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\VersionInspector;
 use PHPUnit\Framework\TestCase;
 use wpdb;
 

@@ -2,12 +2,12 @@
 /**
  * TLS certificate expiry probe.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth\Runtime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -40,7 +40,7 @@ final class SslProbe {
 	 *
 	 * @var string
 	 */
-	public const CACHE_KEY = 'fanxie_wp_core_environment_health_ssl';
+	public const CACHE_KEY = 'fanxie_warden_environment_health_ssl';
 
 	/**
 	 * Cache lifetime in seconds (12 hours).

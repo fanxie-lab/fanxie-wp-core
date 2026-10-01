@@ -2,17 +2,17 @@
 /**
  * Integration tests for the Login Protection attempt limiter.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Integration\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Integration\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Modules\LoginProtection\BanRepository;
-use FanxieLab\WPCore\Modules\LoginProtection\IpResolver;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
+use FanxieLab\Warden\Modules\LoginProtection\BanRepository;
+use FanxieLab\Warden\Modules\LoginProtection\IpResolver;
+use FanxieLab\Warden\Modules\LoginProtection\LoginLogRepository;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\AttemptLimiter;
 use WP_Error;
 
 /**
@@ -123,8 +123,8 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 		do_action( 'wp_login_failed', 'victim' );
 		do_action( 'wp_login_failed', 'victim' );
 
-		$lock_ip_key   = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.88' );
-		$count_ip_key  = 'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.88' );
+		$lock_ip_key   = 'fanxie_warden_lp_lock_ip_' . md5( '203.0.113.88' );
+		$count_ip_key  = 'fanxie_warden_lp_cnt_ip_' . md5( '203.0.113.88' );
 		$timeout_key   = '_transient_timeout_' . $lock_ip_key;
 		$lockouts_at_2 = $this->log->query(
 			[
@@ -184,8 +184,8 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 			true
 		);
 
-		$lock_ip_key   = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.99' );
-		$lock_user_key = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
+		$lock_ip_key   = 'fanxie_warden_lp_lock_ip_' . md5( '203.0.113.99' );
+		$lock_user_key = 'fanxie_warden_lp_lock_user_' . md5( 'victim' );
 
 		// Reach the first tier (threshold 2): one IP lockout row.
 		do_action( 'wp_login_failed', 'victim' );
@@ -256,10 +256,10 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 			true
 		);
 
-		$lock_ip_key         = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.111' );
-		$lock_user_key       = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
-		$count_ip_key        = 'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.111' );
-		$applied_ip_key      = 'fanxie_wp_core_lp_applied_ip_' . md5( '203.0.113.111' );
+		$lock_ip_key         = 'fanxie_warden_lp_lock_ip_' . md5( '203.0.113.111' );
+		$lock_user_key       = 'fanxie_warden_lp_lock_user_' . md5( 'victim' );
+		$count_ip_key        = 'fanxie_warden_lp_cnt_ip_' . md5( '203.0.113.111' );
+		$applied_ip_key      = 'fanxie_warden_lp_applied_ip_' . md5( '203.0.113.111' );
 		$applied_timeout_key = '_transient_timeout_' . $applied_ip_key;
 
 		// Cross tier 1: exactly one IP `lockout` row, applied marker records it.
@@ -308,7 +308,7 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 		}
 
 		// No lockout transient was ever set for the allowlisted IP.
-		$this->assertFalse( get_transient( 'fanxie_wp_core_lp_lock_ip_' . md5( '198.51.100.50' ) ) );
+		$this->assertFalse( get_transient( 'fanxie_warden_lp_lock_ip_' . md5( '198.51.100.50' ) ) );
 
 		// The gate lets the attempt pass through (never our lock error).
 		$result = apply_filters( 'authenticate', null, 'admin', 'wrong-password' );
@@ -338,8 +338,8 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 			do_action( 'wp_login_failed', 'admin' );
 		}
 
-		$lock_user_key  = 'fanxie_wp_core_lp_lock_user_' . md5( 'admin' );
-		$count_user_key = 'fanxie_wp_core_lp_cnt_user_' . md5( 'admin' );
+		$lock_user_key  = 'fanxie_warden_lp_lock_user_' . md5( 'admin' );
+		$count_user_key = 'fanxie_warden_lp_cnt_user_' . md5( 'admin' );
 
 		$this->assertFalse( get_transient( $lock_user_key ), 'The username must never be auto-locked by default.' );
 		$this->assertFalse( get_transient( $count_user_key ), 'The username dimension must never be counted by default.' );
@@ -378,7 +378,7 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 		$_SERVER['REMOTE_ADDR'] = '203.0.113.151';
 		do_action( 'wp_login_failed', 'victim' );
 
-		$lock_user_key = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
+		$lock_user_key = 'fanxie_warden_lp_lock_user_' . md5( 'victim' );
 		$this->assertNotFalse( get_transient( $lock_user_key ), 'The username lock is armed once opted in.' );
 
 		$user_lockouts = $this->log->query(

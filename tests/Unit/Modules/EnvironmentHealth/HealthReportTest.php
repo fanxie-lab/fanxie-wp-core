@@ -2,17 +2,17 @@
 /**
  * Unit tests for the HealthCheck / HealthReport value objects.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthReport;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthReport;
 use PHPUnit\Framework\TestCase;
 
 /**

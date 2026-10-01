@@ -1,4 +1,4 @@
-# Editor defaults for the Fanxie WP Core admin SPA.
+# Editor defaults for the Fanxie Warden admin SPA.
 # Mirrors prettier.config.js so unsaved-file formatting matches committed style.
 
 root = true

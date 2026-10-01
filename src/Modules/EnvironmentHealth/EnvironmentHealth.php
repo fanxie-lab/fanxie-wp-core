@@ -2,17 +2,17 @@
 /**
  * Environment Health module entry point.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\SslProbe;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\WporgScanner;
-use FanxieLab\WPCore\Modules\ModuleBase;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\SslProbe;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\WporgScanner;
+use FanxieLab\Warden\Modules\ModuleBase;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -57,7 +57,7 @@ final class EnvironmentHealth extends ModuleBase {
 	 *
 	 * @var string
 	 */
-	public const SCAN_HOOK = 'fanxie_wp_core_environment_health_scan';
+	public const SCAN_HOOK = 'fanxie_warden_environment_health_scan';
 
 	/**
 	 * Delay, in seconds, before the follow-up batch of an unfinished scan.
@@ -163,7 +163,7 @@ final class EnvironmentHealth extends ModuleBase {
 	 * Translatable display name.
 	 */
 	public function name(): string {
-		return __( 'Environment Health', 'fanxie-wp-core' );
+		return __( 'Environment Health', 'fanxie-warden' );
 	}
 
 	/**
@@ -242,81 +242,81 @@ final class EnvironmentHealth extends ModuleBase {
 		return [
 			[
 				'id'        => 'checks.versions',
-				'label'     => __( 'Check software versions', 'fanxie-wp-core' ),
+				'label'     => __( 'Check software versions', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
-				'help'      => __( 'WordPress, PHP, the database server, the TLS certificate, and whether the site is served over HTTPS.', 'fanxie-wp-core' ),
+				'help'      => __( 'WordPress, PHP, the database server, the TLS certificate, and whether the site is served over HTTPS.', 'fanxie-warden' ),
 			],
 			[
 				'id'        => 'checks.cron',
-				'label'     => __( 'Check scheduled tasks', 'fanxie-wp-core' ),
+				'label'     => __( 'Check scheduled tasks', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Detects a wedged cron lock and events that are running late.', 'fanxie-wp-core' ),
+				'help'      => __( 'Detects a wedged cron lock and events that are running late.', 'fanxie-warden' ),
 			],
 			[
 				'id'        => 'checks.debug',
-				'label'     => __( 'Check debug settings', 'fanxie-wp-core' ),
+				'label'     => __( 'Check debug settings', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Finds debug switches left on in production, including a debug log written inside the web root.', 'fanxie-wp-core' ),
+				'help'      => __( 'Finds debug switches left on in production, including a debug log written inside the web root.', 'fanxie-warden' ),
 			],
 			[
 				'id'        => 'checks.plugins_themes',
-				'label'     => __( 'Check plugins and themes', 'fanxie-wp-core' ),
+				'label'     => __( 'Check plugins and themes', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Inactive plugins, unused themes, and — when the wordpress.org check below is on — plugins that look abandoned.', 'fanxie-wp-core' ),
+				'help'      => __( 'Inactive plugins, unused themes, and — when the wordpress.org check below is on — plugins that look abandoned.', 'fanxie-warden' ),
 			],
 			[
 				'id'        => 'wporg_scan_enabled',
-				'label'     => __( 'Check plugin freshness on wordpress.org', 'fanxie-wp-core' ),
+				'label'     => __( 'Check plugin freshness on wordpress.org', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Sends the slug of each active plugin to api.wordpress.org to read its last-updated date, a few at a time on a daily schedule, cached for 24 hours. Nothing about you or your visitors is sent. Turn this off to stop the requests and discard everything already cached.', 'fanxie-wp-core' ),
+				'help'      => __( 'Sends the slug of each active plugin to api.wordpress.org to read its last-updated date, a few at a time on a daily schedule, cached for 24 hours. Nothing about you or your visitors is sent. Turn this off to stop the requests and discard everything already cached.', 'fanxie-warden' ),
 			],
 			[
 				'id'        => 'ssl_check_enabled',
-				'label'     => __( 'Check the TLS certificate', 'fanxie-wp-core' ),
+				'label'     => __( 'Check the TLS certificate', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Opens one short-lived connection to this site to read its certificate expiry date, at most twice a day. Hosts that block outbound connections will report "unknown" rather than a false alarm.', 'fanxie-wp-core' ),
+				'help'      => __( 'Opens one short-lived connection to this site to read its certificate expiry date, at most twice a day. Hosts that block outbound connections will report "unknown" rather than a false alarm.', 'fanxie-warden' ),
 			],
 			[
 				'id'        => 'dashboard_widget',
-				'label'     => __( 'Show the dashboard widget', 'fanxie-wp-core' ),
+				'label'     => __( 'Show the dashboard widget', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			$this->threshold_field(
 				'ssl_expiry_warning_days',
-				__( 'Warn this many days before the certificate expires', 'fanxie-wp-core' ),
-				__( 'Most certificate authorities renew automatically about a month out, so 30 days is a good default.', 'fanxie-wp-core' ),
+				__( 'Warn this many days before the certificate expires', 'fanxie-warden' ),
+				__( 'Most certificate authorities renew automatically about a month out, so 30 days is a good default.', 'fanxie-warden' ),
 				[ $this, 'sanitize_ssl_expiry_warning_days' ]
 			),
 			$this->threshold_field(
 				'cron_overdue_minutes',
-				__( 'Treat an event as overdue after this many minutes', 'fanxie-wp-core' ),
-				__( 'On a quiet site the page-load scheduler can legitimately run late, so keep this generous enough not to cry wolf.', 'fanxie-wp-core' ),
+				__( 'Treat an event as overdue after this many minutes', 'fanxie-warden' ),
+				__( 'On a quiet site the page-load scheduler can legitimately run late, so keep this generous enough not to cry wolf.', 'fanxie-warden' ),
 				[ $this, 'sanitize_cron_overdue_minutes' ]
 			),
 			$this->threshold_field(
 				'abandoned_warning_days',
-				__( 'Warn when a plugin has not been updated in this many days', 'fanxie-wp-core' ),
+				__( 'Warn when a plugin has not been updated in this many days', 'fanxie-warden' ),
 				'',
 				[ $this, 'sanitize_abandoned_warning_days' ]
 			),
 			$this->threshold_field(
 				'abandoned_critical_days',
-				__( 'Flag as critical after this many days without an update', 'fanxie-wp-core' ),
-				__( 'Must be at least the warning threshold — a critical window below the warning window would mean nothing was ever flagged critical. A lower value is raised to match.', 'fanxie-wp-core' ),
+				__( 'Flag as critical after this many days without an update', 'fanxie-warden' ),
+				__( 'Must be at least the warning threshold — a critical window below the warning window would mean nothing was ever flagged critical. A lower value is raised to match.', 'fanxie-warden' ),
 				[ $this, 'sanitize_abandoned_critical_days' ]
 			),
 		];
@@ -341,7 +341,7 @@ final class EnvironmentHealth extends ModuleBase {
 
 		$range_note = sprintf(
 			/* translators: 1: minimum accepted value. 2: maximum accepted value. */
-			__( 'Accepted range: %1$d–%2$d. Values outside it are clamped to the nearest limit.', 'fanxie-wp-core' ),
+			__( 'Accepted range: %1$d–%2$d. Values outside it are clamped to the nearest limit.', 'fanxie-warden' ),
 			$range['min'],
 			$range['max']
 		);

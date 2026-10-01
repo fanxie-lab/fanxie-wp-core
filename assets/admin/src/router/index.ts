@@ -3,7 +3,7 @@
  *
  * We use `createWebHashHistory` (hash mode) rather than `createWebHistory`
  * because this SPA is served from a WordPress admin page at
- * `admin.php?page=fanxie-wp-core`. HTML5 history mode would generate URLs
+ * `admin.php?page=fanxie-warden`. HTML5 history mode would generate URLs
  * like `admin.php/security-headers` on in-app navigation, which WP's PHP
  * router would 404 on reload. Hash routing keeps all client-side state in
  * the URL fragment, so every route is bookmarkable and deep-link-safe

@@ -2,16 +2,16 @@
 /**
  * Admin AJAX sub-actions for the Security Headers module.
  *
- * @package FanxieLab\WPCore\Modules\SecurityHeaders
+ * @package FanxieLab\Warden\Modules\SecurityHeaders
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\SecurityHeaders;
+namespace FanxieLab\Warden\Modules\SecurityHeaders;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPolicy;
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPresetLibrary;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspPolicy;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspPresetLibrary;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * AJAX surface consumed by the Vue admin UI.
  *
- * Nonce + `manage_fanxie_wp_core` capability are enforced centrally by the
+ * Nonce + `manage_fanxie_warden` capability are enforced centrally by the
  * AjaxRouter — handlers here focus on payload validation and domain logic.
  * Every handler returns either an associative array (success) or a WP_Error
  * (the router converts it into the frontend's error envelope).
@@ -76,7 +76,7 @@ final class AjaxController {
 	 */
 	public function handle_save_config( array $payload ): array|WP_Error {
 		if ( ! isset( $payload['settings'] ) || ! is_array( $payload['settings'] ) ) {
-			return new WP_Error( 'invalid_settings', __( 'Settings payload must be an object.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'invalid_settings', __( 'Settings payload must be an object.', 'fanxie-warden' ) );
 		}
 
 		$this->module->update_config( $payload['settings'] );
@@ -96,12 +96,12 @@ final class AjaxController {
 	public function handle_apply_preset( array $payload ): array|WP_Error {
 		$preset_id = isset( $payload['preset_id'] ) ? sanitize_key( (string) $payload['preset_id'] ) : '';
 		if ( '' === $preset_id ) {
-			return new WP_Error( 'missing_preset_id', __( 'Preset id is required.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'missing_preset_id', __( 'Preset id is required.', 'fanxie-warden' ) );
 		}
 
 		$preset = $this->presets->get( $preset_id );
 		if ( null === $preset ) {
-			return new WP_Error( 'unknown_preset', __( 'The requested preset was not found.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'unknown_preset', __( 'The requested preset was not found.', 'fanxie-warden' ) );
 		}
 
 		$current    = $this->module->get_config();
@@ -237,7 +237,7 @@ final class AjaxController {
 		$csp_active = CspPolicy::MODE_OFF !== $csp_mode;
 
 		if ( 0 === $count && ! $csp_active ) {
-			return __( 'Inactive', 'fanxie-wp-core' );
+			return __( 'Inactive', 'fanxie-warden' );
 		}
 
 		$mode_label = $this->csp_mode_label( $csp_mode );
@@ -245,7 +245,7 @@ final class AjaxController {
 		if ( $count > 0 && $csp_active ) {
 			return sprintf(
 				/* translators: 1: header count, 2: CSP mode label. */
-				_n( '%1$d header · CSP %2$s', '%1$d headers · CSP %2$s', $count, 'fanxie-wp-core' ),
+				_n( '%1$d header · CSP %2$s', '%1$d headers · CSP %2$s', $count, 'fanxie-warden' ),
 				$count,
 				$mode_label
 			);
@@ -254,14 +254,14 @@ final class AjaxController {
 		if ( $count > 0 ) {
 			return sprintf(
 				/* translators: %d: header count. */
-				_n( '%d header active', '%d headers active', $count, 'fanxie-wp-core' ),
+				_n( '%d header active', '%d headers active', $count, 'fanxie-warden' ),
 				$count
 			);
 		}
 
 		return sprintf(
 			/* translators: %s: CSP mode label. */
-			__( 'CSP %s only', 'fanxie-wp-core' ),
+			__( 'CSP %s only', 'fanxie-warden' ),
 			$mode_label
 		);
 	}
@@ -273,9 +273,9 @@ final class AjaxController {
 	 */
 	private function csp_mode_label( string $mode ): string {
 		return match ( $mode ) {
-			CspPolicy::MODE_REPORT_ONLY => __( 'Report-Only', 'fanxie-wp-core' ),
-			CspPolicy::MODE_ENFORCE     => __( 'Enforce', 'fanxie-wp-core' ),
-			default                     => __( 'Off', 'fanxie-wp-core' ),
+			CspPolicy::MODE_REPORT_ONLY => __( 'Report-Only', 'fanxie-warden' ),
+			CspPolicy::MODE_ENFORCE     => __( 'Enforce', 'fanxie-warden' ),
+			default                     => __( 'Off', 'fanxie-warden' ),
 		};
 	}
 

@@ -13,16 +13,16 @@
  * restores the tables and the current DB version so a dropped-table test cannot
  * leak a missing schema into later suites.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Plugin
+ * @package FanxieLab\Warden\Tests\Integration\Plugin
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Plugin;
+namespace FanxieLab\Warden\Tests\Integration\Plugin;
 
-use FanxieLab\WPCore\Modules\LoginProtection\BanRepository;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
-use FanxieLab\WPCore\Plugin;
+use FanxieLab\Warden\Modules\LoginProtection\BanRepository;
+use FanxieLab\Warden\Modules\LoginProtection\LoginLogRepository;
+use FanxieLab\Warden\Plugin;
 use WP_UnitTestCase;
 
 /**

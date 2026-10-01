@@ -2,17 +2,17 @@
 /**
  * Unit tests for VersionHider.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\RootHtaccessWriter;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\VersionHider;
+use FanxieLab\Warden\Modules\Hardening\Runtime\RootHtaccessWriter;
+use FanxieLab\Warden\Modules\Hardening\Runtime\VersionHider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -110,7 +110,7 @@ final class VersionHiderTest extends TestCase {
 
 	public function test_ensure_readme_license_block_removes_block_when_toggle_off(): void {
 		$tmp = sys_get_temp_dir() . '/fanxie-htaccess-' . uniqid( '', true );
-		file_put_contents( $tmp, "# BEGIN Fanxie WP Core\nrule\n# END Fanxie WP Core\n" );
+		file_put_contents( $tmp, "# BEGIN Fanxie Warden\nrule\n# END Fanxie Warden\n" );
 
 		try {
 			$writer = new RootHtaccessWriter( $tmp );

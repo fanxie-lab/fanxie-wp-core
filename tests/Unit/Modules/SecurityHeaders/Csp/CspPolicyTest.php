@@ -2,16 +2,16 @@
 /**
  * Unit tests for CspPolicy.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\SecurityHeaders\Csp
+ * @package FanxieLab\Warden\Tests\Unit\Modules\SecurityHeaders\Csp
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\SecurityHeaders\Csp;
+namespace FanxieLab\Warden\Tests\Unit\Modules\SecurityHeaders\Csp;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPolicy;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspPolicy;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -108,7 +108,7 @@ final class CspPolicyTest extends TestCase {
 
 		Functions\when( 'apply_filters' )->alias(
 			static function ( string $hook, $value ) {
-				if ( 'fanxie_wp_core/security_headers/csp_directives' === $hook && is_array( $value ) ) {
+				if ( 'fanxie_warden/security_headers/csp_directives' === $hook && is_array( $value ) ) {
 					$value['x-filter'] = [ 'added' ];
 				}
 				return $value;

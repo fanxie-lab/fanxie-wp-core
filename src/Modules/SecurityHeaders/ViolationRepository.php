@@ -2,12 +2,12 @@
 /**
  * Persistence layer for CSP violation records.
  *
- * @package FanxieLab\WPCore\Modules\SecurityHeaders
+ * @package FanxieLab\Warden\Modules\SecurityHeaders
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\SecurityHeaders;
+namespace FanxieLab\Warden\Modules\SecurityHeaders;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -31,7 +31,7 @@ final class ViolationRepository {
 	 *
 	 * @var string
 	 */
-	public const SCHEMA_VERSION_OPTION = 'fanxie_wp_core_security_headers_table_version';
+	public const SCHEMA_VERSION_OPTION = 'fanxie_warden_security_headers_table_version';
 
 	/**
 	 * Current schema version. Bump whenever the CREATE TABLE shape changes.
@@ -189,7 +189,7 @@ final class ViolationRepository {
 		}
 
 		/**
-		 * Action: fanxie_wp_core/security_headers/violation_recorded
+		 * Action: fanxie_warden/security_headers/violation_recorded
 		 *
 		 * Fires after a CSP violation has been persisted (inserted or
 		 * incremented) to the custom table.
@@ -198,7 +198,7 @@ final class ViolationRepository {
 		 *
 		 * @param ViolationRecord $violation The violation that was just recorded.
 		 */
-		do_action( 'fanxie_wp_core/security_headers/violation_recorded', $violation );
+		do_action( 'fanxie_warden/security_headers/violation_recorded', $violation );
 	}
 
 	/**

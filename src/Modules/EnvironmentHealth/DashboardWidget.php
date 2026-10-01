@@ -2,15 +2,15 @@
 /**
  * "At a glance" dashboard widget for the Environment Health module.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth;
 
-use FanxieLab\WPCore\Admin\SettingsPage;
-use FanxieLab\WPCore\Plugin;
+use FanxieLab\Warden\Admin\SettingsPage;
+use FanxieLab\Warden\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -32,7 +32,7 @@ final class DashboardWidget {
 	 *
 	 * @var string
 	 */
-	public const WIDGET_ID = 'fanxie_wp_core_environment_health';
+	public const WIDGET_ID = 'fanxie_warden_environment_health';
 
 	/**
 	 * Number of failing checks listed before the widget links out for the rest.
@@ -66,7 +66,7 @@ final class DashboardWidget {
 
 		wp_add_dashboard_widget(
 			self::WIDGET_ID,
-			esc_html__( 'Environment Health', 'fanxie-wp-core' ),
+			esc_html__( 'Environment Health', 'fanxie-warden' ),
 			[ $this, 'render' ]
 		);
 	}
@@ -94,9 +94,9 @@ final class DashboardWidget {
 		if ( null === $report ) {
 			printf(
 				'<p>%s</p><p><a href="%s">%s</a></p>',
-				esc_html__( 'No health report has been generated yet.', 'fanxie-wp-core' ),
+				esc_html__( 'No health report has been generated yet.', 'fanxie-warden' ),
 				esc_url( $tab_url ),
-				esc_html__( 'Run the checks', 'fanxie-wp-core' )
+				esc_html__( 'Run the checks', 'fanxie-warden' )
 			);
 			return;
 		}
@@ -113,7 +113,7 @@ final class DashboardWidget {
 				esc_html(
 					sprintf(
 						/* translators: 1: status label, e.g. "Critical". 2: number of checks with that status. */
-						__( '%1$s: %2$d', 'fanxie-wp-core' ),
+						__( '%1$s: %2$d', 'fanxie-warden' ),
 						$this->status_label( $status ),
 						(int) ( $counts[ $status ] ?? 0 )
 					)
@@ -131,7 +131,7 @@ final class DashboardWidget {
 					esc_html(
 						sprintf(
 							/* translators: 1: health check name. 2: one-line summary of the finding. */
-							__( '%1$s — %2$s', 'fanxie-wp-core' ),
+							__( '%1$s — %2$s', 'fanxie-warden' ),
 							$issue['label'],
 							$issue['summary']
 						)
@@ -144,11 +144,11 @@ final class DashboardWidget {
 		printf(
 			'<p><a href="%s">%s</a> <span class="description">%s</span></p>',
 			esc_url( $tab_url ),
-			esc_html__( 'View all checks', 'fanxie-wp-core' ),
+			esc_html__( 'View all checks', 'fanxie-warden' ),
 			esc_html(
 				sprintf(
 					/* translators: %s: human-readable age of the cached report, e.g. "12 minutes". */
-					__( 'Last measured %s ago.', 'fanxie-wp-core' ),
+					__( 'Last measured %s ago.', 'fanxie-warden' ),
 					human_time_diff( (int) $report['generated_at'], time() )
 				)
 			)
@@ -169,22 +169,22 @@ final class DashboardWidget {
 			case HealthCheck::STATUS_CRITICAL:
 				return sprintf(
 					/* translators: %d: number of checks needing immediate attention. */
-					_n( '%d check needs attention now.', '%d checks need attention now.', $critical, 'fanxie-wp-core' ),
+					_n( '%d check needs attention now.', '%d checks need attention now.', $critical, 'fanxie-warden' ),
 					$critical
 				);
 
 			case HealthCheck::STATUS_WARNING:
 				return sprintf(
 					/* translators: %d: number of checks worth reviewing. */
-					_n( '%d check is worth a look.', '%d checks are worth a look.', $warning, 'fanxie-wp-core' ),
+					_n( '%d check is worth a look.', '%d checks are worth a look.', $warning, 'fanxie-warden' ),
 					$warning
 				);
 
 			case HealthCheck::STATUS_UNKNOWN:
-				return __( 'Nothing is wrong, but some checks could not be completed.', 'fanxie-wp-core' );
+				return __( 'Nothing is wrong, but some checks could not be completed.', 'fanxie-warden' );
 
 			default:
-				return __( 'Everything checks out.', 'fanxie-wp-core' );
+				return __( 'Everything checks out.', 'fanxie-warden' );
 		}
 	}
 
@@ -229,10 +229,10 @@ final class DashboardWidget {
 	 */
 	private function status_label( string $status ): string {
 		return match ( $status ) {
-			HealthCheck::STATUS_CRITICAL => __( 'Critical', 'fanxie-wp-core' ),
-			HealthCheck::STATUS_WARNING  => __( 'Warning', 'fanxie-wp-core' ),
-			HealthCheck::STATUS_UNKNOWN  => __( 'Unknown', 'fanxie-wp-core' ),
-			default                      => __( 'Passing', 'fanxie-wp-core' ),
+			HealthCheck::STATUS_CRITICAL => __( 'Critical', 'fanxie-warden' ),
+			HealthCheck::STATUS_WARNING  => __( 'Warning', 'fanxie-warden' ),
+			HealthCheck::STATUS_UNKNOWN  => __( 'Unknown', 'fanxie-warden' ),
+			default                      => __( 'Passing', 'fanxie-warden' ),
 		};
 	}
 }

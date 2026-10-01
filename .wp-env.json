@@ -41,7 +41,7 @@
 				"WP_ENVIRONMENT_TYPE": "local"
 			},
 			"mappings": {
-				"wp-content/plugins/fanxie-wp-core/tests": "./tests"
+				"wp-content/plugins/fanxie-warden/tests": "./tests"
 			}
 		}
 	}

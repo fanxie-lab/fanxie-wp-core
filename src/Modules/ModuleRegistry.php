@@ -1,13 +1,13 @@
 <?php
 /**
- * Registry for Fanxie WP Core modules.
+ * Registry for Fanxie Warden modules.
  *
- * @package FanxieLab\WPCore\Modules
+ * @package FanxieLab\Warden\Modules
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules;
+namespace FanxieLab\Warden\Modules;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -38,13 +38,13 @@ final class ModuleRegistry {
 		$this->modules[ $module->id() ] = $module;
 
 		/**
-		 * Action: fanxie_wp_core/module/registered
+		 * Action: fanxie_warden/module/registered
 		 *
 		 * Fires after a module has been added to the registry.
 		 *
 		 * @param ModuleBase $module The freshly-registered module.
 		 */
-		do_action( 'fanxie_wp_core/module/registered', $module );
+		do_action( 'fanxie_warden/module/registered', $module );
 	}
 
 	/**

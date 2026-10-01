@@ -2,15 +2,15 @@
 /**
  * Integration tests for the CSP REST controller.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\SecurityHeaders
+ * @package FanxieLab\Warden\Tests\Integration\Modules\SecurityHeaders
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\SecurityHeaders;
+namespace FanxieLab\Warden\Tests\Integration\Modules\SecurityHeaders;
 
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspReportController;
-use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspReportController;
+use FanxieLab\Warden\Modules\SecurityHeaders\ViolationRepository;
 use WP_REST_Request;
 use WP_UnitTestCase;
 
@@ -42,7 +42,7 @@ final class CspReportControllerTest extends WP_UnitTestCase {
 
 		// Flush rate-limit transients to keep tests independent.
 		$_SERVER['REMOTE_ADDR'] = '10.0.0.' . wp_rand( 1, 254 );
-		delete_transient( 'fanxie_wp_core_csp_rate_' . sha1( (string) $_SERVER['REMOTE_ADDR'] ) );
+		delete_transient( 'fanxie_warden_csp_rate_' . sha1( (string) $_SERVER['REMOTE_ADDR'] ) );
 	}
 
 	public function tear_down(): void {

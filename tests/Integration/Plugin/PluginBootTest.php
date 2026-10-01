@@ -5,17 +5,17 @@
  * Runs inside the @wordpress/env `tests` container with a real WordPress core.
  * Extends `WP_UnitTestCase` so each test gets a clean, transactional DB.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Plugin
+ * @package FanxieLab\Warden\Tests\Integration\Plugin
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Plugin;
+namespace FanxieLab\Warden\Tests\Integration\Plugin;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Admin\SettingsPage;
-use FanxieLab\WPCore\Modules\ModuleRegistry;
-use FanxieLab\WPCore\Plugin;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Admin\SettingsPage;
+use FanxieLab\Warden\Modules\ModuleRegistry;
+use FanxieLab\Warden\Plugin;
 use WP_UnitTestCase;
 use WPAjaxDieContinueException;
 
@@ -120,7 +120,7 @@ final class PluginBootTest extends WP_UnitTestCase {
 	 * without forcing us to extend it (which would break the `WP_UnitTestCase`
 	 * transaction model for the rest of the class).
 	 *
-	 * @param string $action AJAX action name (e.g. `fanxie_wp_core`).
+	 * @param string $action AJAX action name (e.g. `fanxie_warden`).
 	 *
 	 * @return array<string, mixed> Decoded JSON response body.
 	 */

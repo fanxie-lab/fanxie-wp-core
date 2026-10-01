@@ -2,14 +2,14 @@
 /**
  * Plugin and theme hygiene checks for the Environment Health module.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth\Runtime;
 
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -126,10 +126,10 @@ final class PluginThemeInspector {
 			return new HealthCheck(
 				'inactive_plugins',
 				HealthCheck::GROUP_PLUGINS_THEMES,
-				__( 'Inactive plugins', 'fanxie-wp-core' ),
+				__( 'Inactive plugins', 'fanxie-warden' ),
 				HealthCheck::STATUS_OK,
 				'0',
-				__( 'Every installed plugin is in use.', 'fanxie-wp-core' ),
+				__( 'Every installed plugin is in use.', 'fanxie-warden' ),
 				'',
 				[],
 				[
@@ -143,7 +143,7 @@ final class PluginThemeInspector {
 		return new HealthCheck(
 			'inactive_plugins',
 			HealthCheck::GROUP_PLUGINS_THEMES,
-			__( 'Inactive plugins', 'fanxie-wp-core' ),
+			__( 'Inactive plugins', 'fanxie-warden' ),
 			HealthCheck::STATUS_WARNING,
 			(string) $count,
 			$count <= self::MAX_NAMED_INLINE
@@ -153,19 +153,19 @@ final class PluginThemeInspector {
 						'%1$d installed plugin is not active: %2$s.',
 						'%1$d installed plugins are not active: %2$s.',
 						$count,
-						'fanxie-wp-core'
+						'fanxie-warden'
 					),
 					$count,
 					$this->join_names( $listed )
 				)
 				: sprintf(
 					/* translators: %d: number of inactive plugins. */
-					_n( '%d installed plugin is not active.', '%d installed plugins are not active.', $count, 'fanxie-wp-core' ),
+					_n( '%d installed plugin is not active.', '%d installed plugins are not active.', $count, 'fanxie-warden' ),
 					$count
 				),
-			__( 'A deactivated plugin still has its PHP files on disk, and a vulnerability in a directly-reachable file does not care whether the plugin is switched on. Deactivated code also stops being watched: it is the code people forget to update. Delete what you are not using; the plugin can always be reinstalled.', 'fanxie-wp-core' ),
+			__( 'A deactivated plugin still has its PHP files on disk, and a vulnerability in a directly-reachable file does not care whether the plugin is switched on. Deactivated code also stops being watched: it is the code people forget to update. Delete what you are not using; the plugin can always be reinstalled.', 'fanxie-warden' ),
 			[
-				HealthCheck::link( admin_url( 'plugins.php?plugin_status=inactive' ), __( 'Review inactive plugins', 'fanxie-wp-core' ) ),
+				HealthCheck::link( admin_url( 'plugins.php?plugin_status=inactive' ), __( 'Review inactive plugins', 'fanxie-warden' ) ),
 			],
 			[
 				'total_installed' => count( $installed ),
@@ -219,10 +219,10 @@ final class PluginThemeInspector {
 			return new HealthCheck(
 				'inactive_themes',
 				HealthCheck::GROUP_PLUGINS_THEMES,
-				__( 'Inactive themes', 'fanxie-wp-core' ),
+				__( 'Inactive themes', 'fanxie-warden' ),
 				HealthCheck::STATUS_OK,
 				'0',
-				__( 'Only the active theme and a default fallback are installed.', 'fanxie-wp-core' ),
+				__( 'Only the active theme and a default fallback are installed.', 'fanxie-warden' ),
 				'',
 				[],
 				[
@@ -237,7 +237,7 @@ final class PluginThemeInspector {
 		return new HealthCheck(
 			'inactive_themes',
 			HealthCheck::GROUP_PLUGINS_THEMES,
-			__( 'Inactive themes', 'fanxie-wp-core' ),
+			__( 'Inactive themes', 'fanxie-warden' ),
 			HealthCheck::STATUS_WARNING,
 			(string) $count,
 			$count <= self::MAX_NAMED_INLINE
@@ -247,19 +247,19 @@ final class PluginThemeInspector {
 						'%1$d unused theme is installed: %2$s.',
 						'%1$d unused themes are installed: %2$s.',
 						$count,
-						'fanxie-wp-core'
+						'fanxie-warden'
 					),
 					$count,
 					$this->join_names( $listed )
 				)
 				: sprintf(
 					/* translators: %d: number of inactive non-default themes. */
-					_n( '%d unused theme is installed.', '%d unused themes are installed.', $count, 'fanxie-wp-core' ),
+					_n( '%d unused theme is installed.', '%d unused themes are installed.', $count, 'fanxie-warden' ),
 					$count
 				),
-			__( 'Unused themes are attack surface with no upside, and their template files have historically been a source of vulnerabilities. Keep the active theme, its parent if it has one, and one current WordPress default as a recovery fallback — delete the rest.', 'fanxie-wp-core' ),
+			__( 'Unused themes are attack surface with no upside, and their template files have historically been a source of vulnerabilities. Keep the active theme, its parent if it has one, and one current WordPress default as a recovery fallback — delete the rest.', 'fanxie-warden' ),
 			[
-				HealthCheck::link( admin_url( 'themes.php' ), __( 'Review installed themes', 'fanxie-wp-core' ) ),
+				HealthCheck::link( admin_url( 'themes.php' ), __( 'Review installed themes', 'fanxie-warden' ) ),
 			],
 			[
 				'total_installed'  => count( $themes ),
@@ -280,7 +280,7 @@ final class PluginThemeInspector {
 	 * nothing about whether a plugin is maintained.
 	 */
 	private function abandoned_plugins_check(): HealthCheck {
-		$label = __( 'Abandoned plugins', 'fanxie-wp-core' );
+		$label = __( 'Abandoned plugins', 'fanxie-warden' );
 
 		if ( ! $this->wporg_scan_enabled() ) {
 			return new HealthCheck(
@@ -289,8 +289,8 @@ final class PluginThemeInspector {
 				$label,
 				HealthCheck::STATUS_UNKNOWN,
 				'',
-				__( 'The wordpress.org freshness check is switched off.', 'fanxie-wp-core' ),
-				__( 'No request is made to wordpress.org while this setting is off. Turn it on to be told when an active plugin has gone a year or more without an update.', 'fanxie-wp-core' ),
+				__( 'The wordpress.org freshness check is switched off.', 'fanxie-warden' ),
+				__( 'No request is made to wordpress.org while this setting is off. Turn it on to be told when an active plugin has gone a year or more without an update.', 'fanxie-warden' ),
 				[],
 				[ 'enabled' => false ]
 			);
@@ -371,7 +371,7 @@ final class PluginThemeInspector {
 							'%1$d active plugin has not been updated in over a year: %2$s.',
 							'%1$d active plugins have not been updated in over a year: %2$s.',
 							$count,
-							'fanxie-wp-core'
+							'fanxie-warden'
 						),
 						$count,
 						$this->join_names( array_merge( $critical_listed, $warning_listed ) )
@@ -382,13 +382,13 @@ final class PluginThemeInspector {
 							'%d active plugin has not been updated in over a year.',
 							'%d active plugins have not been updated in over a year.',
 							$count,
-							'fanxie-wp-core'
+							'fanxie-warden'
 						),
 						$count
 					),
-				__( 'An unmaintained plugin will not be patched when the next vulnerability is found in it, and it will eventually break on a new PHP or WordPress release. Look for a maintained alternative before you need one urgently. Premium plugins are excluded from this check — wordpress.org has no record of them.', 'fanxie-wp-core' ),
+				__( 'An unmaintained plugin will not be patched when the next vulnerability is found in it, and it will eventually break on a new PHP or WordPress release. Look for a maintained alternative before you need one urgently. Premium plugins are excluded from this check — wordpress.org has no record of them.', 'fanxie-warden' ),
 				[
-					HealthCheck::link( admin_url( 'plugins.php' ), __( 'Review active plugins', 'fanxie-wp-core' ) ),
+					HealthCheck::link( admin_url( 'plugins.php' ), __( 'Review active plugins', 'fanxie-warden' ) ),
 				],
 				$meta
 			);
@@ -401,8 +401,8 @@ final class PluginThemeInspector {
 				$label,
 				HealthCheck::STATUS_UNKNOWN,
 				'',
-				__( 'Not checked yet.', 'fanxie-wp-core' ),
-				__( 'Plugins are looked up on wordpress.org a few at a time, on a schedule, so a large site never fires dozens of requests at once. Results appear here as each batch completes.', 'fanxie-wp-core' ),
+				__( 'Not checked yet.', 'fanxie-warden' ),
+				__( 'Plugins are looked up on wordpress.org a few at a time, on a schedule, so a large site never fires dozens of requests at once. Results appear here as each batch completes.', 'fanxie-warden' ),
 				[],
 				$meta
 			);
@@ -421,11 +421,11 @@ final class PluginThemeInspector {
 						'No abandoned plugins so far; %d still to check.',
 						'No abandoned plugins so far; %d still to check.',
 						$pending,
-						'fanxie-wp-core'
+						'fanxie-warden'
 					),
 					$pending
 				)
-				: __( 'Every active plugin listed on wordpress.org has been updated within the last year.', 'fanxie-wp-core' ),
+				: __( 'Every active plugin listed on wordpress.org has been updated within the last year.', 'fanxie-warden' ),
 			'',
 			[],
 			$meta
@@ -460,7 +460,7 @@ final class PluginThemeInspector {
 	 * @param array<int, string> $names Names to join.
 	 */
 	private function join_names( array $names ): string {
-		return implode( _x( ', ', 'separator between item names in a summary sentence', 'fanxie-wp-core' ), $names );
+		return implode( _x( ', ', 'separator between item names in a summary sentence', 'fanxie-warden' ), $names );
 	}
 
 	/**

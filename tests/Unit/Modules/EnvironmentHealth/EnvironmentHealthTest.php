@@ -2,19 +2,19 @@
 /**
  * Unit tests for the Environment Health module shell.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth;
 
 use Brain\Monkey;
 use Brain\Monkey\Actions;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\EnvironmentHealth;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\WporgScanner;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\EnvironmentHealth\EnvironmentHealth;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\WporgScanner;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -324,7 +324,7 @@ final class EnvironmentHealthTest extends TestCase {
 	public function test_an_incoherent_option_written_by_older_code_self_heals_on_read(): void {
 		// `absint` let this shape through before the bounds existed; reading it
 		// back must not hand a broken config to the inspectors.
-		$this->options['fanxie_wp_core_environment-health_settings'] = [
+		$this->options['fanxie_warden_environment-health_settings'] = [
 			'thresholds' => [
 				'ssl_expiry_warning_days' => 0,
 				'cron_overdue_minutes'    => 0,

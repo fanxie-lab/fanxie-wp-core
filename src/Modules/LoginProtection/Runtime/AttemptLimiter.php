@@ -2,16 +2,16 @@
 /**
  * Tiered brute-force attempt limiter.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection\Runtime
+ * @package FanxieLab\Warden\Modules\LoginProtection\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection\Runtime;
+namespace FanxieLab\Warden\Modules\LoginProtection\Runtime;
 
-use FanxieLab\WPCore\Modules\LoginProtection\BanStore;
-use FanxieLab\WPCore\Modules\LoginProtection\IpResolver;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRecorder;
+use FanxieLab\Warden\Modules\LoginProtection\BanStore;
+use FanxieLab\Warden\Modules\LoginProtection\IpResolver;
+use FanxieLab\Warden\Modules\LoginProtection\LoginLogRecorder;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -33,7 +33,7 @@ final class AttemptLimiter {
 	 *
 	 * @var string
 	 */
-	private const PREFIX = 'fanxie_wp_core_lp_';
+	private const PREFIX = 'fanxie_warden_lp_';
 
 	/**
 	 * Constructor.
@@ -85,7 +85,7 @@ final class AttemptLimiter {
 
 		return new WP_Error(
 			'fanxie_login_locked',
-			__( 'Too many failed attempts. Try again later.', 'fanxie-wp-core' )
+			__( 'Too many failed attempts. Try again later.', 'fanxie-warden' )
 		);
 	}
 

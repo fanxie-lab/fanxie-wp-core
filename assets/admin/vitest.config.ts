@@ -1,6 +1,6 @@
 /// <reference types="vitest/globals" />
 
-// Vitest config for the Fanxie WP Core admin SPA.
+// Vitest config for the Fanxie Warden admin SPA.
 //
 // Mirrors the Vue + `@/*` alias setup from `vite.config.ts` so tests resolve
 // imports identically to the production build. We do NOT pull in the HotFile

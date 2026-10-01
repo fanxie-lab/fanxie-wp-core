@@ -12,10 +12,10 @@
  *      file is registered under `scanFiles` in `phpstan.neon.dist` to give the
  *      analyser the `WP_CLI` symbol when it reads the CLI command class.
  *
- * Only the surface Fanxie WP Core's CLI commands touch is implemented. Mirrors
+ * Only the surface Fanxie Warden's CLI commands touch is implemented. Mirrors
  * the lazy, unit-mode-only stub idiom of {@see WP_Error} in `wp-error.php`.
  *
- * @package FanxieLab\WPCore\Tests\Stubs
+ * @package FanxieLab\Warden\Tests\Stubs
  */
 
 declare( strict_types=1 );

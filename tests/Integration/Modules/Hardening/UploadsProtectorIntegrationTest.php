@@ -2,14 +2,14 @@
 /**
  * Integration tests for UploadsProtector against the real filesystem.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\Hardening
+ * @package FanxieLab\Warden\Tests\Integration\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\Hardening;
+namespace FanxieLab\Warden\Tests\Integration\Modules\Hardening;
 
-use FanxieLab\WPCore\Modules\Hardening\UploadsProtector;
+use FanxieLab\Warden\Modules\Hardening\UploadsProtector;
 use WP_UnitTestCase;
 
 /**

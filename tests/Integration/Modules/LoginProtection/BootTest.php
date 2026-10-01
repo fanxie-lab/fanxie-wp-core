@@ -2,20 +2,20 @@
 /**
  * Boot-wiring integration test for the Login Protection module.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Integration\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Integration\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\LoginProtection\AjaxController;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginProtection;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\LoginSlugGuard;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\PasswordPolicy;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\SessionTimeout;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\LoginProtection\AjaxController;
+use FanxieLab\Warden\Modules\LoginProtection\LoginProtection;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\AttemptLimiter;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\LoginSlugGuard;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\PasswordPolicy;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\SessionTimeout;
 use ReflectionProperty;
 use WP_UnitTestCase;
 
@@ -41,7 +41,7 @@ final class LoginProtectionBootTest extends WP_UnitTestCase {
 	/**
 	 * Stored-settings option key — deleted per test so config resolves to defaults.
 	 */
-	private const SETTINGS_OPTION = 'fanxie_wp_core_login-protection_settings';
+	private const SETTINGS_OPTION = 'fanxie_warden_login-protection_settings';
 
 	private AjaxRouter $router;
 

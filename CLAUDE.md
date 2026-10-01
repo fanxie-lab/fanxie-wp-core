@@ -1,4 +1,4 @@
-# CLAUDE.md — Fanxie WP Core
+# CLAUDE.md — Fanxie Warden
 
 Guidance for Claude Code when working in this repository. The source of truth for *what* to build is [`_PRD/prd-fanxie-wp-core-v0.5.md`](./_PRD/prd-fanxie-wp-core-v0.5.md). This file defines *how* we build it.
 
@@ -8,9 +8,9 @@ Progress lives in [`_PRD/checklist-fanxie-wp-core.md`](./_PRD/checklist-fanxie-w
 
 ## 1. Identity & Positioning
 
-- **Plugin name:** Fanxie WP Core
-- **Slug / text domain:** `fanxie-wp-core`
-- **PHP namespace root:** `FanxieLab\WPCore`
+- **Plugin name:** Fanxie Warden
+- **Slug / text domain:** `fanxie-warden`
+- **PHP namespace root:** `FanxieLab\Warden`
 - **Author:** Fanxie Lab
 - **Destination:** WordPress.org public release (day-one wp.org compliance)
 - **Quality bar:** Plugin Check passes with **100%** (zero errors, zero warnings) before any release is cut.
@@ -39,17 +39,17 @@ The user has set explicit agent ownership. When the scope is clear, delegate; do
 
 - **Target:** PHP 8.1+, WordPress 6.4+ (per PRD §2.3). Use modern language features (typed properties, readonly, enums, `match`, named args).
 - **PSR-4 autoloading** via Composer. Directory → namespace mapping:
-  - `src/` → `FanxieLab\WPCore\`
-  - `src/Modules/SecurityHeaders/` → `FanxieLab\WPCore\Modules\SecurityHeaders\`
-  - `tests/` → `FanxieLab\WPCore\Tests\`
+  - `src/` → `FanxieLab\Warden\`
+  - `src/Modules/SecurityHeaders/` → `FanxieLab\Warden\Modules\SecurityHeaders\`
+  - `tests/` → `FanxieLab\Warden\Tests\`
 - Composer dependencies are committed to `vendor/` on tagged releases (wp.org requirement); runtime deps must be GPL-compatible.
-- **Module contract:** every module extends `FanxieLab\WPCore\Modules\ModuleBase` and implements `id()`, `name()`, `register_hooks()`, `get_settings_fields()`, `get_default_config()`. There is no module-level `is_enabled()` flag — each module exposes fine-grained toggles through its own settings, and runtime emitters consult those settings to decide whether to do any work.
+- **Module contract:** every module extends `FanxieLab\Warden\Modules\ModuleBase` and implements `id()`, `name()`, `register_hooks()`, `get_settings_fields()`, `get_default_config()`. There is no module-level `is_enabled()` flag — each module exposes fine-grained toggles through its own settings, and runtime emitters consult those settings to decide whether to do any work.
 - **No global state.** Use DI through the core `Plugin` container. No singletons except the plugin bootstrap.
-- **Options:** one prefix — `fanxie_wp_core_*`. One namespaced option per module (`fanxie_wp_core_<module_id>_settings`) to keep `wp_options` tidy.
-- **Custom tables:** prefix `{$wpdb->prefix}fanxie_core_` (e.g., `wp_fanxie_core_csp_violations`, `wp_fanxie_core_login_log`, `wp_fanxie_core_login_bans`, `wp_fanxie_core_activity_log`). Install via `dbDelta`, version-tracked (one `fanxie_wp_core_<...>_version` option per table).
-- **Hooks API:** prefix custom hooks `fanxie_wp_core/` (e.g., `fanxie_wp_core/module/registered`). Documented in `docs/hooks.md`. (Exception: WP-Cron event names are flat, e.g. `fanxie_wp_core_login_protection_prune`.)
-- **Capabilities:** gate admin actions behind a dedicated cap `manage_fanxie_wp_core` (mapped to `manage_options` by default, overridable via filter).
-- **User-facing constants & CLI naming:** wp-config **override constants** use the `FX_CORE_*` prefix (e.g. `FX_CORE_LOGIN_SLUG`, `FX_CORE_DELETE_ALL_DATA`); the **WP-CLI root command is `fx-core`** (e.g. `wp fx-core login reveal`). Internal bootstrap constants stay `FANXIE_WP_CORE_*` (VERSION/PATH/URL) and option/table/hook prefixes are unchanged. Applies to all modules.
+- **Options:** one prefix — `fanxie_warden_*`. One namespaced option per module (`fanxie_warden_<module_id>_settings`) to keep `wp_options` tidy.
+- **Custom tables:** prefix `{$wpdb->prefix}fanxie_core_` (e.g., `wp_fanxie_core_csp_violations`, `wp_fanxie_core_login_log`, `wp_fanxie_core_login_bans`, `wp_fanxie_core_activity_log`). Install via `dbDelta`, version-tracked (one `fanxie_warden_<...>_version` option per table).
+- **Hooks API:** prefix custom hooks `fanxie_warden/` (e.g., `fanxie_warden/module/registered`). Documented in `docs/hooks.md`. (Exception: WP-Cron event names are flat, e.g. `fanxie_warden_login_protection_prune`.)
+- **Capabilities:** gate admin actions behind a dedicated cap `manage_fanxie_warden` (mapped to `manage_options` by default, overridable via filter).
+- **User-facing constants & CLI naming:** wp-config **override constants** use the `FX_CORE_*` prefix (e.g. `FX_CORE_LOGIN_SLUG`, `FX_CORE_DELETE_ALL_DATA`); the **WP-CLI root command is `fx-core`** (e.g. `wp fx-core login reveal`). Internal bootstrap constants are `FANXIE_WARDEN_*` (VERSION/PATH/URL). These three user-facing names (`FX_CORE_*`, `fx-core`) and the `fanxie_core_*` table prefix deliberately survived the 2026-10 rename to Fanxie Warden: all are wp.org-compliant and already documented to users. Applies to all modules.
 
 ### 3.2 Security
 
@@ -62,11 +62,11 @@ The user has set explicit agent ownership. When the scope is clear, delegate; do
 
 ### 3.3 i18n
 
-- Text domain `fanxie-wp-core` on **every** user-facing string. Use `__`, `esc_html__`, `esc_attr__`, `_n`, `_x` appropriately.
+- Text domain `fanxie-warden` on **every** user-facing string. Use `__`, `esc_html__`, `esc_attr__`, `_n`, `_x` appropriately.
 - No variables inside `__()`. Use `sprintf` with translator comments:
   ```php
   /* translators: %s: module name */
-  esc_html__( 'Module %s enabled.', 'fanxie-wp-core' );
+  esc_html__( 'Module %s enabled.', 'fanxie-warden' );
   ```
 - `.pot` file generated via `wp i18n make-pot`. Regenerate before every release.
 
@@ -93,8 +93,8 @@ The user has set explicit agent ownership. When the scope is clear, delegate; do
 - **Build output:** `assets/admin/dist/` — checked in for wp.org (with unminified source in `assets/admin/src/`, satisfying PRD §2.4 "no minified code without unminified source").
 - **Enqueue:** admin assets load **only on the plugin's settings screens** (screen ID check). Never on the frontend, never globally.
 - **No CDN dependencies at runtime.** No exceptions — every asset the admin SPA loads ships with the plugin.
-- **Bridging to PHP:** hydrate initial state via `wp_add_inline_script( 'fanxie-admin', 'window.fanxieWPCore = ' . wp_json_encode( $bootstrap ), 'before' )`. Do not echo JSON into the DOM.
-- **AJAX over REST for the admin UI**, per user direction. Each action = one `admin-ajax.php` action registered as `fanxie_wp_core_<action>`. REST routes reserved for external integrations (the CSP report endpoint, future webhooks).
+- **Bridging to PHP:** hydrate initial state via `wp_add_inline_script( 'fanxie-warden-admin', 'window.fanxieWarden = ' . wp_json_encode( $bootstrap ), 'before' )`. Do not echo JSON into the DOM.
+- **AJAX over REST for the admin UI**, per user direction. Each action = one `admin-ajax.php` action registered as `fanxie_warden_<action>`. REST routes reserved for external integrations (the CSP report endpoint, future webhooks).
 - **Accessibility:** WCAG 2.1 AA. Every interactive element keyboard-reachable, labelled, and screen-reader tested. Settings forms use native labels, not placeholder-as-label.
 - **Setting help is a standard, not a one-off.** Every setting exposes an explanation: simple toggles via the accessible `Tooltip` primitive (keyboard-focusable ⓘ), complex or risky settings via inline `HelpText`. To wire `HelpText` to a `Toggle` for screen readers, pass the help element's id through the Toggle's `describedby` prop (a raw `aria-describedby` on `<Toggle>` falls through to its wrapper `<div>`, not the switch). All current and future modules follow this pattern.
 
@@ -138,8 +138,8 @@ CI runs on every PR and blocks merge on failure.
 ## 5. Repository layout (target)
 
 ```
-fanxie-wp-core/
-├── fanxie-wp-core.php           # bootstrap only — version, constants, activation, require autoloader
+fanxie-warden/
+├── fanxie-warden.php           # bootstrap only — version, constants, activation, require autoloader
 ├── readme.txt                    # wp.org format
 ├── uninstall.php                 # full cleanup when requested
 ├── composer.json
@@ -150,7 +150,7 @@ fanxie-wp-core/
 ├── package.json                  # workspace root (scripts proxy to assets/admin)
 ├── CLAUDE.md                     # this file
 ├── _PRD/                         # product requirements + checklist
-├── src/                          # PHP, PSR-4 → FanxieLab\WPCore
+├── src/                          # PHP, PSR-4 → FanxieLab\Warden
 │   ├── Plugin.php
 │   ├── Modules/
 │   │   ├── ModuleBase.php
@@ -179,7 +179,7 @@ fanxie-wp-core/
 
 - Branch per phase (`phase/0-foundation`, `phase/1-security-headers`, …). Feature branches off the phase branch.
 - Conventional Commits (`feat:`, `fix:`, `chore:`, `test:`, `docs:`, `refactor:`, `perf:`, `ci:`). Scope = module id when applicable: `feat(security-headers): add HSTS toggle`.
-- `readme.txt` `Stable tag` and the `Version:` header in `fanxie-wp-core.php` always match the current tag.
+- `readme.txt` `Stable tag` and the `Version:` header in `fanxie-warden.php` always match the current tag.
 - A phase is "done" only when: checklist items ticked, tests green, Plugin Check 100%, PHPStan clean, checklist updated, CHANGELOG entry written.
 
 ---

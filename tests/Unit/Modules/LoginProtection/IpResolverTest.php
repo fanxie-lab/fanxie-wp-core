@@ -2,14 +2,14 @@
 /**
  * Unit tests for the Login Protection client IP resolver.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Unit\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Unit\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Modules\LoginProtection\IpResolver;
+use FanxieLab\Warden\Modules\LoginProtection\IpResolver;
 use PHPUnit\Framework\TestCase;
 
 /**

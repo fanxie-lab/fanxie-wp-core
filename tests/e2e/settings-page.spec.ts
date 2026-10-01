@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Fanxie WP Core — settings page', () => {
+test.describe('Fanxie Warden — settings page', () => {
 	test.beforeEach(async ({ page }) => {
 		await page.goto('/wp-login.php');
 		await page.fill('#user_login', 'admin');
@@ -10,10 +10,10 @@ test.describe('Fanxie WP Core — settings page', () => {
 	});
 
 	test('plugin is active, settings page renders, Vue app mounts', async ({ page }) => {
-		await page.goto('/wp-admin/options-general.php?page=fanxie-wp-core');
+		await page.goto('/wp-admin/options-general.php?page=fanxie-warden');
 
 		// Sidebar nav should be present (Vue app mounted).
-		await expect(page.locator('#fanxie-wp-core-admin')).toBeVisible();
+		await expect(page.locator('#fanxie-warden-admin')).toBeVisible();
 		await expect(page.getByRole('navigation', { name: /modules/i })).toBeVisible();
 
 		// Section headings from the new IA.

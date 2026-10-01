@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright configuration for Fanxie WP Core.
+ * Playwright configuration for Fanxie Warden.
  *
  * End-to-end browser tests run against the `@wordpress/env` *development*
  * environment (port 8888). The `tests` env on 8889 is reserved for PHPUnit.

@@ -1,9 +1,9 @@
 {
-  "name": "@fanxie-wp-core/admin",
+  "name": "@fanxie-warden/admin",
   "version": "0.1.0-dev",
   "private": true,
   "type": "module",
-  "description": "Fanxie WP Core — Vue 3 admin SPA. Built with Vite; output consumed by the PHP plugin (wp_enqueue_script/style against dist/admin.js + dist/admin.css).",
+  "description": "Fanxie Warden — Vue 3 admin SPA. Built with Vite; output consumed by the PHP plugin (wp_enqueue_script/style against dist/admin.js + dist/admin.css).",
   "license": "GPL-2.0-or-later",
   "author": "Fanxie Lab",
   "engines": {

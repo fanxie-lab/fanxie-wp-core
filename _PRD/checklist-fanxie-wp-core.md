@@ -164,10 +164,10 @@ checked against php.net and endoflife.date.
 - [ ] Tests: each cleanup function, Action Scheduler registration, CLI commands
 
 ### 3.2 Activity Log (PRD §9)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] Custom table `{prefix}fanxie_activity_log` via `dbDelta`
+- [ ] Custom table `{prefix}fanxie_core_activity_log` via `dbDelta`
 - [ ] Event recorders: plugin/theme lifecycle, user CRUD, core update, auth events, content deletion, settings changes
 - [ ] 90-day retention with Action Scheduler prune
-- [ ] WP-CLI `wp fanxie log list` + `log export --format=csv`
+- [ ] WP-CLI `wp fx-core log list` + `log export --format=csv`
 - [ ] Vue log viewer: pagination, filters (event type, user, date range), CSV export button
 - [ ] Tests: each recorder fires once per event, retention prune, CSV shape
 
@@ -211,7 +211,7 @@ checked against php.net and endoflife.date.
 
 ## Phase 7 — wp.org Submission  *(PRD §15 phase 7)*
 
-- [ ] **RENAME — "Fanxie WP Core" → "Fanxie Warden"** *(name chosen 2026-09-03; rename not yet executed)*
+- [~] **RENAME — "Fanxie WP Core" → "Fanxie Warden"** *(name chosen 2026-09-03; code rename done 2026-10-01 on `phase/7-rename-warden` — every item below except **Repo name**, which needs the GitHub repo + local checkout folder renamed by hand. Until the folder is `fanxie-warden`, the wp-env `--env-cwd` / plugin-check scripts in root `package.json` and the tests mapping in `.wp-env.json` point at a mount path that does not exist yet. `_PRD/` filenames and historical `docs/superpowers/` records intentionally keep the old name.)*
   wordpress.org bans the term "wp" outright in both the plugin name and the
   slug; Plugin Check reports it as `trademarked_term` and it is a hard rejection
   at submission, not a negotiable warning. Cheapest to fix while unreleased — no
@@ -259,7 +259,7 @@ checked against php.net and endoflife.date.
     `docs/hooks.md` and the recovery instructions emailed on a login-slug change.
   - Override constants `FX_CORE_*` — already compliant; users may already have
     `FX_CORE_LOGIN_SLUG` in a `wp-config.php`.
-- [ ] Verify the rename left no `fanxie-wp-core` / `fanxie_wp_core` / `WPCore` /
+- [x] Verify the rename left no `fanxie-wp-core` / `fanxie_wp_core` / `WPCore` /
   `FANXIE_WP_CORE` strings outside the three deliberate exceptions above
 - [ ] Full Plugin Check **zero** errors/warnings on complete plugin
 - [ ] Build a distribution archive that excludes `tests/`, `.github/`, `node_modules/`,
@@ -291,7 +291,7 @@ checked against php.net and endoflife.date.
 
 ## Cross-phase ongoing items
 
-- [ ] Every new user-facing string has text domain `fanxie-wp-core`
+- [ ] Every new user-facing string has text domain `fanxie-warden`
 - [ ] Every destructive op has a `--dry-run` and a UI confirmation
 - [ ] Every AJAX action: nonce + capability, documented in `docs/hooks.md`
 - [ ] Every module: enabled/disabled cost benchmark recorded

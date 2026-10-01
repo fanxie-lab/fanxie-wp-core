@@ -2,15 +2,15 @@
 /**
  * Unit tests for the date-driven support matrix.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth;
 
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\SupportMatrix;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\SupportMatrix;
 use PHPUnit\Framework\TestCase;
 
 /**

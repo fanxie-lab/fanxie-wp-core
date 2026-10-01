@@ -3,12 +3,12 @@
  * Hide-login slug guard: serves wp-login.php from a secret slug and 404s the
  * raw entry point.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection\Runtime
+ * @package FanxieLab\Warden\Modules\LoginProtection\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection\Runtime;
+namespace FanxieLab\Warden\Modules\LoginProtection\Runtime;
 
 use WP_Query;
 
@@ -501,7 +501,7 @@ final class LoginSlugGuard {
 			exit;
 		}
 
-		wp_die( esc_html__( 'Not Found', 'fanxie-wp-core' ), '', [ 'response' => 404 ] );
+		wp_die( esc_html__( 'Not Found', 'fanxie-warden' ), '', [ 'response' => 404 ] );
 	}
 
 	/**

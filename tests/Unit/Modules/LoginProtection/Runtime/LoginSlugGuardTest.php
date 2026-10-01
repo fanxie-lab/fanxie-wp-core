@@ -2,16 +2,16 @@
 /**
  * Unit tests for the Login Protection hide-login slug guard.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\LoginSlugGuard;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\LoginSlugGuard;
 use PHPUnit\Framework\TestCase;
 
 /**

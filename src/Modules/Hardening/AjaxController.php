@@ -2,16 +2,16 @@
 /**
  * Admin AJAX sub-actions for the Hardening module.
  *
- * @package FanxieLab\WPCore\Modules\Hardening
+ * @package FanxieLab\Warden\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening;
+namespace FanxieLab\Warden\Modules\Hardening;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\RootHtaccessWriter;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\XmlRpcGate;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\Hardening\Runtime\RootHtaccessWriter;
+use FanxieLab\Warden\Modules\Hardening\Runtime\XmlRpcGate;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * AJAX surface consumed by the Vue admin UI.
  *
- * Nonce + `manage_fanxie_wp_core` capability are enforced centrally by the
+ * Nonce + `manage_fanxie_warden` capability are enforced centrally by the
  * AjaxRouter. Handlers validate the payload shape, delegate to the module /
  * inspector / uploads protector, and return the shared envelope:
  *
@@ -87,7 +87,7 @@ final class AjaxController {
 	 */
 	public function handle_save_config( array $payload ): array|WP_Error {
 		if ( ! isset( $payload['settings'] ) || ! is_array( $payload['settings'] ) ) {
-			return new WP_Error( 'invalid_settings', __( 'Settings payload must be an object.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'invalid_settings', __( 'Settings payload must be an object.', 'fanxie-warden' ) );
 		}
 
 		$this->module->update_config( $payload['settings'] );
@@ -126,12 +126,12 @@ final class AjaxController {
 	public function handle_apply_fix( array $payload ): array|WP_Error {
 		$target = isset( $payload['target'] ) ? sanitize_key( (string) $payload['target'] ) : '';
 		if ( '' === $target ) {
-			return new WP_Error( 'missing_target', __( 'A fix target is required.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'missing_target', __( 'A fix target is required.', 'fanxie-warden' ) );
 		}
 
 		$allowed = [ 'uploads_index', 'uploads_htaccess', 'readme_license_block' ];
 		if ( ! in_array( $target, $allowed, true ) ) {
-			return new WP_Error( 'invalid_target', __( 'Unknown fix target.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'invalid_target', __( 'Unknown fix target.', 'fanxie-warden' ) );
 		}
 
 		if ( 'readme_license_block' === $target ) {
@@ -220,12 +220,12 @@ final class AjaxController {
 	private function validate_upload_target( array $payload ): string|WP_Error {
 		$target = isset( $payload['target'] ) ? sanitize_key( (string) $payload['target'] ) : '';
 		if ( '' === $target ) {
-			return new WP_Error( 'missing_target', __( 'A fix target is required.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'missing_target', __( 'A fix target is required.', 'fanxie-warden' ) );
 		}
 
 		$allowed = [ 'uploads_index', 'uploads_htaccess' ];
 		if ( ! in_array( $target, $allowed, true ) ) {
-			return new WP_Error( 'invalid_target', __( 'Unknown fix target.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'invalid_target', __( 'Unknown fix target.', 'fanxie-warden' ) );
 		}
 
 		return $target;
@@ -311,27 +311,27 @@ final class AjaxController {
 		if ( true === $this->read_path( $settings, [ 'version_hiding', 'remove_powered_by' ], false )
 			&& ! empty( $checks['x_powered_by_present'] )
 		) {
-			$warnings[] = __( 'X-Powered-By header is still present — your web server or php.ini is injecting it.', 'fanxie-wp-core' );
+			$warnings[] = __( 'X-Powered-By header is still present — your web server or php.ini is injecting it.', 'fanxie-warden' );
 		}
 
 		if ( true === $this->read_path( $settings, [ 'uploads', 'drop_index' ], false )
 			&& true === ( $checks['uploads_dir_listable'] ?? null )
 		) {
-			$warnings[] = __( 'Uploads directory is still listable over HTTP.', 'fanxie-wp-core' );
+			$warnings[] = __( 'Uploads directory is still listable over HTTP.', 'fanxie-warden' );
 		}
 
 		if ( true === $this->read_path( $settings, [ 'uploads', 'block_php_execution' ], false )
 			&& true === ( $checks['uploads_php_executable'] ?? null )
 		) {
-			$warnings[] = __( 'PHP files in uploads still execute — server configuration (likely nginx) needs updating.', 'fanxie-wp-core' );
+			$warnings[] = __( 'PHP files in uploads still execute — server configuration (likely nginx) needs updating.', 'fanxie-warden' );
 		}
 
 		if ( true === $this->read_path( $settings, [ 'version_hiding', 'block_readme_license' ], false ) ) {
 			if ( false === ( $checks['readme_blocked'] ?? true ) ) {
-				$warnings[] = __( '/readme.html is still reachable — server rules are not being honoured.', 'fanxie-wp-core' );
+				$warnings[] = __( '/readme.html is still reachable — server rules are not being honoured.', 'fanxie-warden' );
 			}
 			if ( false === ( $checks['license_blocked'] ?? true ) ) {
-				$warnings[] = __( '/license.txt is still reachable — server rules are not being honoured.', 'fanxie-wp-core' );
+				$warnings[] = __( '/license.txt is still reachable — server rules are not being honoured.', 'fanxie-warden' );
 			}
 		}
 
@@ -339,7 +339,7 @@ final class AjaxController {
 		if ( 'nginx' === $server_type
 			&& true === $this->read_path( $settings, [ 'uploads', 'block_php_execution' ], false )
 		) {
-			$warnings[] = __( 'nginx detected — drop the provided server snippet into your vhost to block PHP execution in uploads.', 'fanxie-wp-core' );
+			$warnings[] = __( 'nginx detected — drop the provided server snippet into your vhost to block PHP execution in uploads.', 'fanxie-warden' );
 		}
 
 		return $warnings;
@@ -356,14 +356,14 @@ final class AjaxController {
 		unset( $checks );
 
 		if ( ! $active ) {
-			return __( 'Inactive', 'fanxie-wp-core' );
+			return __( 'Inactive', 'fanxie-warden' );
 		}
 
 		$count = $this->active_toggle_count( $settings );
 
 		return sprintf(
 			/* translators: %d: number of active hardening toggles. */
-			_n( '%d safeguard active', '%d safeguards active', $count, 'fanxie-wp-core' ),
+			_n( '%d safeguard active', '%d safeguards active', $count, 'fanxie-warden' ),
 			$count
 		);
 	}

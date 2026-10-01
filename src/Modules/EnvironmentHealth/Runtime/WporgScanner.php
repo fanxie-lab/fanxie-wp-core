@@ -2,12 +2,12 @@
 /**
  * Throttled api.wordpress.org plugin freshness scanner.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth\Runtime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -40,7 +40,7 @@ final class WporgScanner {
 	 *
 	 * @var string
 	 */
-	public const CACHE_OPTION = 'fanxie_wp_core_environment_health_wporg_cache';
+	public const CACHE_OPTION = 'fanxie_warden_environment_health_wporg_cache';
 
 	/**
 	 * The api.wordpress.org plugin information endpoint.
@@ -220,7 +220,7 @@ final class WporgScanner {
 			$url,
 			[
 				'timeout'    => self::REQUEST_TIMEOUT_SEC,
-				'user-agent' => 'FanxieWPCore/' . ( defined( 'FANXIE_WP_CORE_VERSION' ) ? (string) constant( 'FANXIE_WP_CORE_VERSION' ) : '0' ) . '; ' . home_url( '/' ),
+				'user-agent' => 'FanxieWarden/' . ( defined( 'FANXIE_WARDEN_VERSION' ) ? (string) constant( 'FANXIE_WARDEN_VERSION' ) : '0' ) . '; ' . home_url( '/' ),
 			]
 		);
 

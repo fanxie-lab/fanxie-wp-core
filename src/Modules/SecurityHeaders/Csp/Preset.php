@@ -2,12 +2,12 @@
 /**
  * Value object representing a single CSP preset.
  *
- * @package FanxieLab\WPCore\Modules\SecurityHeaders\Csp
+ * @package FanxieLab\Warden\Modules\SecurityHeaders\Csp
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\SecurityHeaders\Csp;
+namespace FanxieLab\Warden\Modules\SecurityHeaders\Csp;
 
 defined( 'ABSPATH' ) || exit;
 

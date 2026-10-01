@@ -2,19 +2,19 @@
 /**
  * Unit tests for the SecurityHeaders module class.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\SecurityHeaders
+ * @package FanxieLab\Warden\Tests\Unit\Modules\SecurityHeaders
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\SecurityHeaders;
+namespace FanxieLab\Warden\Tests\Unit\Modules\SecurityHeaders;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPolicy;
-use FanxieLab\WPCore\Modules\SecurityHeaders\SecurityHeaders;
-use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspPolicy;
+use FanxieLab\Warden\Modules\SecurityHeaders\SecurityHeaders;
+use FanxieLab\Warden\Modules\SecurityHeaders\ViolationRepository;
 use PHPUnit\Framework\TestCase;
 
 /**

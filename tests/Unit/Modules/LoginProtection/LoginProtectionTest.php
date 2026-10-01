@@ -2,17 +2,17 @@
 /**
  * Unit tests for the Login Protection module class.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Unit\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Unit\Modules\LoginProtection;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginProtection;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\LoginProtection\LoginProtection;
 use PHPUnit\Framework\TestCase;
 
 /**

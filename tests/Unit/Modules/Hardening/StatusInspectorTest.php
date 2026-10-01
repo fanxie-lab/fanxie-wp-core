@@ -2,18 +2,18 @@
 /**
  * Unit tests for StatusInspector.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening;
 
 use Brain\Monkey;
 use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\Hardening\StatusInspector;
-use FanxieLab\WPCore\Modules\Hardening\UploadsProtector;
+use FanxieLab\Warden\Modules\Hardening\StatusInspector;
+use FanxieLab\Warden\Modules\Hardening\UploadsProtector;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -84,7 +84,7 @@ final class StatusInspectorTest extends TestCase {
 		);
 		Functions\when( 'wp_generate_password' )->alias( static fn ( int $l = 12 ) => substr( str_repeat( 'x', $l ), 0, $l ) );
 
-		Filters\expectApplied( 'fanxie_wp_core/hardening/uploads_dir' )
+		Filters\expectApplied( 'fanxie_warden/hardening/uploads_dir' )
 			->zeroOrMoreTimes()
 			->andReturnFirstArg();
 

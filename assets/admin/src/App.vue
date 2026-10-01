@@ -127,7 +127,7 @@ function onModuleKeydown(event: KeyboardEvent, id: string): void {
       :class="{ 'fx-sidebar--open': sidebarOpen }"
     >
       <div class="fx-sidebar__header">
-        <span class="fx-sidebar__brand-plugin">Fanxie WP Core</span>
+        <span class="fx-sidebar__brand-plugin">Fanxie Warden</span>
         <span class="fx-sidebar__version" aria-label="Plugin version">
           v{{ version }}
         </span>

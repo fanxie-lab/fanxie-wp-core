@@ -2,12 +2,12 @@
 /**
  * Static catalog of CSP presets.
  *
- * @package FanxieLab\WPCore\Modules\SecurityHeaders\Csp
+ * @package FanxieLab\Warden\Modules\SecurityHeaders\Csp
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\SecurityHeaders\Csp;
+namespace FanxieLab\Warden\Modules\SecurityHeaders\Csp;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * Presets are intentionally conservative: they expose the domains needed for
  * the tool to operate but never add `'unsafe-inline'` or `'unsafe-eval'`.
  * Integrators can extend the catalog via the
- * `fanxie_wp_core/security_headers/csp_presets` filter.
+ * `fanxie_warden/security_headers/csp_presets` filter.
  */
 final class CspPresetLibrary {
 
@@ -34,7 +34,7 @@ final class CspPresetLibrary {
 		];
 
 		/**
-		 * Filter: fanxie_wp_core/security_headers/csp_presets
+		 * Filter: fanxie_warden/security_headers/csp_presets
 		 *
 		 * Extend or mutate the CSP preset catalog. Handlers receive the fully
 		 * built map (id → Preset) and should return the same shape.
@@ -43,7 +43,7 @@ final class CspPresetLibrary {
 		 *
 		 * @param array<string, Preset> $presets Preset catalog.
 		 */
-		$filtered = apply_filters( 'fanxie_wp_core/security_headers/csp_presets', $presets );
+		$filtered = apply_filters( 'fanxie_warden/security_headers/csp_presets', $presets );
 
 		if ( ! is_array( $filtered ) ) {
 			return $presets;
@@ -77,7 +77,7 @@ final class CspPresetLibrary {
 	private function woocommerce(): Preset {
 		return new Preset(
 			'woocommerce',
-			__( 'WooCommerce (Stripe, PayPal, Square)', 'fanxie-wp-core' ),
+			__( 'WooCommerce (Stripe, PayPal, Square)', 'fanxie-warden' ),
 			[
 				'script-src'  => [
 					'https://js.stripe.com',
@@ -116,7 +116,7 @@ final class CspPresetLibrary {
 	private function ga_gtm(): Preset {
 		return new Preset(
 			'ga-gtm',
-			__( 'Google Analytics / Tag Manager', 'fanxie-wp-core' ),
+			__( 'Google Analytics / Tag Manager', 'fanxie-warden' ),
 			[
 				'script-src'  => [
 					'https://*.google-analytics.com',
@@ -142,7 +142,7 @@ final class CspPresetLibrary {
 	private function meta_pixel(): Preset {
 		return new Preset(
 			'meta-pixel',
-			__( 'Meta Pixel (Facebook)', 'fanxie-wp-core' ),
+			__( 'Meta Pixel (Facebook)', 'fanxie-warden' ),
 			[
 				'script-src'  => [
 					'https://connect.facebook.net',

@@ -2,12 +2,12 @@
 /**
  * Writes protection files into `wp-content/uploads` and probes their effect.
  *
- * @package FanxieLab\WPCore\Modules\Hardening
+ * @package FanxieLab\Warden\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening;
+namespace FanxieLab\Warden\Modules\Hardening;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -37,7 +37,7 @@ final class UploadsProtector {
 	 *
 	 * @var string
 	 */
-	private const INDEX_PHP_CONTENTS = "<?php\n// Silence is golden. Dropped by Fanxie WP Core.\n";
+	private const INDEX_PHP_CONTENTS = "<?php\n// Silence is golden. Dropped by Fanxie Warden.\n";
 
 	/**
 	 * Apache `.htaccess` body used when `block_php_execution` is on.
@@ -46,7 +46,7 @@ final class UploadsProtector {
 	 *
 	 * @var string
 	 */
-	private const HTACCESS_CONTENTS = "# BEGIN Fanxie WP Core — deny PHP execution\n<FilesMatch \"\\.(?:php|phtml|php[3-7]?|phar)$\">\n    <IfModule mod_authz_core.c>\n        Require all denied\n    </IfModule>\n    <IfModule !mod_authz_core.c>\n        Order allow,deny\n        Deny from all\n    </IfModule>\n</FilesMatch>\n# END Fanxie WP Core\n";
+	private const HTACCESS_CONTENTS = "# BEGIN Fanxie Warden — deny PHP execution\n<FilesMatch \"\\.(?:php|phtml|php[3-7]?|phar)$\">\n    <IfModule mod_authz_core.c>\n        Require all denied\n    </IfModule>\n    <IfModule !mod_authz_core.c>\n        Order allow,deny\n        Deny from all\n    </IfModule>\n</FilesMatch>\n# END Fanxie Warden\n";
 
 	/**
 	 * Constructor.
@@ -168,7 +168,7 @@ final class UploadsProtector {
 		$basedir = is_array( $info ) && isset( $info['basedir'] ) ? (string) $info['basedir'] : '';
 
 		/**
-		 * Filter: fanxie_wp_core/hardening/uploads_dir
+		 * Filter: fanxie_warden/hardening/uploads_dir
 		 *
 		 * Override the uploads directory used for protection writes + probes.
 		 *
@@ -176,7 +176,7 @@ final class UploadsProtector {
 		 *
 		 * @param string $basedir Resolved uploads base dir.
 		 */
-		$basedir = (string) apply_filters( 'fanxie_wp_core/hardening/uploads_dir', $basedir );
+		$basedir = (string) apply_filters( 'fanxie_warden/hardening/uploads_dir', $basedir );
 
 		return '' === $basedir ? null : $basedir;
 	}

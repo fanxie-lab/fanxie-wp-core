@@ -2,15 +2,15 @@
 /**
  * Integration tests for the readme/license 404 behaviour.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\Hardening
+ * @package FanxieLab\Warden\Tests\Integration\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\Hardening;
+namespace FanxieLab\Warden\Tests\Integration\Modules\Hardening;
 
-use FanxieLab\WPCore\Modules\Hardening\Runtime\RootHtaccessWriter;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\VersionHider;
+use FanxieLab\Warden\Modules\Hardening\Runtime\RootHtaccessWriter;
+use FanxieLab\Warden\Modules\Hardening\Runtime\VersionHider;
 use WP_UnitTestCase;
 
 /**
@@ -96,7 +96,7 @@ final class ReadmeLicense404Test extends WP_UnitTestCase {
 			$this->assertFileExists( $tmp );
 
 			$contents = (string) file_get_contents( $tmp );
-			$this->assertStringContainsString( '# BEGIN Fanxie WP Core', $contents );
+			$this->assertStringContainsString( '# BEGIN Fanxie Warden', $contents );
 			$this->assertStringContainsString( 'readme.html', $contents );
 			$this->assertStringContainsString( 'license.txt', $contents );
 		} finally {

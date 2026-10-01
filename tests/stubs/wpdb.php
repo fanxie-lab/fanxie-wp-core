@@ -2,7 +2,7 @@
 /**
  * Minimal `wpdb` shim for the unit suite.
  *
- * @package FanxieLab\WPCore\Tests\Stubs
+ * @package FanxieLab\Warden\Tests\Stubs
  */
 
 declare( strict_types=1 );

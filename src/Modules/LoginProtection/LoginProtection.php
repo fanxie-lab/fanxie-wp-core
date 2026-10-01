@@ -2,20 +2,20 @@
 /**
  * Login Protection module entry point.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection
+ * @package FanxieLab\Warden\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection;
+namespace FanxieLab\Warden\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\LoginProtection\Cli\LoginCommand;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\LoginSlugGuard;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\PasswordPolicy;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\SessionTimeout;
-use FanxieLab\WPCore\Modules\ModuleBase;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\LoginProtection\Cli\LoginCommand;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\AttemptLimiter;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\LoginSlugGuard;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\PasswordPolicy;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\SessionTimeout;
+use FanxieLab\Warden\Modules\ModuleBase;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -48,7 +48,7 @@ final class LoginProtection extends ModuleBase {
 	 * Translatable display name.
 	 */
 	public function name(): string {
-		return __( 'Login Protection', 'fanxie-wp-core' );
+		return __( 'Login Protection', 'fanxie-warden' );
 	}
 
 	/**
@@ -110,50 +110,50 @@ final class LoginProtection extends ModuleBase {
 		return array(
 			array(
 				'id'        => 'attempts.enabled',
-				'label'     => __( 'Limit login attempts', 'fanxie-wp-core' ),
+				'label'     => __( 'Limit login attempts', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			),
 			array(
 				'id'        => 'attempts.lock_by_username',
-				'label'     => __( 'Also lock by username', 'fanxie-wp-core' ),
+				'label'     => __( 'Also lock by username', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Off by default: automatic lockouts apply to the attacker IP only. Enabling this also locks the targeted username after repeated failures — which lets anyone who knows a username (for example "admin") lock that account out from rotating IP addresses, a targeted account-lockout denial of service. Manual username bans are always enforced regardless of this setting.', 'fanxie-wp-core' ),
+				'help'      => __( 'Off by default: automatic lockouts apply to the attacker IP only. Enabling this also locks the targeted username after repeated failures — which lets anyone who knows a username (for example "admin") lock that account out from rotating IP addresses, a targeted account-lockout denial of service. Manual username bans are always enforced regardless of this setting.', 'fanxie-warden' ),
 			),
 			array(
 				'id'        => 'attempts.trust_proxy',
-				'label'     => __( 'Trust reverse-proxy header for client IP', 'fanxie-wp-core' ),
+				'label'     => __( 'Trust reverse-proxy header for client IP', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
 			),
 			array(
 				'id'        => 'attempts.proxy_header',
-				'label'     => __( 'Proxy IP header', 'fanxie-wp-core' ),
+				'label'     => __( 'Proxy IP header', 'fanxie-warden' ),
 				'type'      => 'text',
 				'default'   => 'HTTP_X_FORWARDED_FOR',
 				'sanitizer' => 'text',
 			),
 			array(
 				'id'                 => 'attempts.allowlist',
-				'label'              => __( 'Trusted IP allowlist', 'fanxie-wp-core' ),
+				'label'              => __( 'Trusted IP allowlist', 'fanxie-warden' ),
 				'type'               => 'textarea',
 				'default'            => array(),
 				'sanitizer_callback' => array( $this, 'sanitize_ip_list' ),
 			),
 			array(
 				'id'                 => 'attempts.tiers',
-				'label'              => __( 'Lockout tiers', 'fanxie-wp-core' ),
+				'label'              => __( 'Lockout tiers', 'fanxie-warden' ),
 				'type'               => 'textarea',
 				'default'            => array(),
 				'sanitizer_callback' => array( $this, 'sanitize_tiers' ),
 			),
 			array(
 				'id'        => 'attempts.log_retention_days',
-				'label'     => __( 'Log retention (days)', 'fanxie-wp-core' ),
+				'label'     => __( 'Log retention (days)', 'fanxie-warden' ),
 				'type'      => 'number',
 				'default'   => 30,
 				'sanitizer' => 'absint',
@@ -161,14 +161,14 @@ final class LoginProtection extends ModuleBase {
 
 			array(
 				'id'        => 'hide_login.enabled',
-				'label'     => __( 'Hide wp-login.php', 'fanxie-wp-core' ),
+				'label'     => __( 'Hide wp-login.php', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
 			),
 			array(
 				'id'                 => 'hide_login.slug',
-				'label'              => __( 'Custom login slug', 'fanxie-wp-core' ),
+				'label'              => __( 'Custom login slug', 'fanxie-warden' ),
 				'type'               => 'text',
 				'default'            => '',
 				'sanitizer_callback' => array( $this, 'sanitize_slug' ),
@@ -176,35 +176,35 @@ final class LoginProtection extends ModuleBase {
 
 			array(
 				'id'        => 'passwords.enforce',
-				'label'     => __( 'Force strong passwords', 'fanxie-wp-core' ),
+				'label'     => __( 'Force strong passwords', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
 			),
 			array(
 				'id'        => 'passwords.min_length',
-				'label'     => __( 'Minimum length', 'fanxie-wp-core' ),
+				'label'     => __( 'Minimum length', 'fanxie-warden' ),
 				'type'      => 'number',
 				'default'   => 12,
 				'sanitizer' => 'absint',
 			),
 			array(
 				'id'        => 'passwords.require_mixed_case',
-				'label'     => __( 'Require mixed case', 'fanxie-wp-core' ),
+				'label'     => __( 'Require mixed case', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			),
 			array(
 				'id'        => 'passwords.require_number',
-				'label'     => __( 'Require a number', 'fanxie-wp-core' ),
+				'label'     => __( 'Require a number', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			),
 			array(
 				'id'        => 'passwords.require_symbol',
-				'label'     => __( 'Require a symbol', 'fanxie-wp-core' ),
+				'label'     => __( 'Require a symbol', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
@@ -212,14 +212,14 @@ final class LoginProtection extends ModuleBase {
 
 			array(
 				'id'        => 'sessions.enabled',
-				'label'     => __( 'Enforce session timeout', 'fanxie-wp-core' ),
+				'label'     => __( 'Enforce session timeout', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
 			),
 			array(
 				'id'                 => 'sessions.timeouts',
-				'label'              => __( 'Per-role timeouts (minutes)', 'fanxie-wp-core' ),
+				'label'              => __( 'Per-role timeouts (minutes)', 'fanxie-warden' ),
 				'type'               => 'textarea',
 				'default'            => array(),
 				'sanitizer_callback' => array( $this, 'sanitize_timeouts' ),

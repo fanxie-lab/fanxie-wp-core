@@ -2,16 +2,16 @@
 /**
  * REST controller for receiving CSP violation reports.
  *
- * @package FanxieLab\WPCore\Modules\SecurityHeaders\Csp
+ * @package FanxieLab\Warden\Modules\SecurityHeaders\Csp
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\SecurityHeaders\Csp;
+namespace FanxieLab\Warden\Modules\SecurityHeaders\Csp;
 
-use FanxieLab\WPCore\Modules\SecurityHeaders\SecurityHeaders;
-use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRecord;
-use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
+use FanxieLab\Warden\Modules\SecurityHeaders\SecurityHeaders;
+use FanxieLab\Warden\Modules\SecurityHeaders\ViolationRecord;
+use FanxieLab\Warden\Modules\SecurityHeaders\ViolationRepository;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -19,7 +19,7 @@ use WP_REST_Server;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST endpoint: `POST /fanxie-wp-core/v1/csp-report`.
+ * REST endpoint: `POST /fanxie-warden/v1/csp-report`.
  *
  * Browsers post CSP violation reports anonymously — there is no nonce, no
  * capability check. We compensate with a strict per-IP rate limit and a
@@ -39,7 +39,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class CspReportController {
 
-	public const ROUTE_NAMESPACE = 'fanxie-wp-core/v1';
+	public const ROUTE_NAMESPACE = 'fanxie-warden/v1';
 	public const ROUTE           = '/csp-report';
 
 	/**
@@ -97,7 +97,7 @@ final class CspReportController {
 		// --- Rate limit check ----------------------------------------------------
 		[ $window, $ceiling ] = $this->resolve_rate_limit();
 		$ip                   = $this->client_ip();
-		$key                  = 'fanxie_wp_core_csp_rate_' . sha1( $ip );
+		$key                  = 'fanxie_warden_csp_rate_' . sha1( $ip );
 
 		$hits = (int) get_transient( $key );
 
@@ -168,7 +168,7 @@ final class CspReportController {
 	 */
 	private function resolve_rate_limit(): array {
 		/**
-		 * Filter: fanxie_wp_core/security_headers/rate_limit
+		 * Filter: fanxie_warden/security_headers/rate_limit
 		 *
 		 * Override the CSP report endpoint's rate limit as `[window, ceiling]`.
 		 *
@@ -177,7 +177,7 @@ final class CspReportController {
 		 * @param array{0:int,1:int} $limits Default `[60, 60]` — 60 reports per 60s per IP.
 		 */
 		$filtered = apply_filters(
-			'fanxie_wp_core/security_headers/rate_limit',
+			'fanxie_warden/security_headers/rate_limit',
 			[ self::DEFAULT_WINDOW, self::DEFAULT_CEILING ]
 		);
 

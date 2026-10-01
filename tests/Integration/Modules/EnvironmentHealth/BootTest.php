@@ -2,18 +2,18 @@
 /**
  * Integration tests for Environment Health boot wiring and the scheduled scan.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Tests\Integration\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Tests\Integration\Modules\EnvironmentHealth;
 
-use FanxieLab\WPCore\Modules\EnvironmentHealth\EnvironmentHealth;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\WporgScanner;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\StatusInspector;
-use FanxieLab\WPCore\Modules\ModuleRegistry;
-use FanxieLab\WPCore\Plugin;
+use FanxieLab\Warden\Modules\EnvironmentHealth\EnvironmentHealth;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\WporgScanner;
+use FanxieLab\Warden\Modules\EnvironmentHealth\StatusInspector;
+use FanxieLab\Warden\Modules\ModuleRegistry;
+use FanxieLab\Warden\Plugin;
 
 /**
  * Covers the module's place in the plugin container, its option round-trip,

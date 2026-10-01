@@ -1,0 +1,1393 @@
+# Copyright (C) 2026 Fanxie Lab
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Fanxie Warden 0.1.0-dev\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/fanxie-warden\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-01T18:40:08+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: fanxie-warden\n"
+
+#. Plugin Name of the plugin
+#: fanxie-warden.php
+#: src/Admin/SettingsPage.php:129
+#: src/Admin/SettingsPage.php:141
+#: src/Admin/SettingsPage.php:195
+msgid "Fanxie Warden"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: fanxie-warden.php
+msgid "https://fanxielab.com/plugins/fanxie-warden"
+msgstr ""
+
+#. Description of the plugin
+#: fanxie-warden.php
+msgid "Modular WordPress security, hardening, maintenance, and performance toolkit by Fanxie Lab."
+msgstr ""
+
+#. Author of the plugin
+#: fanxie-warden.php
+msgid "Fanxie Lab"
+msgstr ""
+
+#. Author URI of the plugin
+#: fanxie-warden.php
+msgid "https://fanxielab.com"
+msgstr ""
+
+#. translators: 1: required PHP version, 2: current PHP version
+#: fanxie-warden.php:57
+#, php-format
+msgid "Fanxie Warden requires PHP %1$s or higher. You are running PHP %2$s. The plugin is inactive until PHP is upgraded."
+msgstr ""
+
+#. translators: 1: required WordPress version, 2: current WordPress version
+#: fanxie-warden.php:78
+#, php-format
+msgid "Fanxie Warden requires WordPress %1$s or higher. You are running WordPress %2$s. The plugin is inactive until WordPress is upgraded."
+msgstr ""
+
+#: fanxie-warden.php:106
+msgid "Fanxie Warden: Composer dependencies are missing. Run `composer install` inside the plugin directory."
+msgstr ""
+
+#: src/Admin/AjaxRouter.php:121
+msgid "Nonce verification failed."
+msgstr ""
+
+#: src/Admin/AjaxRouter.php:131
+#: src/Admin/AjaxRouter.php:177
+msgid "You do not have permission to perform this action."
+msgstr ""
+
+#: src/Admin/AjaxRouter.php:144
+msgid "Missing sub-action."
+msgstr ""
+
+#: src/Admin/AjaxRouter.php:165
+msgid "Unknown sub-action."
+msgstr ""
+
+#: src/Admin/AjaxRouter.php:189
+msgid "An unexpected error occurred."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:130
+msgid "FX Core"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:142
+msgid "Settings"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:156
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:200
+msgid "Vite dev server connected."
+msgstr ""
+
+#. translators: %s: Vite dev server URL (e.g. http://localhost:5173)
+#: src/Admin/SettingsPage.php:204
+#, php-format
+msgid "HMR active at %s."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:216
+msgid "Admin UI build missing — run `npm run build` in `assets/admin/`."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:229
+msgid "Fanxie Warden requires JavaScript to configure. See the documentation for alternative options."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/AjaxController.php:125
+#: src/Modules/Hardening/AjaxController.php:90
+#: src/Modules/SecurityHeaders/AjaxController.php:79
+msgid "Settings payload must be an object."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:69
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:166
+msgid "Environment Health"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:97
+msgid "No health report has been generated yet."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:99
+msgid "Run the checks"
+msgstr ""
+
+#. translators: 1: status label, e.g. "Critical". 2: number of checks with that status.
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:116
+#, php-format
+msgid "%1$s: %2$d"
+msgstr ""
+
+#. translators: 1: health check name. 2: one-line summary of the finding.
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:134
+#, php-format
+msgid "%1$s — %2$s"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:147
+msgid "View all checks"
+msgstr ""
+
+#. translators: %s: human-readable age of the cached report, e.g. "12 minutes".
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:151
+#, php-format
+msgid "Last measured %s ago."
+msgstr ""
+
+#. translators: %d: number of checks needing immediate attention.
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:172
+#, php-format
+msgid "%d check needs attention now."
+msgid_plural "%d checks need attention now."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of checks worth reviewing.
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:179
+#, php-format
+msgid "%d check is worth a look."
+msgid_plural "%d checks are worth a look."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:184
+msgid "Nothing is wrong, but some checks could not be completed."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:187
+msgid "Everything checks out."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:232
+msgid "Critical"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:233
+msgid "Warning"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:234
+msgid "Unknown"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/DashboardWidget.php:235
+msgid "Passing"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:245
+msgid "Check software versions"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:249
+msgid "WordPress, PHP, the database server, the TLS certificate, and whether the site is served over HTTPS."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:253
+msgid "Check scheduled tasks"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:257
+msgid "Detects a wedged cron lock and events that are running late."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:261
+msgid "Check debug settings"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:265
+msgid "Finds debug switches left on in production, including a debug log written inside the web root."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:269
+msgid "Check plugins and themes"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:273
+msgid "Inactive plugins, unused themes, and — when the wordpress.org check below is on — plugins that look abandoned."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:277
+msgid "Check plugin freshness on wordpress.org"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:281
+msgid "Sends the slug of each active plugin to api.wordpress.org to read its last-updated date, a few at a time on a daily schedule, cached for 24 hours. Nothing about you or your visitors is sent. Turn this off to stop the requests and discard everything already cached."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:285
+msgid "Check the TLS certificate"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:289
+msgid "Opens one short-lived connection to this site to read its certificate expiry date, at most twice a day. Hosts that block outbound connections will report \"unknown\" rather than a false alarm."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:293
+msgid "Show the dashboard widget"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:300
+msgid "Warn this many days before the certificate expires"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:301
+msgid "Most certificate authorities renew automatically about a month out, so 30 days is a good default."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:306
+msgid "Treat an event as overdue after this many minutes"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:307
+msgid "On a quiet site the page-load scheduler can legitimately run late, so keep this generous enough not to cry wolf."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:312
+msgid "Warn when a plugin has not been updated in this many days"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:318
+msgid "Flag as critical after this many days without an update"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:319
+msgid "Must be at least the warning threshold — a critical window below the warning window would mean nothing was ever flagged critical. A lower value is raised to match."
+msgstr ""
+
+#. translators: 1: minimum accepted value. 2: maximum accepted value.
+#: src/Modules/EnvironmentHealth/EnvironmentHealth.php:344
+#, php-format
+msgid "Accepted range: %1$d–%2$d. Values outside it are clamped to the nearest limit."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:130
+msgid "System crontab entry"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:136
+msgid "Disable the page-load scheduler"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:143
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:157
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:170
+msgid "WP-Cron configuration"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:146
+msgid "The page-load scheduler is off and nothing is running the queue in its place."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:147
+msgid "Defining DISABLE_WP_CRON is only safe when a real system cron calls wp-cron.php. Events are overdue, so that call is either missing or failing. Add the crontab entry below, or remove the constant to fall back to the page-load scheduler."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:160
+msgid "Driven by a real system cron — the recommended setup."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:173
+msgid "Scheduled work runs on visitor page loads."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:174
+msgid "This is the WordPress default and it works. On a busy site it adds latency to a random visitor’s request; on a quiet one, events can be hours late because nobody visited. Moving to a system crontab fixes both — apply the two snippets together."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:190
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:207
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:220
+msgid "Cron lock"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:192
+msgid "Not held"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:193
+msgid "No cron run is in progress."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:209
+msgid "Run in progress"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:210
+msgid "A cron run is currently in progress."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:223
+msgid "A cron run started but never finished."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:224
+msgid "WordPress sets a lock when it begins processing the queue and clears it on completion. A lock this old means the run was killed part-way — usually a PHP fatal error, a memory limit, or a request timeout in a scheduled task. Check the PHP error log for what ran last, then let the lock expire or clear the doing_cron transient."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:229
+msgid "Clear the stuck lock (WP-CLI)"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:248
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:271
+msgid "Overdue scheduled events"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:251
+msgid "Every scheduled event is running on time."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:265
+msgid "WordPress’s own maintenance events are late, which means the scheduler is not running at all — update checks, transient cleanup, and trash emptying have all stopped. Wire wp-cron.php to a system crontab."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:266
+msgid "Core’s own events are on time, so the scheduler itself works. One or more plugin tasks are late — usually a task that fatals, or one scheduled with a hook nothing listens to any more."
+msgstr ""
+
+#. translators: 1: number of overdue events. 2: overdue threshold in minutes.
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:276
+#, php-format
+msgid "%1$d event is more than %2$d minutes overdue."
+msgid_plural "%1$d events are more than %2$d minutes overdue."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:290
+msgid "Inspect the queue (WP-CLI)"
+msgstr ""
+
+#. translators: %s: human-readable time difference, e.g. "2 hours".
+#: src/Modules/EnvironmentHealth/Runtime/CronInspector.php:370
+#, php-format
+msgid "Held for %s"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:65
+msgid "WP_DEBUG"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:69
+msgid "Debug mode is on."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:70
+msgid "Debug mode is off."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:72
+msgid "WP_DEBUG turns on PHP notices and deprecation warnings across WordPress. That is exactly right on a staging site and wrong on a live one: it costs performance and, combined with any display setting, leaks file paths and query details."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:74
+msgid "Turn debug mode off"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:93
+msgid "WP_DEBUG_DISPLAY"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:97
+msgid "PHP errors are being printed into pages visitors can see."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:98
+msgid "Errors are not rendered into page output."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:100
+msgid "A single notice can expose absolute server paths, table prefixes, and fragments of SQL — everything an attacker needs to aim the next attempt. Log errors instead of displaying them."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:106
+msgid "Stop printing errors to the page"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:121
+msgid "Debug log exposure"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:131
+msgid "Debug logging is off."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:149
+msgid "The debug log is written outside the web root."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:163
+msgid "Move the log outside the web root"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:168
+msgid "Deny the log in nginx"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:179
+msgid "A debug log exists inside the web root and may be downloadable."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:180
+msgid "Debug logging writes inside the web root."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:182
+msgid "The default log path is public knowledge, so anyone can try to fetch it. Debug logs routinely contain absolute paths, query strings, and occasionally credentials passed to a failing function. Move it above the document root, or deny it at the web-server level."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:183
+msgid "No log file has been written yet, but the first error will create one at a publicly guessable path. Move the destination above the document root before that happens."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:202
+msgid "SCRIPT_DEBUG"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:206
+msgid "WordPress is loading unminified core scripts and styles."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:207
+msgid "Minified core assets are in use."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:209
+msgid "This is a core-development setting. It roughly doubles the weight of every admin screen and the block editor, and offers a visitor nothing."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:211
+msgid "Use minified assets"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:226
+msgid "PHP display_errors"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:230
+msgid "PHP is configured to print errors into its output."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:231
+msgid "PHP does not print errors into its output."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:233
+msgid "This is set in php.ini or by your host, so WordPress constants alone may not switch it off — errors raised before WordPress boots will still reach the browser. Change it in php.ini, or in a .user.ini if your host allows one."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:240
+msgid "Log errors instead of showing them"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:264
+msgid "PHP error_reporting"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:268
+msgid "Notices, warnings, and deprecations are being reported."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:269
+msgid "Only significant errors are reported."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:271
+msgid "Harmless on its own — nothing is exposed while display_errors is off. It does mean a busy site can fill a disk with log lines about deprecations in themes and plugins you do not maintain. Narrow the mask in production, or make sure log rotation is in place."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:278
+msgid "Quieten development-only diagnostics"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:371
+msgid "Enabled"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/DebugInspector.php:371
+msgid "Disabled"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:129
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:146
+msgid "Inactive plugins"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:132
+msgid "Every installed plugin is in use."
+msgstr ""
+
+#. translators: 1: number of inactive plugins, 2: comma-separated list of those plugin names (e.g. "Akismet, Hello Dolly").
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:152
+#, php-format
+msgid "%1$d installed plugin is not active: %2$s."
+msgid_plural "%1$d installed plugins are not active: %2$s."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of inactive plugins.
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:163
+#, php-format
+msgid "%d installed plugin is not active."
+msgid_plural "%d installed plugins are not active."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:166
+msgid "A deactivated plugin still has its PHP files on disk, and a vulnerability in a directly-reachable file does not care whether the plugin is switched on. Deactivated code also stops being watched: it is the code people forget to update. Delete what you are not using; the plugin can always be reinstalled."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:168
+msgid "Review inactive plugins"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:222
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:240
+msgid "Inactive themes"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:225
+msgid "Only the active theme and a default fallback are installed."
+msgstr ""
+
+#. translators: 1: number of inactive non-default themes, 2: comma-separated list of those theme names (e.g. "Twenty Twenty-Three, Twenty Twenty-Two").
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:246
+#, php-format
+msgid "%1$d unused theme is installed: %2$s."
+msgid_plural "%1$d unused themes are installed: %2$s."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of inactive non-default themes.
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:257
+#, php-format
+msgid "%d unused theme is installed."
+msgid_plural "%d unused themes are installed."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:260
+msgid "Unused themes are attack surface with no upside, and their template files have historically been a source of vulnerabilities. Keep the active theme, its parent if it has one, and one current WordPress default as a recovery fallback — delete the rest."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:262
+msgid "Review installed themes"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:283
+msgid "Abandoned plugins"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:292
+msgid "The wordpress.org freshness check is switched off."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:293
+msgid "No request is made to wordpress.org while this setting is off. Turn it on to be told when an active plugin has gone a year or more without an update."
+msgstr ""
+
+#. translators: 1: number of stale active plugins, 2: comma-separated list of those plugin names (e.g. "Contact Form 7, Akismet").
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:370
+#, php-format
+msgid "%1$d active plugin has not been updated in over a year: %2$s."
+msgid_plural "%1$d active plugins have not been updated in over a year: %2$s."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of stale active plugins.
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:381
+#, php-format
+msgid "%d active plugin has not been updated in over a year."
+msgid_plural "%d active plugins have not been updated in over a year."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:389
+msgid "An unmaintained plugin will not be patched when the next vulnerability is found in it, and it will eventually break on a new PHP or WordPress release. Look for a maintained alternative before you need one urgently. Premium plugins are excluded from this check — wordpress.org has no record of them."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:391
+msgid "Review active plugins"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:404
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:264
+msgid "Not checked yet."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:405
+msgid "Plugins are looked up on wordpress.org a few at a time, on a schedule, so a large site never fires dozens of requests at once. Results appear here as each batch completes."
+msgstr ""
+
+#. translators: %d: number of plugins still queued for a wordpress.org lookup.
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:420
+#, php-format
+msgid "No abandoned plugins so far; %d still to check."
+msgid_plural "No abandoned plugins so far; %d still to check."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:428
+msgid "Every active plugin listed on wordpress.org has been updated within the last year."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/PluginThemeInspector.php:463
+msgctxt "separator between item names in a summary sentence"
+msgid ", "
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:78
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:92
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:125
+msgid "WordPress version"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:81
+msgid "Could not determine the latest WordPress release."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:82
+msgid "WordPress has not yet stored the result of its own update check for this site, so there is nothing to compare against. Visit Dashboard → Updates to run one."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:95
+msgid "Running the latest WordPress release."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:109
+msgid "A maintenance or security release is available for your branch."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:112
+msgid "One feature release behind."
+msgstr ""
+
+#. translators: %d: number of WordPress feature releases the site is behind.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:117
+#, php-format
+msgid "%d feature release behind."
+msgid_plural "%d feature releases behind."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: latest available WordPress version.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:131
+#, php-format
+msgid "WordPress %s is available. Core updates carry security fixes; apply them on a staging copy first if the site is business-critical."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:135
+msgid "Open Dashboard → Updates"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:152
+msgid "PHP supported versions"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:158
+msgid "PHP version"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:161
+msgid "PHP"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:178
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:202
+msgid "Database version"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:181
+msgid "Could not read the database server version."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:182
+msgid "The database driver did not report a version string. This is normal on some managed or proxied database services."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:194
+msgid "MariaDB"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:194
+msgid "MySQL"
+msgstr ""
+
+#. translators: %s: database server name, e.g. MySQL.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:213
+#, php-format
+msgid "%s release lifecycle"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:224
+msgid "SSL certificate"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:233
+msgid "Certificate checking is switched off."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:248
+msgid "Could not determine this site’s hostname."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:265
+msgid "The certificate is read on a schedule and on demand, never while a page is loading. Use Re-run checks to read it now."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:281
+msgid "Couldn’t check — this host may block outbound connections."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:282
+msgid "We could not open a TLS connection back to this site to read its certificate. That is common on hosts that firewall outbound traffic, and it does not by itself mean anything is wrong with your certificate. Check it from outside the server to be sure."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:284
+msgid "Test this site with SSL Labs"
+msgstr ""
+
+#. translators: %s: certificate expiry date.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:305
+#, php-format
+msgid "Certificate expired on %s."
+msgstr ""
+
+#. translators: %d: number of days until the certificate expires.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:312
+#, php-format
+msgid "Certificate expires in %d day."
+msgid_plural "Certificate expires in %d days."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: certificate expiry date.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:319
+#, php-format
+msgid "Certificate valid until %s."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:333
+msgid "Most certificate authorities renew automatically about a month out. If yours does not, renew now — an expired certificate makes the whole site unreachable in every modern browser."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:364
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:380
+msgid "HTTPS"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:367
+msgid "Site and home URLs both use HTTPS."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:384
+msgid "Only one of the site and home URLs uses HTTPS."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:385
+msgid "This site is not served over HTTPS."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:386
+msgid "Passwords, cookies, and admin sessions travel in the clear without HTTPS, and mixed HTTP/HTTPS URLs break logins in subtle ways. Obtain a certificate, then update both URLs under Settings → General."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:391
+msgid "Force HTTPS in wp-admin"
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:393
+msgid "Open Settings → General"
+msgstr ""
+
+#. translators: 1: software name, e.g. PHP. 2: branch number, e.g. 8.1. 3: end-of-life date.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:519
+#, php-format
+msgid "%1$s %2$s reached end of life on %3$s and receives no further security fixes."
+msgstr ""
+
+#. translators: 1: software name, e.g. PHP. 2: branch number. 3: end of security support date.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:528
+#, php-format
+msgid "%1$s %2$s is in security-only support until %3$s."
+msgstr ""
+
+#. translators: 1: software name. 2: branch number. 3: end of support date.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:538
+#, php-format
+msgid "%1$s %2$s is supported, but support ends on %3$s."
+msgstr ""
+
+#. translators: 1: software name. 2: branch number. 3: end of support date.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:547
+#, php-format
+msgid "%1$s %2$s is fully supported until %3$s."
+msgstr ""
+
+#. translators: 1: software name. 2: branch number.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:556
+#, php-format
+msgid "%1$s %2$s is not in our support matrix — we cannot say whether it is still supported."
+msgstr ""
+
+#. translators: %s: date the support matrix was last reviewed.
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:572
+#, php-format
+msgid "Our support matrix was last reviewed on %s. A release newer than that will show as unknown until the matrix is updated — that is deliberate, so you are never shown a guess dressed up as a verdict."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:578
+msgid "Known vulnerabilities found after the end-of-life date are never patched on this branch. Upgrading is the only fix; there is no configuration that makes an unsupported runtime safe."
+msgstr ""
+
+#: src/Modules/EnvironmentHealth/Runtime/VersionInspector.php:582
+msgid "Security fixes still arrive, but bug fixes have stopped. Plan the upgrade before the security window closes rather than after."
+msgstr ""
+
+#: src/Modules/Hardening/AjaxController.php:129
+#: src/Modules/Hardening/AjaxController.php:223
+msgid "A fix target is required."
+msgstr ""
+
+#: src/Modules/Hardening/AjaxController.php:134
+#: src/Modules/Hardening/AjaxController.php:228
+msgid "Unknown fix target."
+msgstr ""
+
+#: src/Modules/Hardening/AjaxController.php:314
+msgid "X-Powered-By header is still present — your web server or php.ini is injecting it."
+msgstr ""
+
+#: src/Modules/Hardening/AjaxController.php:320
+msgid "Uploads directory is still listable over HTTP."
+msgstr ""
+
+#: src/Modules/Hardening/AjaxController.php:326
+msgid "PHP files in uploads still execute — server configuration (likely nginx) needs updating."
+msgstr ""
+
+#: src/Modules/Hardening/AjaxController.php:331
+msgid "/readme.html is still reachable — server rules are not being honoured."
+msgstr ""
+
+#: src/Modules/Hardening/AjaxController.php:334
+msgid "/license.txt is still reachable — server rules are not being honoured."
+msgstr ""
+
+#: src/Modules/Hardening/AjaxController.php:342
+msgid "nginx detected — drop the provided server snippet into your vhost to block PHP execution in uploads."
+msgstr ""
+
+#: src/Modules/Hardening/AjaxController.php:359
+#: src/Modules/SecurityHeaders/AjaxController.php:240
+msgid "Inactive"
+msgstr ""
+
+#. translators: %d: number of active hardening toggles.
+#: src/Modules/Hardening/AjaxController.php:366
+#, php-format
+msgid "%d safeguard active"
+msgid_plural "%d safeguards active"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Modules/Hardening/Hardening.php:65
+msgid "Hardening"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:143
+msgid "Block author enumeration"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:147
+msgid "Block guest requests to `/?author=N` that leak login slugs."
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:151
+msgid "Block REST users endpoint for guests"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:160
+msgid "XML-RPC mode"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:165
+msgid "Disabled (recommended)"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:166
+msgid "Restrict dangerous methods"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:167
+msgid "Restrict by IP allowlist"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:168
+msgid "Off (no changes)"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:173
+msgid "XML-RPC allowed IPs"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:182
+msgid "Remove X-Powered-By header"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:189
+msgid "Remove WordPress generator meta"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:196
+msgid "Remove WordPress generator from feeds"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:203
+msgid "Strip ?ver= cache-busters from assets"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:210
+msgid "Block /readme.html and /license.txt"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:219
+msgid "Drop index.php in uploads (suppress directory listing)"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:226
+msgid "Block PHP execution in uploads"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:235
+msgid "Obfuscate login error messages"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:244
+msgid "Disable theme/plugin editor at runtime"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:248
+msgid "Prefer adding DISALLOW_FILE_EDIT to wp-config.php. This toggle is a runtime fallback."
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:254
+msgid "Disable Application Passwords"
+msgstr ""
+
+#: src/Modules/Hardening/Hardening.php:258
+msgid "Only recommended when no Application Passwords exist on the site."
+msgstr ""
+
+#: src/Modules/Hardening/Runtime/LoginErrorObfuscator.php:93
+msgid "Invalid username or password."
+msgstr ""
+
+#: src/Modules/Hardening/Runtime/UserEnumerationGuard.php:116
+#: src/Modules/Hardening/Runtime/VersionHider.php:169
+#: src/Modules/LoginProtection/Runtime/LoginSlugGuard.php:504
+msgid "Not Found"
+msgstr ""
+
+#: src/Modules/Hardening/Runtime/UserEnumerationGuard.php:151
+msgid "Sorry, you are not allowed to list users."
+msgstr ""
+
+#: src/Modules/Hardening/Runtime/XmlRpcGate.php:109
+msgid "XML-RPC services are disabled on this site."
+msgstr ""
+
+#: src/Modules/LoginProtection/AjaxController.php:110
+msgid "Configuration payload must be an object."
+msgstr ""
+
+#: src/Modules/LoginProtection/AjaxController.php:121
+msgid "Choose a custom login slug that is not a reserved WordPress path."
+msgstr ""
+
+#: src/Modules/LoginProtection/AjaxController.php:215
+msgid "Enter a valid IP address to ban."
+msgstr ""
+
+#: src/Modules/LoginProtection/AjaxController.php:305
+msgid "The ban subject must be an IP address or a username."
+msgstr ""
+
+#: src/Modules/LoginProtection/AjaxController.php:324
+msgid "A subject value is required."
+msgstr ""
+
+#: src/Modules/LoginProtection/AjaxController.php:410
+msgid "Your WordPress login URL has changed"
+msgstr ""
+
+#: src/Modules/LoginProtection/AjaxController.php:413
+msgid "The custom login URL for your site has been removed. You can sign in at the default WordPress login screen."
+msgstr ""
+
+#. translators: %s: the new secret login URL.
+#: src/Modules/LoginProtection/AjaxController.php:417
+#, php-format
+msgid "The custom login URL for your site has changed. Bookmark this address to sign in: %s"
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:75
+msgid "Hide-login is not active: no custom login slug is configured."
+msgstr ""
+
+#. translators: %s: default login URL.
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:79
+#, php-format
+msgid "The default login URL is in use: %s"
+msgstr ""
+
+#. translators: %s: the effective login slug.
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:89
+#, php-format
+msgid "Effective login slug: %s"
+msgstr ""
+
+#. translators: %s: where the slug comes from.
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:96
+#, php-format
+msgid "Source: %s"
+msgstr ""
+
+#. translators: %s: the full hidden-login URL.
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:103
+#, php-format
+msgid "Login URL: %s"
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:110
+msgid "Hide-login is disabled (the \"Hide wp-login.php\" toggle is off), so this slug is not being enforced."
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:117
+msgid "Login slug revealed."
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:151
+msgid "A subject (IP address or username) is required."
+msgstr ""
+
+#. translators: %s: the subject (IP address or username).
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:172
+#, php-format
+msgid "Cleared lockout transients for \"%s\" (IP and username dimensions)."
+msgstr ""
+
+#. translators: %d: number of ban rows removed.
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:179
+#, php-format
+msgid "Removed %d persistent ban."
+msgid_plural "Removed %d persistent bans."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: the subject (IP address or username).
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:187
+#, php-format
+msgid "Unlocked \"%s\"."
+msgstr ""
+
+#. translators: %s: the subject (IP address or username).
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:202
+#, php-format
+msgid "Dry run for \"%s\" — nothing will be changed."
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:212
+msgid "IP lockout transient"
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:213
+msgid "Username lockout transient"
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:214
+msgid "IP ban"
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:215
+msgid "Username ban"
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:218
+msgid "Run without --dry-run to clear the items marked present."
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:220
+msgid "Nothing is currently locked or banned for this subject."
+msgstr ""
+
+#. translators: %s: the subject (IP address or username).
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:226
+#, php-format
+msgid "Dry run complete for \"%s\"."
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:240
+msgid "present (would be cleared)"
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:241
+msgid "none"
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:256
+msgid "FX_CORE_LOGIN_SLUG constant (wp-config.php)"
+msgstr ""
+
+#: src/Modules/LoginProtection/Cli/LoginCommand.php:259
+msgid "stored plugin settings"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:51
+msgid "Login Protection"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:113
+msgid "Limit login attempts"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:120
+msgid "Also lock by username"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:124
+msgid "Off by default: automatic lockouts apply to the attacker IP only. Enabling this also locks the targeted username after repeated failures — which lets anyone who knows a username (for example \"admin\") lock that account out from rotating IP addresses, a targeted account-lockout denial of service. Manual username bans are always enforced regardless of this setting."
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:128
+msgid "Trust reverse-proxy header for client IP"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:135
+msgid "Proxy IP header"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:142
+msgid "Trusted IP allowlist"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:149
+msgid "Lockout tiers"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:156
+msgid "Log retention (days)"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:164
+msgid "Hide wp-login.php"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:171
+msgid "Custom login slug"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:179
+msgid "Force strong passwords"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:186
+msgid "Minimum length"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:193
+msgid "Require mixed case"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:200
+msgid "Require a number"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:207
+msgid "Require a symbol"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:215
+msgid "Enforce session timeout"
+msgstr ""
+
+#: src/Modules/LoginProtection/LoginProtection.php:222
+msgid "Per-role timeouts (minutes)"
+msgstr ""
+
+#: src/Modules/LoginProtection/Runtime/AttemptLimiter.php:88
+msgid "Too many failed attempts. Try again later."
+msgstr ""
+
+#. translators: %d: minimum length
+#: src/Modules/LoginProtection/Runtime/PasswordPolicy.php:183
+#, php-format
+msgid "Password must be at least %d characters."
+msgstr ""
+
+#: src/Modules/LoginProtection/Runtime/PasswordPolicy.php:187
+msgid "Password must include both uppercase and lowercase letters."
+msgstr ""
+
+#: src/Modules/LoginProtection/Runtime/PasswordPolicy.php:191
+msgid "Password must include at least one number."
+msgstr ""
+
+#: src/Modules/LoginProtection/Runtime/PasswordPolicy.php:195
+msgid "Password must include at least one symbol."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/AjaxController.php:99
+msgid "Preset id is required."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/AjaxController.php:104
+msgid "The requested preset was not found."
+msgstr ""
+
+#. translators: 1: header count, 2: CSP mode label.
+#: src/Modules/SecurityHeaders/AjaxController.php:248
+#, php-format
+msgid "%1$d header · CSP %2$s"
+msgid_plural "%1$d headers · CSP %2$s"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: header count.
+#: src/Modules/SecurityHeaders/AjaxController.php:257
+#, php-format
+msgid "%d header active"
+msgid_plural "%d headers active"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: CSP mode label.
+#: src/Modules/SecurityHeaders/AjaxController.php:264
+#, php-format
+msgid "CSP %s only"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/AjaxController.php:276
+msgid "Report-Only"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/AjaxController.php:277
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:270
+msgid "Enforce"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/AjaxController.php:278
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:268
+msgid "Off"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/Csp/CspPresetLibrary.php:80
+msgid "WooCommerce (Stripe, PayPal, Square)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/Csp/CspPresetLibrary.php:119
+msgid "Google Analytics / Tag Manager"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/Csp/CspPresetLibrary.php:145
+msgid "Meta Pixel (Facebook)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:69
+msgid "Security Headers"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:151
+msgid "Enable Strict-Transport-Security"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:155
+msgid "Off by default. Only enable on a site that is fully and permanently HTTPS — once cached, browsers will refuse plain HTTP for the configured max-age."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:159
+msgid "HSTS max-age (seconds)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:166
+msgid "Include subdomains"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:175
+msgid "Enable X-Frame-Options"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:182
+msgid "X-Frame-Options value"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:195
+msgid "Enable X-Content-Type-Options: nosniff"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:204
+msgid "Enable Referrer-Policy"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:211
+msgid "Referrer-Policy value"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:230
+msgid "Enable Permissions-Policy"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:237
+msgid "Permissions-Policy value"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:246
+msgid "Enable Cache-Control (non-authenticated pages)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:250
+msgid "Off by default — a wrong value can break dynamic pages."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:254
+msgid "Cache-Control value"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:263
+msgid "Content-Security-Policy mode"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:269
+msgid "Report only"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:275
+msgid "CSP learning mode (dual-emit)"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:279
+msgid "Keep collecting violation reports while the policy is enforced."
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:283
+msgid "CSP directives"
+msgstr ""
+
+#: src/Modules/SecurityHeaders/SecurityHeaders.php:290
+msgid "CSP report-uri"
+msgstr ""

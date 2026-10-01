@@ -1,19 +1,19 @@
 /**
- * Fanxie WP Core — idle-logout watchdog (wp-admin only).
+ * Fanxie Warden — idle-logout watchdog (wp-admin only).
  *
  * Dependency-free, framework-free. Enqueued by the Login Protection module's
  * SessionTimeout runtime on the admin screens when per-role session timeouts are
  * enabled. It logs an inactive user out once the configured idle window elapses,
  * complementing the server-side `auth_cookie_expiration` cap.
  *
- * Config is injected via `wp_add_inline_script` as `window.fanxieWpCoreIdle`:
+ * Config is injected via `wp_add_inline_script` as `window.fanxieWardenIdle`:
  *   - timeoutMs {number} Idle window in milliseconds (per-role).
  *   - logoutUrl {string} URL to redirect to on timeout (nonced wp_logout_url()).
  */
 ( function () {
 	'use strict';
 
-	var config = window.fanxieWpCoreIdle;
+	var config = window.fanxieWardenIdle;
 
 	if ( ! config ) {
 		return;

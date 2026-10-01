@@ -2,17 +2,17 @@
 /**
  * Unit tests for LoginErrorObfuscator.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\LoginErrorObfuscator;
+use FanxieLab\Warden\Modules\Hardening\Runtime\LoginErrorObfuscator;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -58,7 +58,7 @@ final class LoginErrorObfuscatorTest extends TestCase {
 	}
 
 	public function test_replaces_message_when_target_code_present(): void {
-		Filters\expectApplied( 'fanxie_wp_core/hardening/login_error_message' )->andReturnFirstArg();
+		Filters\expectApplied( 'fanxie_warden/hardening/login_error_message' )->andReturnFirstArg();
 
 		global $errors;
 		$errors = new FakeLoginErrors( [ 'invalid_username' ] );
@@ -97,7 +97,7 @@ final class LoginErrorObfuscatorTest extends TestCase {
 		global $errors;
 		$errors = new FakeLoginErrors( [ 'incorrect_password' ] );
 
-		Filters\expectApplied( 'fanxie_wp_core/hardening/login_error_message' )
+		Filters\expectApplied( 'fanxie_warden/hardening/login_error_message' )
 			->once()
 			->andReturn( 'Nope.' );
 

@@ -1,15 +1,15 @@
 <?php
 /**
- * AJAX dispatcher for the Fanxie WP Core admin SPA.
+ * AJAX dispatcher for the Fanxie Warden admin SPA.
  *
- * @package FanxieLab\WPCore\Admin
+ * @package FanxieLab\Warden\Admin
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Admin;
+namespace FanxieLab\Warden\Admin;
 
-use FanxieLab\WPCore\Plugin;
+use FanxieLab\Warden\Plugin;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -17,22 +17,22 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Single-entry AJAX router.
  *
- * The frontend posts every admin request to `admin-ajax.php?action=fanxie_wp_core`
+ * The frontend posts every admin request to `admin-ajax.php?action=fanxie_warden`
  * with the following body shape:
  *
  *   {
- *     action:        'fanxie_wp_core',
+ *     action:        'fanxie_warden',
  *     _action:       '<sub_action>',
- *     _ajax_nonce:   '<nonce>',    // action: 'fanxie_wp_core_admin'
+ *     _ajax_nonce:   '<nonce>',    // action: 'fanxie_warden_admin'
  *     ...payload
  *   }
  *
  * Dispatcher guarantees:
- *   - Nonce verified (`fanxie_wp_core_admin`).
- *   - Capability `manage_fanxie_wp_core` required.
+ *   - Nonce verified (`fanxie_warden_admin`).
+ *   - Capability `manage_fanxie_warden` required.
  *   - Only logged-in users (no `wp_ajax_nopriv_*` binding).
  *   - Sub-actions resolve from an internal map (filterable via
- *     `fanxie_wp_core/ajax/sub_actions`).
+ *     `fanxie_warden/ajax/sub_actions`).
  *   - Handlers return either an array (→ `wp_send_json_success`) or a WP_Error
  *     (→ `wp_send_json_error` with the error's first code/message).
  *
@@ -47,14 +47,14 @@ final class AjaxRouter {
 	 *
 	 * @var string
 	 */
-	public const NONCE_ACTION = 'fanxie_wp_core_admin';
+	public const NONCE_ACTION = 'fanxie_warden_admin';
 
 	/**
 	 * WordPress-side AJAX action name ("action" POST field).
 	 *
 	 * @var string
 	 */
-	public const AJAX_ACTION = 'fanxie_wp_core';
+	public const AJAX_ACTION = 'fanxie_warden';
 
 	/**
 	 * Sub-action → { callback, cap } map.
@@ -76,7 +76,7 @@ final class AjaxRouter {
 	 * @param string      $sub_action Sub-action slug (sanitised via `sanitize_key`).
 	 * @param callable    $handler    Receives the raw `$_POST` array; returns array|WP_Error.
 	 * @param string|null $cap        Optional extra capability required in addition
-	 *                                to `manage_fanxie_wp_core`.
+	 *                                to `manage_fanxie_warden`.
 	 */
 	public function register( string $sub_action, callable $handler, ?string $cap = null ): void {
 		$sub_action = sanitize_key( $sub_action );
@@ -118,7 +118,7 @@ final class AjaxRouter {
 			wp_send_json_error(
 				[
 					'code'    => 'invalid_nonce',
-					'message' => __( 'Nonce verification failed.', 'fanxie-wp-core' ),
+					'message' => __( 'Nonce verification failed.', 'fanxie-warden' ),
 				],
 				403
 			);
@@ -128,7 +128,7 @@ final class AjaxRouter {
 			wp_send_json_error(
 				[
 					'code'    => 'forbidden',
-					'message' => __( 'You do not have permission to perform this action.', 'fanxie-wp-core' ),
+					'message' => __( 'You do not have permission to perform this action.', 'fanxie-warden' ),
 				],
 				403
 			);
@@ -141,28 +141,28 @@ final class AjaxRouter {
 			wp_send_json_error(
 				[
 					'code'    => 'missing_action',
-					'message' => __( 'Missing sub-action.', 'fanxie-wp-core' ),
+					'message' => __( 'Missing sub-action.', 'fanxie-warden' ),
 				],
 				400
 			);
 		}
 
 		/**
-		 * Filter: fanxie_wp_core/ajax/sub_actions
+		 * Filter: fanxie_warden/ajax/sub_actions
 		 *
 		 * Modify the sub-action handler map before dispatch. Useful for tests
 		 * and third-party extensions.
 		 *
 		 * @param array<string, array{callback: callable, cap: ?string}> $map
 		 */
-		$handlers = apply_filters( 'fanxie_wp_core/ajax/sub_actions', $this->handlers );
+		$handlers = apply_filters( 'fanxie_warden/ajax/sub_actions', $this->handlers );
 		$handlers = is_array( $handlers ) ? $handlers : $this->handlers;
 
 		if ( ! isset( $handlers[ $sub_action ] ) ) {
 			wp_send_json_error(
 				[
 					'code'    => 'unknown_action',
-					'message' => __( 'Unknown sub-action.', 'fanxie-wp-core' ),
+					'message' => __( 'Unknown sub-action.', 'fanxie-warden' ),
 				],
 				404
 			);
@@ -174,7 +174,7 @@ final class AjaxRouter {
 			wp_send_json_error(
 				[
 					'code'    => 'forbidden',
-					'message' => __( 'You do not have permission to perform this action.', 'fanxie-wp-core' ),
+					'message' => __( 'You do not have permission to perform this action.', 'fanxie-warden' ),
 				],
 				403
 			);
@@ -186,7 +186,7 @@ final class AjaxRouter {
 			wp_send_json_error(
 				[
 					'code'    => 'handler_exception',
-					'message' => __( 'An unexpected error occurred.', 'fanxie-wp-core' ),
+					'message' => __( 'An unexpected error occurred.', 'fanxie-warden' ),
 				],
 				500
 			);

@@ -2,22 +2,22 @@
 /**
  * Unit tests for the Hardening AjaxController.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening;
 
 use Brain\Monkey;
 use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\Hardening\AjaxController;
-use FanxieLab\WPCore\Modules\Hardening\Hardening;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\RootHtaccessWriter;
-use FanxieLab\WPCore\Modules\Hardening\StatusInspector;
-use FanxieLab\WPCore\Modules\Hardening\UploadsProtector;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\Hardening\AjaxController;
+use FanxieLab\Warden\Modules\Hardening\Hardening;
+use FanxieLab\Warden\Modules\Hardening\Runtime\RootHtaccessWriter;
+use FanxieLab\Warden\Modules\Hardening\StatusInspector;
+use FanxieLab\Warden\Modules\Hardening\UploadsProtector;
 use PHPUnit\Framework\TestCase;
 use WP_Error;
 
@@ -120,7 +120,7 @@ final class AjaxControllerTest extends TestCase {
 		// `maybe_unserialize` stub just returns the input unchanged.
 		Functions\when( 'maybe_unserialize' )->returnArg( 1 );
 
-		Filters\expectApplied( 'fanxie_wp_core/hardening/uploads_dir' )
+		Filters\expectApplied( 'fanxie_warden/hardening/uploads_dir' )
 			->zeroOrMoreTimes()
 			->andReturnFirstArg();
 
@@ -255,7 +255,7 @@ final class AjaxControllerTest extends TestCase {
 		$this->assertIsArray( $result );
 		$this->assertFileExists( $this->htaccess_path );
 		$contents = (string) file_get_contents( $this->htaccess_path );
-		$this->assertStringContainsString( '# BEGIN Fanxie WP Core', $contents );
+		$this->assertStringContainsString( '# BEGIN Fanxie Warden', $contents );
 		$this->assertStringContainsString( 'readme.html', $contents );
 		$this->assertStringContainsString( 'license.txt', $contents );
 	}
@@ -273,7 +273,7 @@ final class AjaxControllerTest extends TestCase {
 
 		$this->assertFileExists( $this->htaccess_path );
 		$this->assertStringContainsString(
-			'# BEGIN Fanxie WP Core',
+			'# BEGIN Fanxie Warden',
 			(string) file_get_contents( $this->htaccess_path )
 		);
 	}
@@ -284,7 +284,7 @@ final class AjaxControllerTest extends TestCase {
 		// Prime the block so we can verify it's stripped.
 		file_put_contents(
 			$this->htaccess_path,
-			"# BEGIN Fanxie WP Core\n<Files \"readme.html\">\n</Files>\n# END Fanxie WP Core\n"
+			"# BEGIN Fanxie Warden\n<Files \"readme.html\">\n</Files>\n# END Fanxie Warden\n"
 		);
 
 		$controller->handle_save_config(
@@ -297,7 +297,7 @@ final class AjaxControllerTest extends TestCase {
 
 		if ( file_exists( $this->htaccess_path ) ) {
 			$this->assertStringNotContainsString(
-				'# BEGIN Fanxie WP Core',
+				'# BEGIN Fanxie Warden',
 				(string) file_get_contents( $this->htaccess_path )
 			);
 		}

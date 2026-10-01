@@ -2,12 +2,12 @@
 /**
  * Persistence layer for active login-protection bans.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection
+ * @package FanxieLab\Warden\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection;
+namespace FanxieLab\Warden\Modules\LoginProtection;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * is keyed by a `(subject_type, subject_value)` pair — e.g. `('ip', '203.0.113.9')`
  * or `('username', 'bob')` — and may be indefinite (`expires_at IS NULL`) or
  * time-boxed. Mirrors the conventions of
- * {@see \FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository}.
+ * {@see \FanxieLab\Warden\Modules\SecurityHeaders\ViolationRepository}.
  */
 final class BanRepository implements BanStore {
 
@@ -27,7 +27,7 @@ final class BanRepository implements BanStore {
 	 *
 	 * @var string
 	 */
-	public const SCHEMA_VERSION_OPTION = 'fanxie_wp_core_login_protection_bans_version';
+	public const SCHEMA_VERSION_OPTION = 'fanxie_warden_login_protection_bans_version';
 
 	/**
 	 * Current schema version. Bump whenever the CREATE TABLE shape changes.

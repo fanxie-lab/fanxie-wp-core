@@ -2,12 +2,12 @@
 /**
  * Runtime `file_mod_allowed` guard for theme + plugin editing.
  *
- * @package FanxieLab\WPCore\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Modules\Hardening\Runtime;
 
 defined( 'ABSPATH' ) || exit;
 
