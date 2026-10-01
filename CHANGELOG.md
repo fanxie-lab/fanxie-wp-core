@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Database Maintenance module** (PRD §8). Counts, approximate sizes and a
+  preview for nine cleanups — post revisions (keeps the newest N per post,
+  never autosaves), expired transients, orphaned post/user/term/comment meta,
+  auto-drafts, trashed posts (aged from when they were trashed) and spam
+  comments — purged from the admin in time-budgeted steps with progress,
+  cancel and confirmation. Optional revision limit (off by default, 20
+  pre-filled; `WP_POST_REVISIONS` in wp-config wins). Optional WP-Cron schedule
+  (daily or weekly at a site-local hour, per-cleanup toggles, continuation for
+  large sites). WP-CLI: `wp fx-warden db status|clean --all|revisions|transients
+  [--all]|orphans|trash|spam|autodrafts`, each with `--dry-run` and `--yes`.
+
 ### Changed
 - **Renamed the plugin to Fanxie Warden** (slug and text domain `fanxie-warden`,
   bootstrap file `fanxie-warden.php`). wordpress.org rejects "wp" in plugin
