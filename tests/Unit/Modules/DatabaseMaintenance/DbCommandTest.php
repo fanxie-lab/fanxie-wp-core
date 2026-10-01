@@ -83,7 +83,7 @@ final class DbCommandTest extends TestCase {
 	 * @dataProvider invalid_flags
 	 *
 	 * @param string                $method Command method.
-	 * @param array<string, string> $assoc  Flags.
+	 * @param array<string, string|bool> $assoc  Flags.
 	 */
 	public function test_out_of_range_flags_error( string $method, array $assoc ): void {
 		$this->expectException( \RuntimeException::class ); // The stub's WP_CLI::error() throws, like the real one exits.
@@ -91,15 +91,27 @@ final class DbCommandTest extends TestCase {
 	}
 
 	/**
-	 * @return array<string, array{string, array<string, string>}>
+	 * @return array<string, array{string, array<string, string|bool>}>
 	 */
 	public static function invalid_flags(): array {
 		return [
 			'keep too high' => [ 'revisions', [ 'keep' => '51' ] ],
 			'days zero'     => [ 'trash', [ 'days' => '0' ] ],
 			'days text'     => [ 'spam', [ 'days' => 'abc' ] ],
+			'keep bare'     => [ 'revisions', [ 'keep' => true ] ],
+			'days bare'     => [ 'trash', [ 'days' => true ] ],
 			'bad type'      => [ 'orphans', [ 'type' => 'link' ] ],
 		];
+	}
+
+	public function test_locked_task_is_reported_as_skipped_not_cleaned(): void {
+		Functions\when( 'get_transient' )->justReturn( 1 );
+
+		$this->cmd()->spam( [], [ 'yes' => true ] );
+
+		$this->assertSame( 7, $this->task->count(), 'A locked task must not be purged.' );
+		$warnings = implode( "\n", array_map( 'strval', WP_CLI::messages_for( 'warning' ) ) );
+		$this->assertStringContainsString( 'Fake is already being cleaned by another process; skipped.', $warnings );
 	}
 
 	public function test_clean_without_all_errors(): void {

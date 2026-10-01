@@ -268,7 +268,9 @@ final class DbCommand {
 		}
 
 		[ $min, $max ] = Settings::RANGES[ $range_key ];
-		$raw           = is_scalar( $assoc_args[ $flag ] ) ? (string) $assoc_args[ $flag ] : '';
+		$value         = $assoc_args[ $flag ];
+		// A valueless flag arrives as boolean true; only strings and ints are real values.
+		$raw = is_string( $value ) || is_int( $value ) ? (string) $value : '';
 
 		if ( ! ctype_digit( $raw ) || (int) $raw < $min || (int) $raw > $max ) {
 			WP_CLI::error(
@@ -342,6 +344,16 @@ final class DbCommand {
 
 		foreach ( $tasks as $task ) {
 			$result   = $this->runner->run( $task, null, CleanupRunner::DEFAULT_BATCH, static fn ( BatchResult $b ) => $bar->tick( $b->deleted + count( $b->failed ) ) );
+			if ( $result->busy ) {
+				WP_CLI::warning(
+					sprintf(
+						/* translators: %s: task label */
+						__( '%s is already being cleaned by another process; skipped.', 'fanxie-warden' ),
+						$task->label()
+					)
+				);
+				continue;
+			}
 			$deleted += $result->deleted;
 			$failed  += $result->failed;
 		}
