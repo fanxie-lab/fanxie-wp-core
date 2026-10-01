@@ -200,6 +200,6 @@ fanxie-warden/
 ### Database Maintenance (PRD §8) — decided 2026-10-01, spec `docs/superpowers/specs/2026-10-01-database-maintenance-design.md`
 
 - **WP-Cron, not Action Scheduler** (PRD §8.3, §9.3). Matches existing modules and avoids bundling a dependency; Action Scheduler was justified by Media Optimizer, now deferred. Also applies to Activity Log retention.
-- **Revision limit OFF by default, 20 pre-filled** (PRD: ON at 10). One `revisions_keep` value drives both the future-revision cap and the purge. `WP_POST_REVISIONS` in wp-config wins and locks the setting.
+- **Revision limit OFF by default, 20 pre-filled** (PRD: ON at 10). One `revisions_keep` value drives both the future-revision cap and the purge. `WP_POST_REVISIONS` in wp-config (any value other than core's default `true`) wins over the cap and locks only the cap toggle; "Revisions to keep" stays editable because it drives the purge. Autosaves are never counted or purged.
 - **"Delete all transients" is CLI-only** (`wp fx-warden db transients --all`); the admin UI and schedule only ever purge expired transients.
 - **Trash age uses `_wp_trash_meta_time`** (when trashed), not PRD's `post_modified`; deletions go through WP APIs in time-budgeted batches rather than the PRD's unbatched loops.

@@ -13,7 +13,7 @@ Client sites accumulate database bloat: unlimited revisions, expired transients,
 ## Decisions locked (from brainstorming)
 
 1. **Scheduling uses WP-Cron, not Action Scheduler** (diverges from PRD §8.3/§9.3). Matches the three existing modules, adds no bundled dependency; Action Scheduler was justified by Media Optimizer bulk jobs, which are deferred. Applies to Activity Log retention too. Recorded in CLAUDE.md.
-2. **Revision limit is OFF by default**, with **20** pre-filled (PRD said ON at 10). If `WP_POST_REVISIONS` is defined in wp-config it wins and the setting renders locked, mirroring how `FX_WARDEN_LOGIN_SLUG` locks the login slug.
+2. **Revision limit is OFF by default**, with **20** pre-filled (PRD said ON at 10). If `WP_POST_REVISIONS` is set in wp-config it wins: the future-revision cap toggle renders locked (mirroring how `FX_WARDEN_LOGIN_SLUG` locks the login slug), but "Revisions to keep" stays editable because it also drives the purge. Negative constant values read as "unlimited". *(Amended 2026-10-01 after final review.)*
 3. **"Delete ALL transients" is CLI-only** (`wp fx-warden db transients --all`). The admin tab only offers expired transients; the schedule never deletes valid transients.
 4. **Purges run as time-budgeted steps** that the client (or CLI/cron) re-invokes until done. One engine for all three entry points; no hidden background work; an abandoned browser tab just leaves a partial, harmless purge.
 5. **PRD code samples are illustrative.** Deletions go through WP APIs (hooks fire, object cache stays coherent), batched; the PRD's unbatched loops and `post_modified`-based trash age are not used verbatim.
