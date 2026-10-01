@@ -112,4 +112,18 @@ describe('usePurgeRun', () => {
     await run.run(['spam-comments']);
     expect(run.announcement.value).toMatch(/3/);
   });
+
+  it('does not double-count rows that fail again in a later step', async () => {
+    const calls = [
+      step('revisions', { deleted: 10, failed: 2, remaining: 5, done: false }),
+      step('revisions', { deleted: 3, failed: 2, done: true }),
+    ];
+    const stepFn = vi.fn(() => Promise.resolve(calls.shift()!));
+    const run = usePurgeRun({ step: stepFn, sleep: () => Promise.resolve() });
+
+    const totals = await run.run(['revisions']);
+
+    expect(totals.failed).toBe(2);
+    expect(run.progress.value.revisions?.failed).toBe(2);
+  });
 });

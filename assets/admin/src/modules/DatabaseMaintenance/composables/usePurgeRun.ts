@@ -94,7 +94,9 @@ export function usePurgeRun(deps: PurgeDeps = defaultDeps): {
       }
 
       entry.deleted += res.deleted;
-      entry.failed += res.failed;
+      // Failed rows are retried (and fail again) in later steps, so a running
+      // sum would count them repeatedly; the max is the distinct-failure count.
+      entry.failed = Math.max(entry.failed, res.failed);
       entry.remaining = res.remaining;
 
       if (res.done) {
