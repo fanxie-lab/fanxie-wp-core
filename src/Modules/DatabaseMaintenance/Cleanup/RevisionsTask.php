@@ -43,6 +43,17 @@ final class RevisionsTask implements CleanupTask {
 	}
 
 	/**
+	 * LIKE pattern matching core autosave revisions ("{parent}-autosave-v1").
+	 *
+	 * Core's own trimming skips autosaves, so they never count toward the limit and are never deleted.
+	 */
+	private function autosave_pattern(): string {
+		global $wpdb;
+
+		return '%' . $wpdb->esc_like( '-autosave-v' ) . '%';
+	}
+
+	/**
 	 * Revision counts for parents over the limit.
 	 *
 	 * @return array<int, int> parent ID => revision count.
@@ -53,7 +64,8 @@ final class RevisionsTask implements CleanupTask {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- live counts for a maintenance screen; caching would show stale numbers.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT post_parent, COUNT(*) AS c FROM {$wpdb->posts} WHERE post_type = 'revision' AND post_parent > 0 GROUP BY post_parent HAVING c > %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- core table name.
+				"SELECT post_parent, COUNT(*) AS c FROM {$wpdb->posts} WHERE post_type = 'revision' AND post_parent > 0 AND post_name NOT LIKE %s GROUP BY post_parent HAVING c > %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- core table name.
+				$this->autosave_pattern(),
 				$this->keep
 			),
 			ARRAY_A
@@ -78,8 +90,9 @@ final class RevisionsTask implements CleanupTask {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- see parents_over_limit(); ALL_ROWS is a constant.
 		$ids = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'revision' AND post_parent = %d ORDER BY post_date DESC, ID DESC LIMIT %d, " . self::ALL_ROWS, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'revision' AND post_parent = %d AND post_name NOT LIKE %s ORDER BY post_date DESC, ID DESC LIMIT %d, " . self::ALL_ROWS, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				$parent_id,
+				$this->autosave_pattern(),
 				$this->keep
 			)
 		);

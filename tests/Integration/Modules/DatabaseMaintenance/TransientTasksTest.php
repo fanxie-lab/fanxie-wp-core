@@ -76,4 +76,18 @@ final class TransientTasksTest extends DatabaseMaintenanceTestCase {
 		$this->assertFalse( get_option( '_transient_timeout_fx_a' ) );
 		$this->assertSame( 0, $task->count() );
 	}
+
+	public function test_orphaned_expired_timeout_rows_are_counted_and_purged(): void {
+		$this->expire( 'fx_orphan' );
+		$this->expire( 'fx_site_orphan', true );
+
+		$task = new ExpiredTransientsTask();
+		$this->assertSame( 2, $task->count() );
+
+		( new CleanupRunner() )->run( $task, null );
+
+		$this->assertFalse( get_option( '_transient_timeout_fx_orphan' ) );
+		$this->assertFalse( get_option( '_site_transient_timeout_fx_site_orphan' ) );
+		$this->assertSame( 0, $task->count() );
+	}
 }

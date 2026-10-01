@@ -153,11 +153,49 @@ final class ExpiredTransientsTask implements CleanupTask {
 
 		delete_expired_transients( true );
 
+		// Core only removes timeout rows that still have a value row; sweep the orphans so count() can reach 0.
+		$this->delete_orphaned_timeouts( max( 1, $limit ) );
+
 		// Core deletes with raw SQL, so drop the in-request options cache to avoid stale reads.
 		if ( wp_cache_supports( 'flush_group' ) ) {
 			wp_cache_flush_group( 'options' );
 		}
 
 		return new BatchResult( max( 0, $before - $this->count() ), [], true );
+	}
+
+	/**
+	 * Delete expired timeout rows that have no matching value row.
+	 *
+	 * @param int $limit Rows deleted per round trip.
+	 */
+	private function delete_orphaned_timeouts( int $limit ): void {
+		global $wpdb;
+
+		foreach ( self::KINDS as $value_prefix => $timeout_prefix ) {
+			do {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- orphan lookup; core table name.
+				$names = (array) $wpdb->get_col(
+					$wpdb->prepare(
+						"SELECT t.option_name FROM {$wpdb->options} t
+						LEFT JOIN {$wpdb->options} v ON v.option_name = CONCAT(%s, SUBSTRING(t.option_name, %d))
+						WHERE t.option_name LIKE %s AND t.option_value < %d AND v.option_id IS NULL
+						LIMIT %d",
+						$value_prefix,
+						strlen( $timeout_prefix ) + 1,
+						$wpdb->esc_like( $timeout_prefix ) . '%',
+						time(),
+						$limit
+					)
+				);
+
+				$removed = 0;
+				foreach ( $names as $name ) {
+					if ( delete_option( (string) $name ) ) {
+						++$removed;
+					}
+				}
+			} while ( $removed > 0 && count( $names ) >= $limit );
+		}
 	}
 }

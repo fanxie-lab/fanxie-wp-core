@@ -107,4 +107,33 @@ final class RevisionsTaskTest extends DatabaseMaintenanceTestCase {
 		$this->assertGreaterThan( 0, ( new RevisionsTask( 1 ) )->estimate_bytes() );
 		$this->assertSame( 0, ( new RevisionsTask( 50 ) )->estimate_bytes() );
 	}
+
+	public function test_autosaves_are_neither_counted_nor_deleted(): void {
+		$a = $this->post_with_revisions( 3 );
+		wp_insert_post(
+			[
+				'post_type'   => 'revision',
+				'post_status' => 'inherit',
+				'post_parent' => $a,
+				'post_name'   => $a . '-autosave-v1',
+				'post_title'  => 'Autosave',
+			]
+		);
+		$autosave = (int) get_posts(
+			[
+				'post_type'   => 'revision',
+				'post_status' => 'inherit',
+				'name'        => $a . '-autosave-v1',
+				'fields'      => 'ids',
+			]
+		)[0];
+
+		$task = new RevisionsTask( 0 );
+		$this->assertSame( count( $this->revision_ids( $a ) ) - 1, $task->count() );
+
+		( new CleanupRunner() )->run( $task, null );
+
+		$this->assertNotNull( get_post( $autosave ), 'Autosave must survive a keep=0 purge.' );
+		$this->assertSame( 0, $task->count() );
+	}
 }
