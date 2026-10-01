@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { ConfirmDialog, Tooltip } from '@/components';
 import { useDatabaseMaintenanceStore } from '../stores/databaseMaintenance';
 import { usePurgeRun } from '../composables/usePurgeRun';
@@ -19,6 +19,10 @@ const purge = usePurgeRun();
 const selected = ref<Set<TaskId>>(new Set());
 const expanded = ref<TaskId | null>(null);
 const confirmOpen = ref(false);
+const sectionRef = ref<HTMLElement | null>(null);
+const selectedBtn = ref<HTMLButtonElement | null>(null);
+const allBtn = ref<HTMLButtonElement | null>(null);
+let askedFrom: 'selected' | 'all' = 'selected';
 const pendingIds = ref<TaskId[]>([]);
 
 const items = computed<StatusItem[]>(() => store.status?.items ?? []);
@@ -45,7 +49,8 @@ async function togglePreview(id: TaskId): Promise<void> {
   if (!store.previews[id]) await store.loadPreview(id);
 }
 
-function ask(ids: TaskId[]): void {
+function ask(ids: TaskId[], from: 'selected' | 'all'): void {
+  askedFrom = from;
   pendingIds.value = ids;
   confirmOpen.value = true;
 }
@@ -53,6 +58,8 @@ function ask(ids: TaskId[]): void {
 async function confirmPurge(): Promise<void> {
   confirmOpen.value = false;
   const ids = [...pendingIds.value];
+  // Previews are cleared by the post-run refresh; don't leave a stale row open.
+  expanded.value = null;
   const totals = await purge.run(ids);
   selected.value = new Set();
 
@@ -72,7 +79,33 @@ async function confirmPurge(): Promise<void> {
       : 'success';
   store.notify(variant, parts.join(' '));
   await store.refreshStatus();
+  await restoreFocus();
 }
+
+/** The Cancel button unmounts when a run ends; hand focus back to a control. */
+async function restoreFocus(): Promise<void> {
+  await nextTick();
+  const order =
+    askedFrom === 'all'
+      ? [allBtn.value, selectedBtn.value]
+      : [selectedBtn.value, allBtn.value];
+  const target = order.find((b) => b && !b.disabled);
+  (target ?? sectionRef.value)?.focus();
+}
+
+const announcement = computed<string>(() => {
+  const finished = Object.values(purge.progress.value).filter((p) =>
+    ['done', 'error', 'cancelled'].includes(p.state),
+  );
+  const last = finished.at(-1);
+  if (!last) return '';
+  const label = items.value.find((i) => i.id === last.id)?.label ?? last.id;
+  if (last.state === 'done') {
+    return `${label}: deleted ${formatRows(last.deleted)}.`;
+  }
+  if (last.state === 'error') return `${label}: ${last.error ?? 'failed.'}`;
+  return `${label}: cancelled.`;
+});
 
 function progressPercent(id: TaskId): number {
   const p = purge.progress.value[id];
@@ -88,7 +121,12 @@ function formatDate(iso: string): string {
 </script>
 
 <template>
-  <section class="fx-db-cleanup" aria-labelledby="fx-db-cleanup-title">
+  <section
+    ref="sectionRef"
+    class="fx-db-cleanup"
+    tabindex="-1"
+    aria-labelledby="fx-db-cleanup-title"
+  >
     <h3 id="fx-db-cleanup-title" class="fx-visually-hidden">Cleanup</h3>
 
     <p v-if="!store.status" class="fx-db-cleanup__loading">Loading…</p>
@@ -166,6 +204,7 @@ function formatDate(iso: string): string {
                   type="button"
                   class="fx-db-link"
                   data-action="preview"
+                  :aria-label="`${expanded === item.id ? 'Hide preview' : 'Preview'} ${item.label}`"
                   :aria-expanded="expanded === item.id"
                   :aria-controls="`fx-db-prev-${item.id}`"
                   @click="togglePreview(item.id)"
@@ -221,18 +260,20 @@ function formatDate(iso: string): string {
         <button
           type="button"
           class="fx-db-btn"
+          ref="selectedBtn"
           data-action="purge-selected"
           :disabled="selected.size === 0 || busy"
-          @click="ask([...selected])"
+          @click="ask([...selected], 'selected')"
         >
           Purge Selected
         </button>
         <button
           type="button"
           class="fx-db-btn fx-db-btn--primary"
+          ref="allBtn"
           data-action="purge-all"
           :disabled="store.purgeableIds.length === 0 || busy"
-          @click="ask(store.purgeableIds)"
+          @click="ask(store.purgeableIds, 'all')"
         >
           Purge All
         </button>
@@ -240,7 +281,7 @@ function formatDate(iso: string): string {
     </div>
 
     <div class="fx-visually-hidden" role="status" aria-live="polite">
-      {{ purge.announcement.value }}
+      {{ announcement }}
     </div>
 
     <ConfirmDialog
@@ -262,6 +303,7 @@ function formatDate(iso: string): string {
 
 <style scoped>
 .fx-db-cleanup {
+  outline: none;
   display: flex;
   flex-direction: column;
   gap: var(--fx-space-4);

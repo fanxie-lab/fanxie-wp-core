@@ -155,7 +155,7 @@ describe('CleanupView', () => {
       }
       return Promise.resolve(makeStatus());
     });
-    const { wrapper } = await mountCleanup();
+    const { wrapper, store } = await mountCleanup();
     await wrapper.get('button[data-action="purge-all"]').trigger('click');
     clickConfirm();
     await flushPromises();
@@ -180,6 +180,56 @@ describe('CleanupView', () => {
       busy: false,
     });
     await flushPromises();
+
+    expect(wrapper.find('button[data-action="cancel"]').exists()).toBe(false);
+    expect(
+      wrapper.get('button[data-action="purge-all"]').attributes('disabled'),
+    ).toBeUndefined();
+    expect(store.toast?.message).toContain('Cancelled');
+    expect(document.activeElement).toBe(
+      wrapper.get('button[data-action="purge-all"]').element,
+    );
+    expect(wrapper.get('[aria-live="polite"]').text()).toContain(
+      'Spam comments: cancelled.',
+    );
+  });
+
+  it('announces progress with human labels, not slugs', async () => {
+    vi.spyOn(client, 'ajax').mockImplementation(
+      (action: string, payload?: Record<string, unknown>) =>
+        Promise.resolve(
+          action.endsWith('purge-step')
+            ? {
+                id: payload?.task,
+                deleted: 156,
+                failed: 0,
+                remaining: 0,
+                done: true,
+                busy: false,
+              }
+            : makeStatus(),
+        ),
+    );
+    const { wrapper } = await mountCleanup();
+    await wrapper
+      .get('tr[data-task="spam-comments"] input[type="checkbox"]')
+      .setValue(true);
+    await wrapper.get('button[data-action="purge-selected"]').trigger('click');
+    clickConfirm();
+    await flushPromises();
+
+    const live = wrapper.get('[aria-live="polite"]').text();
+    expect(live).toContain('Spam comments');
+    expect(live).not.toContain('spam-comments');
+  });
+
+  it('labels each Preview button with its item', async () => {
+    const { wrapper } = await mountCleanup();
+    expect(
+      wrapper
+        .get('tr[data-task="spam-comments"] button[data-action="preview"]')
+        .attributes('aria-label'),
+    ).toBe('Preview Spam comments');
   });
 
   it('shows the object-cache note on the transients row', async () => {
