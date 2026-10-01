@@ -2,21 +2,21 @@
 /**
  * Persistence layer for login-protection event history.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection
+ * @package FanxieLab\Warden\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection;
+namespace FanxieLab\Warden\Modules\LoginProtection;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Data layer for `{$wpdb->prefix}fanxie_core_login_log`.
+ * Data layer for `{$wpdb->prefix}fx_warden_login_log`.
  *
  * The login event history that powers the admin log viewer and feeds the
  * attempt-limiting heuristics. Mirrors the structure of
- * {@see \FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository}:
+ * {@see \FanxieLab\Warden\Modules\SecurityHeaders\ViolationRepository}:
  *
  *   - `install()` — create/upgrade the table via `dbDelta`, gated by a version
  *     option so it only runs on fresh installs or schema bumps.
@@ -31,7 +31,7 @@ final class LoginLogRepository implements LoginLogRecorder {
 	 *
 	 * @var string
 	 */
-	public const SCHEMA_VERSION_OPTION = 'fanxie_wp_core_login_protection_log_version';
+	public const SCHEMA_VERSION_OPTION = 'fanxie_warden_login_protection_log_version';
 
 	/**
 	 * Current schema version. Bump whenever the CREATE TABLE shape changes.
@@ -45,7 +45,7 @@ final class LoginLogRepository implements LoginLogRecorder {
 	 *
 	 * @var string
 	 */
-	public const TABLE_BASENAME = 'fanxie_core_login_log';
+	public const TABLE_BASENAME = 'fx_warden_login_log';
 
 	/**
 	 * Fully-qualified table name, resolved once at construction.

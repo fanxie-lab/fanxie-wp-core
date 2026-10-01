@@ -2,14 +2,14 @@
 /**
  * Emits configured security headers on `send_headers`.
  *
- * @package FanxieLab\WPCore\Modules\SecurityHeaders
+ * @package FanxieLab\Warden\Modules\SecurityHeaders
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\SecurityHeaders;
+namespace FanxieLab\Warden\Modules\SecurityHeaders;
 
-use FanxieLab\WPCore\Modules\SecurityHeaders\Csp\CspPolicy;
+use FanxieLab\Warden\Modules\SecurityHeaders\Csp\CspPolicy;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * Idempotent — before emitting any header we consult `headers_list()` and
  * skip names already set by upstream (web server, reverse proxy, another
  * plugin). The final header array passes through the
- * `fanxie_wp_core/security_headers/headers` filter so integrators can have
+ * `fanxie_warden/security_headers/headers` filter so integrators can have
  * the last word.
  *
  * The two side-effectful helpers (`existing_header_names()` and
@@ -117,7 +117,7 @@ final class HeaderEmitter {
 			// without also revisiting the default policy — see
 			// docs/hooks.md and the module PRD.
 			//
-			// The `fanxie_wp_core/security_headers/csp_emit_context`
+			// The `fanxie_warden/security_headers/csp_emit_context`
 			// filter (applied once per request in `should_emit_csp()`)
 			// lets integrators opt back in for admin/REST emission.
 			if ( ! $emit_csp && $this->is_csp_header_name( $name ) ) {
@@ -145,7 +145,7 @@ final class HeaderEmitter {
 	 *
 	 * Short-circuits to `false` for admin, AJAX, cron, and REST requests;
 	 * runs the decision through the public
-	 * `fanxie_wp_core/security_headers/csp_emit_context` filter so
+	 * `fanxie_warden/security_headers/csp_emit_context` filter so
 	 * integrators with tailored policies can force emission anyway.
 	 */
 	private function should_emit_csp(): bool {
@@ -157,7 +157,7 @@ final class HeaderEmitter {
 		$should_emit = ! ( $is_admin || $is_ajax || $is_cron || $is_rest );
 
 		/**
-		 * Filter: fanxie_wp_core/security_headers/csp_emit_context
+		 * Filter: fanxie_warden/security_headers/csp_emit_context
 		 *
 		 * Controls whether CSP is emitted in the current request context.
 		 * By default CSP is skipped on admin, AJAX, cron, and REST
@@ -169,7 +169,7 @@ final class HeaderEmitter {
 		 *
 		 * @param bool $should_emit Current decision (`true` = emit CSP).
 		 */
-		return (bool) apply_filters( 'fanxie_wp_core/security_headers/csp_emit_context', $should_emit );
+		return (bool) apply_filters( 'fanxie_warden/security_headers/csp_emit_context', $should_emit );
 	}
 
 	/**
@@ -276,7 +276,7 @@ final class HeaderEmitter {
 		}
 
 		/**
-		 * Filter: fanxie_wp_core/security_headers/headers
+		 * Filter: fanxie_warden/security_headers/headers
 		 *
 		 * Last-chance hook to add / remove / modify the header array before
 		 * emission. Return value MUST be a `header-name => header-value` map.
@@ -286,7 +286,7 @@ final class HeaderEmitter {
 		 * @param array<string, string> $headers Name → value map.
 		 * @param array<string, mixed>  $config  Sanitised module config (nested shape).
 		 */
-		$filtered = apply_filters( 'fanxie_wp_core/security_headers/headers', $headers, $config );
+		$filtered = apply_filters( 'fanxie_warden/security_headers/headers', $headers, $config );
 
 		return is_array( $filtered ) ? $filtered : $headers;
 	}

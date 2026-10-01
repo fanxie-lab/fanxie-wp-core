@@ -2,14 +2,14 @@
 /**
  * Debug-mode exposure checks for the Environment Health module.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth\Runtime;
 
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -62,16 +62,16 @@ final class DebugInspector {
 		return new HealthCheck(
 			'wp_debug',
 			HealthCheck::GROUP_DEBUG,
-			__( 'WP_DEBUG', 'fanxie-wp-core' ),
+			__( 'WP_DEBUG', 'fanxie-warden' ),
 			$enabled ? HealthCheck::STATUS_WARNING : HealthCheck::STATUS_OK,
 			$this->bool_label( $enabled ),
 			$enabled
-				? __( 'Debug mode is on.', 'fanxie-wp-core' )
-				: __( 'Debug mode is off.', 'fanxie-wp-core' ),
+				? __( 'Debug mode is on.', 'fanxie-warden' )
+				: __( 'Debug mode is off.', 'fanxie-warden' ),
 			$enabled
-				? __( 'WP_DEBUG turns on PHP notices and deprecation warnings across WordPress. That is exactly right on a staging site and wrong on a live one: it costs performance and, combined with any display setting, leaks file paths and query details.', 'fanxie-wp-core' )
+				? __( 'WP_DEBUG turns on PHP notices and deprecation warnings across WordPress. That is exactly right on a staging site and wrong on a live one: it costs performance and, combined with any display setting, leaks file paths and query details.', 'fanxie-warden' )
 				: '',
-			$enabled ? [ $this->wp_config_snippet( "define( 'WP_DEBUG', false );", __( 'Turn debug mode off', 'fanxie-wp-core' ) ) ] : [],
+			$enabled ? [ $this->wp_config_snippet( "define( 'WP_DEBUG', false );", __( 'Turn debug mode off', 'fanxie-warden' ) ) ] : [],
 			[ 'defined' => defined( 'WP_DEBUG' ) ]
 		);
 	}
@@ -90,20 +90,20 @@ final class DebugInspector {
 		return new HealthCheck(
 			'wp_debug_display',
 			HealthCheck::GROUP_DEBUG,
-			__( 'WP_DEBUG_DISPLAY', 'fanxie-wp-core' ),
+			__( 'WP_DEBUG_DISPLAY', 'fanxie-warden' ),
 			$exposed ? HealthCheck::STATUS_CRITICAL : HealthCheck::STATUS_OK,
 			$this->bool_label( $value ),
 			$exposed
-				? __( 'PHP errors are being printed into pages visitors can see.', 'fanxie-wp-core' )
-				: __( 'Errors are not rendered into page output.', 'fanxie-wp-core' ),
+				? __( 'PHP errors are being printed into pages visitors can see.', 'fanxie-warden' )
+				: __( 'Errors are not rendered into page output.', 'fanxie-warden' ),
 			$exposed
-				? __( 'A single notice can expose absolute server paths, table prefixes, and fragments of SQL — everything an attacker needs to aim the next attempt. Log errors instead of displaying them.', 'fanxie-wp-core' )
+				? __( 'A single notice can expose absolute server paths, table prefixes, and fragments of SQL — everything an attacker needs to aim the next attempt. Log errors instead of displaying them.', 'fanxie-warden' )
 				: '',
 			$exposed
 				? [
 					$this->wp_config_snippet(
 						"define( 'WP_DEBUG_DISPLAY', false );\n@ini_set( 'display_errors', 0 );",
-						__( 'Stop printing errors to the page', 'fanxie-wp-core' )
+						__( 'Stop printing errors to the page', 'fanxie-warden' )
 					),
 				]
 				: [],
@@ -118,7 +118,7 @@ final class DebugInspector {
 	 * `WP_DEBUG_LOG` — and whether the log it writes is reachable over HTTP.
 	 */
 	private function wp_debug_log_check(): HealthCheck {
-		$label   = __( 'Debug log exposure', 'fanxie-wp-core' );
+		$label   = __( 'Debug log exposure', 'fanxie-warden' );
 		$enabled = defined( 'WP_DEBUG_LOG' ) && false !== constant( 'WP_DEBUG_LOG' ) && '' !== constant( 'WP_DEBUG_LOG' );
 
 		if ( ! $enabled ) {
@@ -128,7 +128,7 @@ final class DebugInspector {
 				$label,
 				HealthCheck::STATUS_OK,
 				$this->bool_label( false ),
-				__( 'Debug logging is off.', 'fanxie-wp-core' ),
+				__( 'Debug logging is off.', 'fanxie-warden' ),
 				'',
 				[],
 				[ 'path' => null ]
@@ -146,7 +146,7 @@ final class DebugInspector {
 				$label,
 				HealthCheck::STATUS_OK,
 				$path,
-				__( 'The debug log is written outside the web root.', 'fanxie-wp-core' ),
+				__( 'The debug log is written outside the web root.', 'fanxie-warden' ),
 				'',
 				[],
 				[
@@ -160,12 +160,12 @@ final class DebugInspector {
 		$remediation = [
 			$this->wp_config_snippet(
 				"// Write the log somewhere the web server will never serve.\ndefine( 'WP_DEBUG_LOG', dirname( ABSPATH ) . '/fanxie-debug.log' );",
-				__( 'Move the log outside the web root', 'fanxie-wp-core' )
+				__( 'Move the log outside the web root', 'fanxie-warden' )
 			),
 			HealthCheck::snippet(
 				'nginx',
 				"location ~* /debug\\.log$ {\n    deny all;\n}",
-				__( 'Deny the log in nginx', 'fanxie-wp-core' )
+				__( 'Deny the log in nginx', 'fanxie-warden' )
 			),
 		];
 
@@ -176,11 +176,11 @@ final class DebugInspector {
 			$exists ? HealthCheck::STATUS_CRITICAL : HealthCheck::STATUS_WARNING,
 			$path,
 			$exists
-				? __( 'A debug log exists inside the web root and may be downloadable.', 'fanxie-wp-core' )
-				: __( 'Debug logging writes inside the web root.', 'fanxie-wp-core' ),
+				? __( 'A debug log exists inside the web root and may be downloadable.', 'fanxie-warden' )
+				: __( 'Debug logging writes inside the web root.', 'fanxie-warden' ),
 			$exists
-				? __( 'The default log path is public knowledge, so anyone can try to fetch it. Debug logs routinely contain absolute paths, query strings, and occasionally credentials passed to a failing function. Move it above the document root, or deny it at the web-server level.', 'fanxie-wp-core' )
-				: __( 'No log file has been written yet, but the first error will create one at a publicly guessable path. Move the destination above the document root before that happens.', 'fanxie-wp-core' ),
+				? __( 'The default log path is public knowledge, so anyone can try to fetch it. Debug logs routinely contain absolute paths, query strings, and occasionally credentials passed to a failing function. Move it above the document root, or deny it at the web-server level.', 'fanxie-warden' )
+				: __( 'No log file has been written yet, but the first error will create one at a publicly guessable path. Move the destination above the document root before that happens.', 'fanxie-warden' ),
 			$remediation,
 			[
 				'path'       => $path,
@@ -199,16 +199,16 @@ final class DebugInspector {
 		return new HealthCheck(
 			'script_debug',
 			HealthCheck::GROUP_DEBUG,
-			__( 'SCRIPT_DEBUG', 'fanxie-wp-core' ),
+			__( 'SCRIPT_DEBUG', 'fanxie-warden' ),
 			$enabled ? HealthCheck::STATUS_WARNING : HealthCheck::STATUS_OK,
 			$this->bool_label( $enabled ),
 			$enabled
-				? __( 'WordPress is loading unminified core scripts and styles.', 'fanxie-wp-core' )
-				: __( 'Minified core assets are in use.', 'fanxie-wp-core' ),
+				? __( 'WordPress is loading unminified core scripts and styles.', 'fanxie-warden' )
+				: __( 'Minified core assets are in use.', 'fanxie-warden' ),
 			$enabled
-				? __( 'This is a core-development setting. It roughly doubles the weight of every admin screen and the block editor, and offers a visitor nothing.', 'fanxie-wp-core' )
+				? __( 'This is a core-development setting. It roughly doubles the weight of every admin screen and the block editor, and offers a visitor nothing.', 'fanxie-warden' )
 				: '',
-			$enabled ? [ $this->wp_config_snippet( "define( 'SCRIPT_DEBUG', false );", __( 'Use minified assets', 'fanxie-wp-core' ) ) ] : [],
+			$enabled ? [ $this->wp_config_snippet( "define( 'SCRIPT_DEBUG', false );", __( 'Use minified assets', 'fanxie-warden' ) ) ] : [],
 			[ 'defined' => defined( 'SCRIPT_DEBUG' ) ]
 		);
 	}
@@ -223,21 +223,21 @@ final class DebugInspector {
 		return new HealthCheck(
 			'php_display_errors',
 			HealthCheck::GROUP_DEBUG,
-			__( 'PHP display_errors', 'fanxie-wp-core' ),
+			__( 'PHP display_errors', 'fanxie-warden' ),
 			$on ? HealthCheck::STATUS_CRITICAL : HealthCheck::STATUS_OK,
 			'' !== $raw ? $raw : '0',
 			$on
-				? __( 'PHP is configured to print errors into its output.', 'fanxie-wp-core' )
-				: __( 'PHP does not print errors into its output.', 'fanxie-wp-core' ),
+				? __( 'PHP is configured to print errors into its output.', 'fanxie-warden' )
+				: __( 'PHP does not print errors into its output.', 'fanxie-warden' ),
 			$on
-				? __( 'This is set in php.ini or by your host, so WordPress constants alone may not switch it off — errors raised before WordPress boots will still reach the browser. Change it in php.ini, or in a .user.ini if your host allows one.', 'fanxie-wp-core' )
+				? __( 'This is set in php.ini or by your host, so WordPress constants alone may not switch it off — errors raised before WordPress boots will still reach the browser. Change it in php.ini, or in a .user.ini if your host allows one.', 'fanxie-warden' )
 				: '',
 			$on
 				? [
 					HealthCheck::snippet(
 						'bash',
 						"; php.ini (or .user.ini)\ndisplay_errors = Off\nlog_errors = On",
-						__( 'Log errors instead of showing them', 'fanxie-wp-core' )
+						__( 'Log errors instead of showing them', 'fanxie-warden' )
 					),
 				]
 				: [],
@@ -261,21 +261,21 @@ final class DebugInspector {
 		return new HealthCheck(
 			'php_error_reporting',
 			HealthCheck::GROUP_DEBUG,
-			__( 'PHP error_reporting', 'fanxie-wp-core' ),
+			__( 'PHP error_reporting', 'fanxie-warden' ),
 			$noisy ? HealthCheck::STATUS_WARNING : HealthCheck::STATUS_OK,
 			$this->error_reporting_label( $level ),
 			$noisy
-				? __( 'Notices, warnings, and deprecations are being reported.', 'fanxie-wp-core' )
-				: __( 'Only significant errors are reported.', 'fanxie-wp-core' ),
+				? __( 'Notices, warnings, and deprecations are being reported.', 'fanxie-warden' )
+				: __( 'Only significant errors are reported.', 'fanxie-warden' ),
 			$noisy
-				? __( 'Harmless on its own — nothing is exposed while display_errors is off. It does mean a busy site can fill a disk with log lines about deprecations in themes and plugins you do not maintain. Narrow the mask in production, or make sure log rotation is in place.', 'fanxie-wp-core' )
+				? __( 'Harmless on its own — nothing is exposed while display_errors is off. It does mean a busy site can fill a disk with log lines about deprecations in themes and plugins you do not maintain. Narrow the mask in production, or make sure log rotation is in place.', 'fanxie-warden' )
 				: '',
 			$noisy
 				? [
 					HealthCheck::snippet(
 						'bash',
 						"; php.ini (or .user.ini)\nerror_reporting = E_ALL & ~E_DEPRECATED & ~E_NOTICE",
-						__( 'Quieten development-only diagnostics', 'fanxie-wp-core' )
+						__( 'Quieten development-only diagnostics', 'fanxie-warden' )
 					),
 				]
 				: [],
@@ -368,7 +368,7 @@ final class DebugInspector {
 	 * @param bool $enabled Whether the flag is on.
 	 */
 	private function bool_label( bool $enabled ): string {
-		return $enabled ? __( 'Enabled', 'fanxie-wp-core' ) : __( 'Disabled', 'fanxie-wp-core' );
+		return $enabled ? __( 'Enabled', 'fanxie-warden' ) : __( 'Disabled', 'fanxie-warden' );
 	}
 
 	/**

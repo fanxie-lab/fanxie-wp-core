@@ -46,11 +46,11 @@ Authoritative rule reference: <https://github.com/WordPress/plugin-check>.
 
 These are **not** expected. If Plugin Check flags any of the following, treat it as a bug, not a tolerated warning.
 
-- **Text domain mismatches.** Every `__()`, `_e()`, `esc_html__()`, `esc_attr__()`, `_n()`, `_x()` call in PHP **must** carry `'fanxie-wp-core'`. Scan confirmed clean at Phase 0.4 baseline (see verification below).
+- **Text domain mismatches.** Every `__()`, `_e()`, `esc_html__()`, `esc_attr__()`, `_n()`, `_x()` call in PHP **must** carry `'fanxie-warden'`. Scan confirmed clean at Phase 0.4 baseline (see verification below).
 - **Direct database calls without `$wpdb->prepare()`.** Current usage in `uninstall.php` is verified — both `$wpdb->get_col()` calls use `prepare()`; the `DROP TABLE` call operates on internally-sourced table names filtered by our own prefix, documented inline.
 - **Unescaped output.** `SettingsPage::render()` contains one `phpcs:ignore` for `wp_get_inline_script_tag()` — the ignore is justified in the inline comment (the helper is the documented-correct method).
 - **Missing nonce / capability checks on AJAX or REST handlers.** `AjaxRouter::dispatch()` verifies both, per the contract.
-- **Hardcoded URLs.** None present — `FANXIE_WP_CORE_URL`, `admin_url()`, `rest_url()`, etc. are used consistently.
+- **Hardcoded URLs.** None present — `FANXIE_WARDEN_URL`, `admin_url()`, `rest_url()`, etc. are used consistently.
 - **`eval`, `create_function`, `extract`, or dynamic includes.** None present.
 
 ---
@@ -59,8 +59,8 @@ These are **not** expected. If Plugin Check flags any of the following, treat it
 
 | Check | Command | Result |
 |---|---|---|
-| Every PHP source parses | `php -l` on every file in `src/`, `fanxie-wp-core.php`, `uninstall.php` | Pass |
-| Every translation call has text domain | grep for `__(`, `_e(`, `esc_*__(`, `_n(`, `_x(` across all PHP | Pass — every hit includes `'fanxie-wp-core'` |
+| Every PHP source parses | `php -l` on every file in `src/`, `fanxie-warden.php`, `uninstall.php` | Pass |
+| Every translation call has text domain | grep for `__(`, `_e(`, `esc_*__(`, `_n(`, `_x(` across all PHP | Pass — every hit includes `'fanxie-warden'` |
 | JSON configs parse | `node -e "JSON.parse(...)"` on `composer.json`, `package.json` | Pass |
 | YAML workflow parses | `node -e "require('yaml').parse(...)"` when `yaml` dep available, otherwise manual review | Pass |
 

@@ -2,22 +2,22 @@
 /**
  * Hardening module entry point.
  *
- * @package FanxieLab\WPCore\Modules\Hardening
+ * @package FanxieLab\Warden\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening;
+namespace FanxieLab\Warden\Modules\Hardening;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\ApplicationPasswordGate;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\FileEditGuard;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\HeaderStripper;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\LoginErrorObfuscator;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\UserEnumerationGuard;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\VersionHider;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\XmlRpcGate;
-use FanxieLab\WPCore\Modules\ModuleBase;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\Hardening\Runtime\ApplicationPasswordGate;
+use FanxieLab\Warden\Modules\Hardening\Runtime\FileEditGuard;
+use FanxieLab\Warden\Modules\Hardening\Runtime\HeaderStripper;
+use FanxieLab\Warden\Modules\Hardening\Runtime\LoginErrorObfuscator;
+use FanxieLab\Warden\Modules\Hardening\Runtime\UserEnumerationGuard;
+use FanxieLab\Warden\Modules\Hardening\Runtime\VersionHider;
+use FanxieLab\Warden\Modules\Hardening\Runtime\XmlRpcGate;
+use FanxieLab\Warden\Modules\ModuleBase;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -62,7 +62,7 @@ final class Hardening extends ModuleBase {
 	 * Translatable display name.
 	 */
 	public function name(): string {
-		return __( 'Hardening', 'fanxie-wp-core' );
+		return __( 'Hardening', 'fanxie-warden' );
 	}
 
 	/**
@@ -140,15 +140,15 @@ final class Hardening extends ModuleBase {
 			// User enumeration.
 			[
 				'id'        => 'user_enumeration.block_author_archive',
-				'label'     => __( 'Block author enumeration', 'fanxie-wp-core' ),
+				'label'     => __( 'Block author enumeration', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Block guest requests to `/?author=N` that leak login slugs.', 'fanxie-wp-core' ),
+				'help'      => __( 'Block guest requests to `/?author=N` that leak login slugs.', 'fanxie-warden' ),
 			],
 			[
 				'id'        => 'user_enumeration.block_rest_users_endpoint',
-				'label'     => __( 'Block REST users endpoint for guests', 'fanxie-wp-core' ),
+				'label'     => __( 'Block REST users endpoint for guests', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
@@ -157,20 +157,20 @@ final class Hardening extends ModuleBase {
 			// XML-RPC.
 			[
 				'id'                 => 'xmlrpc.mode',
-				'label'              => __( 'XML-RPC mode', 'fanxie-wp-core' ),
+				'label'              => __( 'XML-RPC mode', 'fanxie-warden' ),
 				'type'               => 'select',
 				'default'            => XmlRpcGate::MODE_DISABLED,
 				'sanitizer_callback' => [ $this, 'sanitize_xmlrpc_mode' ],
 				'options'            => [
-					XmlRpcGate::MODE_DISABLED         => __( 'Disabled (recommended)', 'fanxie-wp-core' ),
-					XmlRpcGate::MODE_RESTRICT_METHODS => __( 'Restrict dangerous methods', 'fanxie-wp-core' ),
-					XmlRpcGate::MODE_RESTRICT_IPS     => __( 'Restrict by IP allowlist', 'fanxie-wp-core' ),
-					XmlRpcGate::MODE_OFF              => __( 'Off (no changes)', 'fanxie-wp-core' ),
+					XmlRpcGate::MODE_DISABLED         => __( 'Disabled (recommended)', 'fanxie-warden' ),
+					XmlRpcGate::MODE_RESTRICT_METHODS => __( 'Restrict dangerous methods', 'fanxie-warden' ),
+					XmlRpcGate::MODE_RESTRICT_IPS     => __( 'Restrict by IP allowlist', 'fanxie-warden' ),
+					XmlRpcGate::MODE_OFF              => __( 'Off (no changes)', 'fanxie-warden' ),
 				],
 			],
 			[
 				'id'                 => 'xmlrpc.allowed_ips',
-				'label'              => __( 'XML-RPC allowed IPs', 'fanxie-wp-core' ),
+				'label'              => __( 'XML-RPC allowed IPs', 'fanxie-warden' ),
 				'type'               => 'textarea',
 				'default'            => [],
 				'sanitizer_callback' => [ $this, 'sanitize_allowed_ips' ],
@@ -179,35 +179,35 @@ final class Hardening extends ModuleBase {
 			// Version hiding.
 			[
 				'id'        => 'version_hiding.remove_powered_by',
-				'label'     => __( 'Remove X-Powered-By header', 'fanxie-wp-core' ),
+				'label'     => __( 'Remove X-Powered-By header', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
 				'id'        => 'version_hiding.remove_wp_generator',
-				'label'     => __( 'Remove WordPress generator meta', 'fanxie-wp-core' ),
+				'label'     => __( 'Remove WordPress generator meta', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
 				'id'        => 'version_hiding.remove_rss_generator',
-				'label'     => __( 'Remove WordPress generator from feeds', 'fanxie-wp-core' ),
+				'label'     => __( 'Remove WordPress generator from feeds', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
 				'id'        => 'version_hiding.strip_version_query',
-				'label'     => __( 'Strip ?ver= cache-busters from assets', 'fanxie-wp-core' ),
+				'label'     => __( 'Strip ?ver= cache-busters from assets', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
 				'id'        => 'version_hiding.block_readme_license',
-				'label'     => __( 'Block /readme.html and /license.txt', 'fanxie-wp-core' ),
+				'label'     => __( 'Block /readme.html and /license.txt', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
@@ -216,14 +216,14 @@ final class Hardening extends ModuleBase {
 			// Uploads.
 			[
 				'id'        => 'uploads.drop_index',
-				'label'     => __( 'Drop index.php in uploads (suppress directory listing)', 'fanxie-wp-core' ),
+				'label'     => __( 'Drop index.php in uploads (suppress directory listing)', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
 			],
 			[
 				'id'        => 'uploads.block_php_execution',
-				'label'     => __( 'Block PHP execution in uploads', 'fanxie-wp-core' ),
+				'label'     => __( 'Block PHP execution in uploads', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
@@ -232,7 +232,7 @@ final class Hardening extends ModuleBase {
 			// Login.
 			[
 				'id'        => 'login.obfuscate_errors',
-				'label'     => __( 'Obfuscate login error messages', 'fanxie-wp-core' ),
+				'label'     => __( 'Obfuscate login error messages', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => true,
 				'sanitizer' => 'bool',
@@ -241,21 +241,21 @@ final class Hardening extends ModuleBase {
 			// File editing.
 			[
 				'id'        => 'file_editing.runtime_enforce',
-				'label'     => __( 'Disable theme/plugin editor at runtime', 'fanxie-wp-core' ),
+				'label'     => __( 'Disable theme/plugin editor at runtime', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Prefer adding DISALLOW_FILE_EDIT to wp-config.php. This toggle is a runtime fallback.', 'fanxie-wp-core' ),
+				'help'      => __( 'Prefer adding DISALLOW_FILE_EDIT to wp-config.php. This toggle is a runtime fallback.', 'fanxie-warden' ),
 			],
 
 			// Application Passwords.
 			[
 				'id'        => 'application_passwords.disable',
-				'label'     => __( 'Disable Application Passwords', 'fanxie-wp-core' ),
+				'label'     => __( 'Disable Application Passwords', 'fanxie-warden' ),
 				'type'      => 'toggle',
 				'default'   => false,
 				'sanitizer' => 'bool',
-				'help'      => __( 'Only recommended when no Application Passwords exist on the site.', 'fanxie-wp-core' ),
+				'help'      => __( 'Only recommended when no Application Passwords exist on the site.', 'fanxie-warden' ),
 			],
 		];
 	}

@@ -2,11 +2,11 @@
 /**
  * Minimal `WP_Error` shim loaded by the unit-mode bootstrap.
  *
- * Only implements what Fanxie WP Core callers touch: `__construct(
+ * Only implements what Fanxie Warden callers touch: `__construct(
  * $code, $message )`, `get_error_code()`, and `get_error_message()`.
  * Anything beyond that should be added as tests grow.
  *
- * @package FanxieLab\WPCore\Tests\Stubs
+ * @package FanxieLab\Warden\Tests\Stubs
  */
 
 declare( strict_types=1 );

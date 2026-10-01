@@ -2,19 +2,19 @@
 /**
  * Unit tests for the Login Protection attempt limiter.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\LoginProtection\BanStore;
-use FanxieLab\WPCore\Modules\LoginProtection\IpResolver;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRecorder;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
+use FanxieLab\Warden\Modules\LoginProtection\BanStore;
+use FanxieLab\Warden\Modules\LoginProtection\IpResolver;
+use FanxieLab\Warden\Modules\LoginProtection\LoginLogRecorder;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\AttemptLimiter;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
@@ -29,8 +29,18 @@ use PHPUnit\Framework\TestCase;
  */
 final class AttemptLimiterTest extends TestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
 	protected function setUp(): void {
 		parent::setUp();
+
+		$this->server_backup = $_SERVER;
 		Monkey\setUp();
 		Functions\when( '__' )->returnArg( 1 );
 
@@ -45,7 +55,7 @@ final class AttemptLimiterTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
-		unset( $_SERVER['REMOTE_ADDR'] );
+		$_SERVER = $this->server_backup;
 		Monkey\tearDown();
 		Mockery::close();
 		parent::tearDown();
@@ -111,7 +121,7 @@ final class AttemptLimiterTest extends TestCase {
 		// our own `gate()` block, not a genuine credential attempt.
 		Functions\when( 'get_transient' )->alias(
 			static function ( $key ): bool {
-				return str_starts_with( (string) $key, 'fanxie_wp_core_lp_lock_ip_' );
+				return str_starts_with( (string) $key, 'fanxie_warden_lp_lock_ip_' );
 			}
 		);
 
@@ -164,8 +174,8 @@ final class AttemptLimiterTest extends TestCase {
 
 		$limiter->on_success( 'bob' );
 
-		$this->assertContains( 'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.1' ), $deleted );
-		$this->assertContains( 'fanxie_wp_core_lp_cnt_user_' . md5( 'bob' ), $deleted );
+		$this->assertContains( 'fanxie_warden_lp_cnt_ip_' . md5( '203.0.113.1' ), $deleted );
+		$this->assertContains( 'fanxie_warden_lp_cnt_user_' . md5( 'bob' ), $deleted );
 	}
 
 	/**
@@ -208,13 +218,13 @@ final class AttemptLimiterTest extends TestCase {
 		// applied marker already records 3; no lock is present.
 		Functions\when( 'get_transient' )->alias(
 			static function ( $key ): mixed {
-				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_lock_' ) ) {
+				if ( str_starts_with( (string) $key, 'fanxie_warden_lp_lock_' ) ) {
 					return false;
 				}
-				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_applied_' ) ) {
+				if ( str_starts_with( (string) $key, 'fanxie_warden_lp_applied_' ) ) {
 					return 3;
 				}
-				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_cnt_' ) ) {
+				if ( str_starts_with( (string) $key, 'fanxie_warden_lp_cnt_' ) ) {
 					return 2;
 				}
 				return false;
@@ -248,8 +258,8 @@ final class AttemptLimiterTest extends TestCase {
 		// Empty username -> only the IP dimension bumps (the user bump short-circuits).
 		$limiter->on_failed( '' );
 
-		$applied_key = 'fanxie_wp_core_lp_applied_ip_' . md5( '203.0.113.20' );
-		$lock_key    = 'fanxie_wp_core_lp_lock_ip_' . md5( '203.0.113.20' );
+		$applied_key = 'fanxie_warden_lp_applied_ip_' . md5( '203.0.113.20' );
+		$lock_key    = 'fanxie_warden_lp_lock_ip_' . md5( '203.0.113.20' );
 
 		$this->assertNotContains( 'lockout', $events, 'Re-matching the applied tier must not re-log a lockout.' );
 		$this->assertContains( 'failed_login', $events, 'The genuine failure is still recorded.' );
@@ -270,13 +280,13 @@ final class AttemptLimiterTest extends TestCase {
 		// applied marker still records the lower threshold 3; no lock is present.
 		Functions\when( 'get_transient' )->alias(
 			static function ( $key ): mixed {
-				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_lock_' ) ) {
+				if ( str_starts_with( (string) $key, 'fanxie_warden_lp_lock_' ) ) {
 					return false;
 				}
-				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_applied_' ) ) {
+				if ( str_starts_with( (string) $key, 'fanxie_warden_lp_applied_' ) ) {
 					return 3;
 				}
-				if ( str_starts_with( (string) $key, 'fanxie_wp_core_lp_cnt_' ) ) {
+				if ( str_starts_with( (string) $key, 'fanxie_warden_lp_cnt_' ) ) {
 					return 5;
 				}
 				return false;
@@ -338,12 +348,12 @@ final class AttemptLimiterTest extends TestCase {
 		$limiter->on_failed( 'admin' );
 
 		$this->assertContains(
-			'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.30' ),
+			'fanxie_warden_lp_cnt_ip_' . md5( '203.0.113.30' ),
 			$set,
 			'The IP dimension is always counted.'
 		);
 		$this->assertNotContains(
-			'fanxie_wp_core_lp_cnt_user_' . md5( 'admin' ),
+			'fanxie_warden_lp_cnt_user_' . md5( 'admin' ),
 			$set,
 			'The username dimension must not be counted while lock_by_username is off.'
 		);
@@ -377,12 +387,12 @@ final class AttemptLimiterTest extends TestCase {
 		$limiter->on_failed( 'admin' );
 
 		$this->assertContains(
-			'fanxie_wp_core_lp_cnt_ip_' . md5( '203.0.113.31' ),
+			'fanxie_warden_lp_cnt_ip_' . md5( '203.0.113.31' ),
 			$set,
 			'The IP dimension is always counted.'
 		);
 		$this->assertContains(
-			'fanxie_wp_core_lp_cnt_user_' . md5( 'admin' ),
+			'fanxie_warden_lp_cnt_user_' . md5( 'admin' ),
 			$set,
 			'The username dimension is counted once opted in.'
 		);
@@ -422,7 +432,7 @@ final class AttemptLimiterTest extends TestCase {
 	public function test_gate_ignores_a_username_lock_transient_when_lock_by_username_off(): void {
 		$_SERVER['REMOTE_ADDR'] = '203.0.113.33';
 
-		$user_lock_key = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
+		$user_lock_key = 'fanxie_warden_lp_lock_user_' . md5( 'victim' );
 		Functions\when( 'get_transient' )->alias(
 			static function ( $key ) use ( $user_lock_key ): mixed {
 				return (string) $key === $user_lock_key ? 7 : false;
@@ -454,7 +464,7 @@ final class AttemptLimiterTest extends TestCase {
 	public function test_gate_enforces_a_username_lock_transient_when_opted_in(): void {
 		$_SERVER['REMOTE_ADDR'] = '203.0.113.34';
 
-		$user_lock_key = 'fanxie_wp_core_lp_lock_user_' . md5( 'victim' );
+		$user_lock_key = 'fanxie_warden_lp_lock_user_' . md5( 'victim' );
 		Functions\when( 'get_transient' )->alias(
 			static function ( $key ) use ( $user_lock_key ): mixed {
 				return (string) $key === $user_lock_key ? 9 : false;

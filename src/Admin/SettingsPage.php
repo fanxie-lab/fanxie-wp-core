@@ -2,15 +2,15 @@
 /**
  * Admin settings page — hosts the Vue 3 single-page app.
  *
- * @package FanxieLab\WPCore\Admin
+ * @package FanxieLab\Warden\Admin
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Admin;
+namespace FanxieLab\Warden\Admin;
 
-use FanxieLab\WPCore\Modules\ModuleRegistry;
-use FanxieLab\WPCore\Plugin;
+use FanxieLab\Warden\Modules\ModuleRegistry;
+use FanxieLab\Warden\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,11 +20,11 @@ defined( 'ABSPATH' ) || exit;
  * Enqueue contract (do NOT rename without coordinating with the frontend
  * agent — the Vite build ships files at exactly these paths):
  *
- *   - Script handle: `fanxie-wp-core-admin`  → assets/admin/dist/admin.js
- *   - Style handle:  `fanxie-wp-core-admin`  → assets/admin/dist/admin.css
+ *   - Script handle: `fanxie-warden-admin`  → assets/admin/dist/admin.js
+ *   - Style handle:  `fanxie-warden-admin`  → assets/admin/dist/admin.css
  *
- * The bootstrap object exposed at `window.fanxieWPCore` (shape is frozen;
- * filter `fanxie_wp_core/admin/bootstrap` allows consumers to extend it):
+ * The bootstrap object exposed at `window.fanxieWarden` (shape is frozen;
+ * filter `fanxie_warden/admin/bootstrap` allows consumers to extend it):
  *
  *   {
  *     version, ajaxUrl, adminUrl, restUrl, nonce, assetsUrl,
@@ -52,14 +52,14 @@ final class SettingsPage {
 	 *
 	 * @var string
 	 */
-	public const MENU_SLUG = 'fanxie-wp-core';
+	public const MENU_SLUG = 'fanxie-warden';
 
 	/**
 	 * Asset handle used for both the JS and CSS registrations.
 	 *
 	 * @var string
 	 */
-	public const ASSET_HANDLE = 'fanxie-wp-core-admin';
+	public const ASSET_HANDLE = 'fanxie-warden-admin';
 
 	/**
 	 * Monochrome shield used as the top-level menu icon. The glyph is baked to
@@ -80,7 +80,7 @@ final class SettingsPage {
 	 *
 	 * @var string
 	 */
-	public const VITE_CLIENT_HANDLE = 'fanxie-wp-core-vite-client';
+	public const VITE_CLIENT_HANDLE = 'fanxie-warden-vite-client';
 
 	/**
 	 * Relative path (from plugin root) to the Vite "hot file" marker.
@@ -122,12 +122,12 @@ final class SettingsPage {
 	 *
 	 * The first submenu row is relabeled "Settings" (WordPress otherwise
 	 * duplicates the top-level title). Slug is unchanged, so the settings screen
-	 * lives at `admin.php?page=fanxie-wp-core`.
+	 * lives at `admin.php?page=fanxie-warden`.
 	 */
 	public function register_menu(): void {
 		$hook = add_menu_page(
-			esc_html__( 'Fanxie WP Core', 'fanxie-wp-core' ),
-			esc_html__( 'FX Core', 'fanxie-wp-core' ),
+			esc_html__( 'Fanxie Warden', 'fanxie-warden' ),
+			esc_html__( 'FX Core', 'fanxie-warden' ),
 			Plugin::CAPABILITY,
 			self::MENU_SLUG,
 			[ $this, 'render' ],
@@ -138,8 +138,8 @@ final class SettingsPage {
 
 		add_submenu_page(
 			self::MENU_SLUG,
-			esc_html__( 'Fanxie WP Core', 'fanxie-wp-core' ),
-			esc_html__( 'Settings', 'fanxie-wp-core' ),
+			esc_html__( 'Fanxie Warden', 'fanxie-warden' ),
+			esc_html__( 'Settings', 'fanxie-warden' ),
 			Plugin::CAPABILITY,
 			self::MENU_SLUG,
 			[ $this, 'render' ]
@@ -153,7 +153,7 @@ final class SettingsPage {
 	 */
 	public function render(): void {
 		if ( ! current_user_can( Plugin::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to access this page.', 'fanxie-wp-core' ) );
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'fanxie-warden' ) );
 		}
 
 		$hot_url       = $this->hot_server_url();
@@ -162,13 +162,13 @@ final class SettingsPage {
 
 		$bootstrap_json = wp_json_encode( $this->get_bootstrap() );
 		// Defensive fallback: if JSON encoding fails, emit an empty object so
-		// the SPA's `window.fanxieWPCore` reference never goes undefined.
-		$bootstrap_js = 'window.fanxieWPCore = ' . ( false === $bootstrap_json ? '{}' : $bootstrap_json ) . ';';
+		// the SPA's `window.fanxieWarden` reference never goes undefined.
+		$bootstrap_js = 'window.fanxieWarden = ' . ( false === $bootstrap_json ? '{}' : $bootstrap_json ) . ';';
 		?>
 		<div class="wrap">
 			<?php
 			/*
-			 * Emit the `window.fanxieWPCore` hydration bootstrap inline here,
+			 * Emit the `window.fanxieWarden` hydration bootstrap inline here,
 			 * rather than attaching it to a script handle via
 			 * `wp_add_inline_script( ..., 'before' )`.
 			 *
@@ -192,16 +192,16 @@ final class SettingsPage {
 			echo wp_get_inline_script_tag( $bootstrap_js ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_inline_script_tag() is the proper helper; it handles attributes and wraps contents, and wp_json_encode() escapes slashes to prevent `</script>` injection.
 			?>
 
-			<h1 class="screen-reader-text"><?php echo esc_html__( 'Fanxie WP Core', 'fanxie-wp-core' ); ?></h1>
+			<h1 class="screen-reader-text"><?php echo esc_html__( 'Fanxie Warden', 'fanxie-warden' ); ?></h1>
 
 			<?php if ( $is_dev ) : ?>
 				<div class="notice notice-info" style="margin: 0 0 16px;">
 					<p>
-						<strong><?php echo esc_html__( 'Vite dev server connected.', 'fanxie-wp-core' ); ?></strong>
+						<strong><?php echo esc_html__( 'Vite dev server connected.', 'fanxie-warden' ); ?></strong>
 						<?php
 						printf(
 							/* translators: %s: Vite dev server URL (e.g. http://localhost:5173) */
-							esc_html__( 'HMR active at %s.', 'fanxie-wp-core' ),
+							esc_html__( 'HMR active at %s.', 'fanxie-warden' ),
 							'<code>' . esc_html( $hot_url ) . '</code>'
 						);
 						?>
@@ -215,20 +215,20 @@ final class SettingsPage {
 						<?php
 						echo esc_html__(
 							'Admin UI build missing — run `npm run build` in `assets/admin/`.',
-							'fanxie-wp-core'
+							'fanxie-warden'
 						);
 						?>
 					</p>
 				</div>
 			<?php endif; ?>
 
-			<div id="fanxie-wp-core-admin" data-version="<?php echo esc_attr( FANXIE_WP_CORE_VERSION ); ?>">
+			<div id="fanxie-warden-admin" data-version="<?php echo esc_attr( FANXIE_WARDEN_VERSION ); ?>">
 				<noscript>
 					<p>
 						<?php
 						echo esc_html__(
-							'Fanxie WP Core requires JavaScript to configure. See the documentation for alternative options.',
-							'fanxie-wp-core'
+							'Fanxie Warden requires JavaScript to configure. See the documentation for alternative options.',
+							'fanxie-warden'
 						);
 						?>
 					</p>
@@ -247,7 +247,7 @@ final class SettingsPage {
 	 *     ES modules. No CSS — Vite injects styles via JS in dev.
 	 *   - Prod: enqueue the built `dist/admin.js` + `dist/admin.css` bundle.
 	 *
-	 * The `window.fanxieWPCore` bootstrap is emitted directly inside
+	 * The `window.fanxieWarden` bootstrap is emitted directly inside
 	 * `render()` — see the docblock there for the rationale.
 	 *
 	 * @param string $hook_suffix Current admin screen's hook suffix.
@@ -274,13 +274,13 @@ final class SettingsPage {
 			return;
 		}
 
-		$dist_url = FANXIE_WP_CORE_URL . 'assets/admin/dist/';
+		$dist_url = FANXIE_WARDEN_URL . 'assets/admin/dist/';
 
 		wp_enqueue_style(
 			self::ASSET_HANDLE,
 			$dist_url . 'admin.css',
 			[],
-			FANXIE_WP_CORE_VERSION
+			FANXIE_WARDEN_VERSION
 		);
 
 		// No `strategy => 'defer'`: the tag is rewritten to `type="module"`
@@ -291,7 +291,7 @@ final class SettingsPage {
 			self::ASSET_HANDLE,
 			$dist_url . 'admin.js',
 			[],
-			FANXIE_WP_CORE_VERSION,
+			FANXIE_WARDEN_VERSION,
 			[ 'in_footer' => true ]
 		);
 
@@ -364,7 +364,7 @@ final class SettingsPage {
 		 * Rewrite the enqueued module tags to add `type="module"` (plus
 		 * `crossorigin` in dev).
 		 *
-		 * The `window.fanxieWPCore` bootstrap is emitted directly in `render()`
+		 * The `window.fanxieWarden` bootstrap is emitted directly in `render()`
 		 * — not attached to these handles via `wp_add_inline_script(..., 'before')`
 		 * — so there is no inline-before payload that a wholesale rewrite would
 		 * drop. The filter can safely return a freshly-built tag.
@@ -404,7 +404,7 @@ final class SettingsPage {
 	 * @return string|null Trimmed URL, or null when no dev server is running.
 	 */
 	private function hot_server_url(): ?string {
-		$path = FANXIE_WP_CORE_PATH . self::HOT_FILE_RELATIVE_PATH;
+		$path = FANXIE_WARDEN_PATH . self::HOT_FILE_RELATIVE_PATH;
 
 		if ( ! is_readable( $path ) ) {
 			return null;
@@ -423,21 +423,21 @@ final class SettingsPage {
 	}
 
 	/**
-	 * Build the bootstrap payload mirrored into `window.fanxieWPCore`.
+	 * Build the bootstrap payload mirrored into `window.fanxieWarden`.
 	 *
 	 * The returned shape is a public contract with the frontend agent — do
-	 * not remove keys. Extend via the `fanxie_wp_core/admin/bootstrap` filter.
+	 * not remove keys. Extend via the `fanxie_warden/admin/bootstrap` filter.
 	 *
 	 * @return array<string, mixed>
 	 */
 	private function get_bootstrap(): array {
 		$bootstrap = [
-			'version'   => FANXIE_WP_CORE_VERSION,
+			'version'   => FANXIE_WARDEN_VERSION,
 			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
 			'adminUrl'  => admin_url(),
-			'restUrl'   => esc_url_raw( rest_url( 'fanxie-wp-core/v1/' ) ),
-			'nonce'     => wp_create_nonce( 'fanxie_wp_core_admin' ),
-			'assetsUrl' => FANXIE_WP_CORE_URL . 'assets/admin/dist/',
+			'restUrl'   => esc_url_raw( rest_url( 'fanxie-warden/v1/' ) ),
+			'nonce'     => wp_create_nonce( 'fanxie_warden_admin' ),
+			'assetsUrl' => FANXIE_WARDEN_URL . 'assets/admin/dist/',
 			'user'      => [
 				'id'   => get_current_user_id(),
 				'caps' => [
@@ -451,13 +451,13 @@ final class SettingsPage {
 		];
 
 		/**
-		 * Filter: fanxie_wp_core/admin/bootstrap
+		 * Filter: fanxie_warden/admin/bootstrap
 		 *
 		 * Modifies the bootstrap payload sent to the Vue SPA.
 		 *
 		 * @param array<string, mixed> $bootstrap Bootstrap payload.
 		 */
-		$filtered = apply_filters( 'fanxie_wp_core/admin/bootstrap', $bootstrap );
+		$filtered = apply_filters( 'fanxie_warden/admin/bootstrap', $bootstrap );
 
 		return is_array( $filtered ) ? $filtered : $bootstrap;
 	}
@@ -487,6 +487,6 @@ final class SettingsPage {
 	 * Does the Vite production build exist on disk?
 	 */
 	private function build_exists(): bool {
-		return file_exists( FANXIE_WP_CORE_PATH . 'assets/admin/dist/admin.js' );
+		return file_exists( FANXIE_WARDEN_PATH . 'assets/admin/dist/admin.js' );
 	}
 }

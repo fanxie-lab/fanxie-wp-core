@@ -1,5 +1,5 @@
 /*
- * Fanxie WP Core — admin SPA base styles.
+ * Fanxie Warden — admin SPA base styles.
  *
  * Light-mode only. The palette is derived from fanxielab.com
  * (Astro build `/_astro/BaseLayout.CGbMIyLU.css`) so the plugin
@@ -16,7 +16,7 @@
  *   Critical    #ff4d4d   (brand error)
  *   Warning     #ffaa00   (brand warning, expanded from #fa0)
  *
- * Everything is scoped under #fanxie-wp-core-admin so we never leak styles
+ * Everything is scoped under #fanxie-warden-admin so we never leak styles
  * into the surrounding WP admin chrome. Components own their visual rules
  * via <style scoped>; this file defines tokens + typography + a11y primitives
  * shared across the app.
@@ -34,7 +34,7 @@
 @import '@fontsource/lexend/600.css';
 @import '@fontsource/lexend/800.css';
 
-#fanxie-wp-core-admin {
+#fanxie-warden-admin {
   /* ------------------------------------------------------------------
    * Colour tokens — derived from fanxielab.com
    * ---------------------------------------------------------------- */
@@ -180,17 +180,17 @@
   text-rendering: optimizeLegibility;
 }
 
-#fanxie-wp-core-admin *,
-#fanxie-wp-core-admin *::before,
-#fanxie-wp-core-admin *::after {
+#fanxie-warden-admin *,
+#fanxie-warden-admin *::before,
+#fanxie-warden-admin *::after {
   box-sizing: inherit;
 }
 
 /* Reduced motion — always respected. */
 @media (prefers-reduced-motion: reduce) {
-  #fanxie-wp-core-admin *,
-  #fanxie-wp-core-admin *::before,
-  #fanxie-wp-core-admin *::after {
+  #fanxie-warden-admin *,
+  #fanxie-warden-admin *::before,
+  #fanxie-warden-admin *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -200,10 +200,10 @@
 
 /* ---------------- Base element resets, scoped ------------------------ */
 
-#fanxie-wp-core-admin h1,
-#fanxie-wp-core-admin h2,
-#fanxie-wp-core-admin h3,
-#fanxie-wp-core-admin h4 {
+#fanxie-warden-admin h1,
+#fanxie-warden-admin h2,
+#fanxie-warden-admin h3,
+#fanxie-warden-admin h4 {
   font-family: var(--fx-font-heading);
   color: var(--fx-color-text);
   line-height: var(--fx-line-height-tight);
@@ -211,39 +211,39 @@
   letter-spacing: -0.01em;
 }
 
-#fanxie-wp-core-admin h1 {
+#fanxie-warden-admin h1 {
   font-size: var(--fx-font-size-3xl);
   font-weight: var(--fx-font-weight-semibold);
 }
 
-#fanxie-wp-core-admin h2 {
+#fanxie-warden-admin h2 {
   margin: 0;
   font-size: var(--fx-font-size-2xl);
   font-weight: var(--fx-font-weight-semibold);
 }
 
-#fanxie-wp-core-admin h3 {
+#fanxie-warden-admin h3 {
   font-size: var(--fx-font-size-xl);
   font-weight: var(--fx-font-weight-medium);
 }
 
-#fanxie-wp-core-admin h4 {
+#fanxie-warden-admin h4 {
   font-size: var(--fx-font-size-lg);
   font-weight: var(--fx-font-weight-medium);
 }
 
-#fanxie-wp-core-admin p {
+#fanxie-warden-admin p {
   margin: 0 0 var(--fx-space-3);
 }
 
-:where(#fanxie-wp-core-admin button) {
+:where(#fanxie-warden-admin button) {
   font: inherit;
   color: inherit;
 }
 
-#fanxie-wp-core-admin code,
-#fanxie-wp-core-admin kbd,
-#fanxie-wp-core-admin samp {
+#fanxie-warden-admin code,
+#fanxie-warden-admin kbd,
+#fanxie-warden-admin samp {
   font-family: var(--fx-font-mono);
 }
 
@@ -253,7 +253,7 @@
  * body copy. A future `.fx-link` utility can opt in to underlines for
  * inline body-copy links; no consumer uses it yet.
  * ------------------------------------------------------------------- */
-:where(#fanxie-wp-core-admin a) {
+:where(#fanxie-warden-admin a) {
   text-decoration: none;
   color: inherit;
 }
@@ -270,26 +270,26 @@
  * only — component rules can still override by adding !important too
  * if they genuinely need a different focus treatment.
  * ------------------------------------------------------------------- */
-#fanxie-wp-core-admin a:focus,
-#fanxie-wp-core-admin a:active,
-#fanxie-wp-core-admin button:focus,
-#fanxie-wp-core-admin [role='tab']:focus,
-#fanxie-wp-core-admin [role='switch']:focus {
+#fanxie-warden-admin a:focus,
+#fanxie-warden-admin a:active,
+#fanxie-warden-admin button:focus,
+#fanxie-warden-admin [role='tab']:focus,
+#fanxie-warden-admin [role='switch']:focus {
   outline: none !important;
   box-shadow: none !important;
 }
 
-#fanxie-wp-core-admin a:focus-visible,
-#fanxie-wp-core-admin button:focus-visible,
-#fanxie-wp-core-admin [role='tab']:focus-visible,
-#fanxie-wp-core-admin [role='switch']:focus-visible {
+#fanxie-warden-admin a:focus-visible,
+#fanxie-warden-admin button:focus-visible,
+#fanxie-warden-admin [role='tab']:focus-visible,
+#fanxie-warden-admin [role='switch']:focus-visible {
   outline: 2px solid var(--fx-color-focus-ring) !important;
   outline-offset: 2px;
   border-radius: var(--fx-radius-sm);
 }
 
 /* Visually hidden utility — keeps screen readers informed without painting. */
-#fanxie-wp-core-admin .fx-visually-hidden {
+#fanxie-warden-admin .fx-visually-hidden {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;

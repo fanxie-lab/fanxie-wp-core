@@ -2,12 +2,12 @@
 /**
  * XML-RPC gate with three enforcement modes.
  *
- * @package FanxieLab\WPCore\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Modules\Hardening\Runtime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -106,7 +106,7 @@ final class XmlRpcGate {
 
 		if ( function_exists( 'wp_die' ) ) {
 			wp_die(
-				esc_html__( 'XML-RPC services are disabled on this site.', 'fanxie-wp-core' ),
+				esc_html__( 'XML-RPC services are disabled on this site.', 'fanxie-warden' ),
 				'',
 				[ 'response' => 403 ]
 			);
@@ -206,7 +206,7 @@ final class XmlRpcGate {
 		}
 
 		/**
-		 * Filter: fanxie_wp_core/hardening/xmlrpc_allowed_ips
+		 * Filter: fanxie_warden/hardening/xmlrpc_allowed_ips
 		 *
 		 * Override the XML-RPC IP allowlist at runtime.
 		 *
@@ -215,7 +215,7 @@ final class XmlRpcGate {
 		 * @param array<int, string>   $clean  Sanitised IP allowlist.
 		 * @param array<string, mixed> $config Module config snapshot.
 		 */
-		$filtered = apply_filters( 'fanxie_wp_core/hardening/xmlrpc_allowed_ips', $clean, $this->config );
+		$filtered = apply_filters( 'fanxie_warden/hardening/xmlrpc_allowed_ips', $clean, $this->config );
 
 		return is_array( $filtered ) ? array_values( array_filter( $filtered, 'is_string' ) ) : $clean;
 	}

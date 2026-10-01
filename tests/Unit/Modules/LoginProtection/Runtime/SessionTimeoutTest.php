@@ -2,16 +2,16 @@
 /**
  * Unit tests for the Login Protection per-role session timeout.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\SessionTimeout;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\SessionTimeout;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -148,12 +148,12 @@ final class SessionTimeoutTest extends TestCase {
 
 		( new SessionTimeout( $this->config() ) )->enqueue_idle_script();
 
-		$this->assertSame( [ 'fanxie-wp-core-idle-logout' ], $enqueued );
-		$this->assertSame( 'fanxie-wp-core-idle-logout', $inline['handle'] );
+		$this->assertSame( [ 'fanxie-warden-idle-logout' ], $enqueued );
+		$this->assertSame( 'fanxie-warden-idle-logout', $inline['handle'] );
 		$this->assertSame( 'before', $inline['position'] );
 
 		// The config is assigned to the same global the script reads.
-		$this->assertStringContainsString( 'window.fanxieWpCoreIdle =', $inline['data'] );
+		$this->assertStringContainsString( 'window.fanxieWardenIdle =', $inline['data'] );
 
 		// Regression guard: the timeout MUST be delivered as a bare JSON number.
 		// The old wp_localize_script() path stringified it to "1800000", which
@@ -162,7 +162,7 @@ final class SessionTimeoutTest extends TestCase {
 		$this->assertStringNotContainsString( '"timeoutMs":"', $inline['data'] );
 
 		// Decode the injected literal and prove the type + values survived.
-		$json    = trim( str_replace( 'window.fanxieWpCoreIdle =', '', $inline['data'] ) );
+		$json    = trim( str_replace( 'window.fanxieWardenIdle =', '', $inline['data'] ) );
 		$decoded = json_decode( rtrim( $json, ';' ), true );
 		$this->assertIsInt( $decoded['timeoutMs'] );
 		$this->assertSame( 30 * 60 * 1000, $decoded['timeoutMs'] );

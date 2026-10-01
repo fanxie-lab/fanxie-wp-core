@@ -2,12 +2,12 @@
 /**
  * Client IP resolver for the Login Protection module.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection
+ * @package FanxieLab\Warden\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection;
+namespace FanxieLab\Warden\Modules\LoginProtection;
 
 defined( 'ABSPATH' ) || exit;
 

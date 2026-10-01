@@ -87,9 +87,9 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 ### 1.3 Login Protection (PRD §5)  *(→ wordpress-development-expert + frontend-expert)*
 - [x] Failed-attempt tracker (IP + username) with tiered lockouts (echo-suppressed; strictly-higher-tier re-arm — no renewal DoS)
 - [x] IP allowlist + trusted-proxy toggle (`REMOTE_ADDR`-only by default)
-- [x] Storage: transients (short lockouts) + custom tables `fanxie_core_login_log` (history) & `fanxie_core_login_bans` (persistent bans)
+- [x] Storage: transients (short lockouts) + custom tables `fx_warden_login_log` (history) & `fx_warden_login_bans` (persistent bans)
 - [x] Hide `wp-login.php` behind custom slug, `/wp-admin` redirect, `wp-login.php?action=` variants (admin-ajax/REST/cron carve-outs)
-- [x] Email owner on slug change; `FX_CORE_LOGIN_SLUG` constant + WP-CLI `wp fx-core login reveal` / `unlock` recovery commands
+- [x] Email owner on slug change; `FX_WARDEN_LOGIN_SLUG` constant + WP-CLI `wp fx-warden login reveal` / `unlock` recovery commands
 - [x] Strong password enforcement (length, case, digit, symbol; configurable) on new/changed passwords only
 - [x] Role-based session timeout via `auth_cookie_expiration` (shorten-only) + admin idle-logout JS
 - [x] Vue tab: attempt config, lockout log table + ban/unban, slug changer with confirmation, password policy builder, per-role timeouts
@@ -98,11 +98,11 @@ Companion tracker for [`prd-fanxie-wp-core-v0.5.md`](./prd-fanxie-wp-core-v0.5.m
 ### 1.3b Login Protection — 2FA enforcement (follow-on)  *(→ wordpress-development-expert + frontend-expert)*
 - [ ] Enforce 2FA on top of WordPress's official Two-Factor plugin (detect/offer install, per-role enrollment enforcement + grace window). Pulled forward from v2; separate spec/plan.
 
-### 1.3c Constants renaming: `FANXIE_*` -> `FX_CORE_*`  *(→ wordpress-development-expert)*
+### 1.3c Constants renaming: `FANXIE_*` -> `FX_CORE_*`  *(→ wordpress-development-expert)* *(superseded by Phase 7 rename → `FX_WARDEN_*`)*
 - [x] Audit every constant against the CLAUDE.md §3.1 convention (user-facing wp-config overrides use `FX_CORE_*`; internal bootstrap constants stay `FANXIE_WP_CORE_*`)
 - [x] Rename `FANXIE_WP_CORE_DELETE_ALL_DATA` -> `FX_CORE_DELETE_ALL_DATA` (the only misnamed user-facing constant; `FX_CORE_LOGIN_SLUG` and the `fx-core` CLI root already complied)
 - [x] Document both override constants in `docs/hooks.md`
-- [-] Options / tables / hooks left on `fanxie_wp_core_*` and `fanxie_core_*` — deliberate per CLAUDE.md §3.1; renaming them would break stored data for no user-visible benefit
+- [-] Options / tables / hooks left on `fanxie_wp_core_*` and `fanxie_core_*` — deliberate per CLAUDE.md §3.1; renaming them would break stored data for no user-visible benefit *(superseded 2026-10-01: all renamed under Phase 7 — see RENAME item)*
 
 ---
 
@@ -164,10 +164,10 @@ checked against php.net and endoflife.date.
 - [ ] Tests: each cleanup function, Action Scheduler registration, CLI commands
 
 ### 3.2 Activity Log (PRD §9)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] Custom table `{prefix}fanxie_activity_log` via `dbDelta`
+- [ ] Custom table `{prefix}fx_warden_activity_log` via `dbDelta`
 - [ ] Event recorders: plugin/theme lifecycle, user CRUD, core update, auth events, content deletion, settings changes
 - [ ] 90-day retention with Action Scheduler prune
-- [ ] WP-CLI `wp fanxie log list` + `log export --format=csv`
+- [ ] WP-CLI `wp fx-warden log list` + `log export --format=csv`
 - [ ] Vue log viewer: pagination, filters (event type, user, date range), CSV export button
 - [ ] Tests: each recorder fires once per event, retention prune, CSV shape
 
@@ -211,7 +211,7 @@ checked against php.net and endoflife.date.
 
 ## Phase 7 — wp.org Submission  *(PRD §15 phase 7)*
 
-- [ ] **RENAME — "Fanxie WP Core" → "Fanxie Warden"** *(name chosen 2026-09-03; rename not yet executed)*
+- [x] **RENAME — "Fanxie WP Core" → "Fanxie Warden"** *(name chosen 2026-09-03; done 2026-10-01 on `phase/7-rename-warden`. `_PRD/` filenames and historical `docs/superpowers/` records intentionally keep the old name.)*
   wordpress.org bans the term "wp" outright in both the plugin name and the
   slug; Plugin Check reports it as `trademarked_term` and it is a hard rejection
   at submission, not a negotiable warning. Cheapest to fix while unreleased — no
@@ -235,7 +235,7 @@ checked against php.net and endoflife.date.
   - Text domain `fanxie-wp-core` → `fanxie-warden` on every `__()` / `esc_html__()` /
     `_n()` / `_x()` call, plus the `Text Domain:` header and `languages/*.pot`
   - `readme.txt` title line and description
-  - Repo name
+  - ~~Repo name~~ — not renamed (see below)
 
   **Rename surface — internal (optional; decided: CHANGE for readability, since
   nothing has shipped and no migration is owed):**
@@ -251,17 +251,17 @@ checked against php.net and endoflife.date.
     and the `window.fanxieWPCore` bootstrap global → `window.fanxieWarden`
   - CI workflows, `phpcs.xml.dist` prefix/text-domain rules, Playwright selectors
 
-  **Deliberately NOT changed:**
-  - Custom table prefix `{$wpdb->prefix}fanxie_core_*` — already free of "wp",
-    already shipped in three modules' `dbDelta` schemas, and invisible to wp.org
-    review. Renaming buys nothing and risks a broken install path.
-  - WP-CLI root command `fx-core` — already compliant, already documented in
-    `docs/hooks.md` and the recovery instructions emailed on a login-slug change.
-  - Override constants `FX_CORE_*` — already compliant; users may already have
-    `FX_CORE_LOGIN_SLUG` in a `wp-config.php`.
-- [ ] Verify the rename left no `fanxie-wp-core` / `fanxie_wp_core` / `WPCore` /
-  `FANXIE_WP_CORE` strings outside the three deliberate exceptions above
-- [ ] Full Plugin Check **zero** errors/warnings on complete plugin
+  **Originally kept, then renamed too (user decision 2026-10-01; local dev data wiped, no migration):**
+  - Custom table prefix `{$wpdb->prefix}fanxie_core_*` → `{$wpdb->prefix}fx_warden_*`
+  - WP-CLI root command `fx-core` → `fx-warden`
+  - Override constants `FX_CORE_*` → `FX_WARDEN_*`
+
+  **Not renamed (user decision 2026-10-01):** the GitHub repo and local checkout
+  folder stay `fanxie-wp-core`; wp-env mounts the plugin under that folder name.
+  The release archive must package the plugin as `fanxie-warden/`.
+- [x] Verify the rename left no `fanxie-wp-core` / `fanxie_wp_core` / `WPCore` /
+  `FANXIE_WP_CORE` / `fx-core` / `FX_CORE` / `fanxie_core` strings outside `_PRD/` and historical docs
+- [ ] Full Plugin Check **zero** errors/warnings on complete plugin — **gate runs against the shippable package** (the built archive, extracted as `fanxie-warden/`), not the dev checkout. The `fanxie-wp-core` dev folder name is irrelevant to the gate (decided 2026-10-01). CI `plugin-check` job must be pointed at the package build before the warnings flag flips.
 - [ ] Build a distribution archive that excludes `tests/`, `.github/`, `node_modules/`,
   and dev configs — most Plugin Check findings against the dev checkout come from
   test fixtures that never ship (146 of 184 at the end of Phase 2)
@@ -279,19 +279,19 @@ checked against php.net and endoflife.date.
 
 ## Known issues
 
-- [ ] **Integration suite is order-fragile.** `LoginSlugGuardIntegrationTest`
-  calls `define( 'FX_CORE_LOGIN_SLUG', … )`, which leaks process-wide. Combined
+- [x] **Integration suite is order-fragile.** *(fixed 2026-10-01: four process-wide constants — `FX_WARDEN_LOGIN_SLUG`, `DOING_AJAX`, `WP_ADMIN`, `REST_REQUEST` — were defined by tests without isolation; now run in separate processes or replaced with filters, and a `$_SERVER['REQUEST_URI']` non-restore fixed. Suites pass in default, reverse and multiple random-seed orders.)* `LoginSlugGuardIntegrationTest`
+  calls `define( 'FX_WARDEN_LOGIN_SLUG', … )`, which leaks process-wide. Combined
   with `executionOrder="depends,defects"` in `phpunit.xml.dist`, a stale
   `.phpunit.cache` from a previously failed run reorders that test ahead of
   `test_password_reset_link_is_rewritten_and_preserves_its_query`, which then
   fails. Reproduced once at the end of Phase 2; three consecutive runs from a
   cleared cache pass, so it is masked by ordering rather than genuinely fixed.
-  It will resurface in CI after any failing run. Fix by isolating the constant
+  It will resurface in CI after any failing run. Re-confirmed 2026-10-01: default order passes (139 tests), but `--order-by=random` seeds 111/222 fail 4 and 6 tests in `LoginSlugGuardIntegrationTest`. Fix by isolating the constant
   (`@runInSeparateProcess`) or by dropping `defects` from the execution order.
 
 ## Cross-phase ongoing items
 
-- [ ] Every new user-facing string has text domain `fanxie-wp-core`
+- [ ] Every new user-facing string has text domain `fanxie-warden`
 - [ ] Every destructive op has a `--dry-run` and a UI confirmation
 - [ ] Every AJAX action: nonce + capability, documented in `docs/hooks.md`
 - [ ] Every module: enabled/disabled cost benchmark recorded

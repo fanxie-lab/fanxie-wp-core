@@ -2,12 +2,12 @@
 /**
  * Per-role session timeout: shorten auth-cookie lifetimes + idle-logout on admin.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection\Runtime
+ * @package FanxieLab\Warden\Modules\LoginProtection\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection\Runtime;
+namespace FanxieLab\Warden\Modules\LoginProtection\Runtime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -34,7 +34,7 @@ final class SessionTimeout {
 	 *
 	 * @var string
 	 */
-	private const SCRIPT_HANDLE = 'fanxie-wp-core-idle-logout';
+	private const SCRIPT_HANDLE = 'fanxie-warden-idle-logout';
 
 	/**
 	 * Plugin-relative path to the checked-in idle-logout script.
@@ -48,7 +48,7 @@ final class SessionTimeout {
 	 *
 	 * @var string
 	 */
-	private const SCRIPT_OBJECT = 'fanxieWpCoreIdle';
+	private const SCRIPT_OBJECT = 'fanxieWardenIdle';
 
 	/**
 	 * Fallback timeout (minutes) when a role has no explicit entry and the config
@@ -149,12 +149,12 @@ final class SessionTimeout {
 			return;
 		}
 
-		$path    = FANXIE_WP_CORE_PATH . self::SCRIPT_PATH;
-		$version = file_exists( $path ) ? (string) filemtime( $path ) : FANXIE_WP_CORE_VERSION;
+		$path    = FANXIE_WARDEN_PATH . self::SCRIPT_PATH;
+		$version = file_exists( $path ) ? (string) filemtime( $path ) : FANXIE_WARDEN_VERSION;
 
 		wp_enqueue_script(
 			self::SCRIPT_HANDLE,
-			FANXIE_WP_CORE_URL . self::SCRIPT_PATH,
+			FANXIE_WARDEN_URL . self::SCRIPT_PATH,
 			[],
 			$version,
 			[ 'in_footer' => true ]
@@ -166,7 +166,7 @@ final class SessionTimeout {
 		 * scalar to a string before JSON-encoding, so `timeoutMs` would reach the
 		 * browser as the STRING "1800000"; wp_json_encode() preserves the integer
 		 * type so the script receives a real number. This mirrors how the admin
-		 * SPA hydrates `window.fanxieWPCore` (see Admin\SettingsPage).
+		 * SPA hydrates `window.fanxieWarden` (see Admin\SettingsPage).
 		 */
 		$config = wp_json_encode(
 			[

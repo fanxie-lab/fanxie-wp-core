@@ -2,16 +2,16 @@
 /**
  * Admin AJAX sub-actions for the Login Protection module.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection
+ * @package FanxieLab\Warden\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection;
+namespace FanxieLab\Warden\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\LoginSlugGuard;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\AttemptLimiter;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\LoginSlugGuard;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * AJAX surface consumed by the Login Protection Vue admin UI.
  *
- * Nonce + the `manage_fanxie_wp_core` capability are enforced centrally by the
+ * Nonce + the `manage_fanxie_warden` capability are enforced centrally by the
  * {@see AjaxRouter} dispatcher; each handler here validates its own payload,
  * delegates to the module / repositories / runtime helpers, and returns either
  * an array (success envelope) or a {@see WP_Error} (surfaced to the client as a
@@ -38,7 +38,7 @@ final class AjaxController {
 	 *
 	 * @var string
 	 */
-	public const PRUNE_HOOK = 'fanxie_wp_core_login_protection_prune';
+	public const PRUNE_HOOK = 'fanxie_warden_login_protection_prune';
 
 	/**
 	 * Subject dimensions a ban / lockout action may target.
@@ -107,7 +107,7 @@ final class AjaxController {
 	 */
 	public function handle_save_config( array $payload ): array|WP_Error {
 		if ( ! isset( $payload['config'] ) || ! is_array( $payload['config'] ) ) {
-			return new WP_Error( 'invalid_config', __( 'Configuration payload must be an object.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'invalid_config', __( 'Configuration payload must be an object.', 'fanxie-warden' ) );
 		}
 
 		$incoming   = $payload['config'];
@@ -118,7 +118,7 @@ final class AjaxController {
 			if ( '' === $this->module->sanitize_slug( $raw_slug ) ) {
 				return new WP_Error(
 					'invalid_slug',
-					__( 'Choose a custom login slug that is not a reserved WordPress path.', 'fanxie-wp-core' ),
+					__( 'Choose a custom login slug that is not a reserved WordPress path.', 'fanxie-warden' ),
 					[ 'field' => 'hide_login.slug' ]
 				);
 			}
@@ -212,7 +212,7 @@ final class AjaxController {
 		if ( 'ip' === $type && false === filter_var( $value, FILTER_VALIDATE_IP ) ) {
 			return new WP_Error(
 				'invalid_ip',
-				__( 'Enter a valid IP address to ban.', 'fanxie-wp-core' ),
+				__( 'Enter a valid IP address to ban.', 'fanxie-warden' ),
 				[ 'field' => 'subject_value' ]
 			);
 		}
@@ -302,7 +302,7 @@ final class AjaxController {
 		if ( ! in_array( $type, self::SUBJECT_TYPES, true ) ) {
 			return new WP_Error(
 				'invalid_subject_type',
-				__( 'The ban subject must be an IP address or a username.', 'fanxie-wp-core' ),
+				__( 'The ban subject must be an IP address or a username.', 'fanxie-warden' ),
 				[ 'field' => 'subject_type' ]
 			);
 		}
@@ -321,7 +321,7 @@ final class AjaxController {
 		if ( '' === $value ) {
 			return new WP_Error(
 				'invalid_subject_value',
-				__( 'A subject value is required.', 'fanxie-wp-core' ),
+				__( 'A subject value is required.', 'fanxie-warden' ),
 				[ 'field' => 'subject_value' ]
 			);
 		}
@@ -351,11 +351,11 @@ final class AjaxController {
 	}
 
 	/**
-	 * Where the active login slug comes from: the `FX_CORE_LOGIN_SLUG` wp-config
+	 * Where the active login slug comes from: the `FX_WARDEN_LOGIN_SLUG` wp-config
 	 * constant (when defined and non-empty) or the stored setting.
 	 */
 	private function slug_source(): string {
-		if ( defined( 'FX_CORE_LOGIN_SLUG' ) && '' !== (string) constant( 'FX_CORE_LOGIN_SLUG' ) ) {
+		if ( defined( 'FX_WARDEN_LOGIN_SLUG' ) && '' !== (string) constant( 'FX_WARDEN_LOGIN_SLUG' ) ) {
 			return 'constant';
 		}
 		return 'stored';
@@ -407,14 +407,14 @@ final class AjaxController {
 			return;
 		}
 
-		$subject = __( 'Your WordPress login URL has changed', 'fanxie-wp-core' );
+		$subject = __( 'Your WordPress login URL has changed', 'fanxie-warden' );
 
 		if ( '' === $new_active_slug ) {
-			$message = __( 'The custom login URL for your site has been removed. You can sign in at the default WordPress login screen.', 'fanxie-wp-core' );
+			$message = __( 'The custom login URL for your site has been removed. You can sign in at the default WordPress login screen.', 'fanxie-warden' );
 		} else {
 			$message = sprintf(
 				/* translators: %s: the new secret login URL. */
-				__( 'The custom login URL for your site has changed. Bookmark this address to sign in: %s', 'fanxie-wp-core' ),
+				__( 'The custom login URL for your site has changed. Bookmark this address to sign in: %s', 'fanxie-warden' ),
 				home_url( '/' . $new_active_slug )
 			);
 		}

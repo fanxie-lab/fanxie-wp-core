@@ -2,16 +2,16 @@
 /**
  * Admin AJAX sub-actions for the Environment Health module.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\SslProbe;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\WporgScanner;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\SslProbe;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\WporgScanner;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * AJAX surface consumed by the Vue admin tab.
  *
- * Nonce and the `manage_fanxie_wp_core` capability are enforced centrally by
+ * Nonce and the `manage_fanxie_warden` capability are enforced centrally by
  * {@see AjaxRouter} — both, on every sub-action.
  *
  * Response shapes are a frozen contract with the frontend:
@@ -122,7 +122,7 @@ final class AjaxController {
 	 */
 	public function handle_save_config( array $payload ): array|WP_Error {
 		if ( ! isset( $payload['settings'] ) || ! is_array( $payload['settings'] ) ) {
-			return new WP_Error( 'invalid_settings', __( 'Settings payload must be an object.', 'fanxie-wp-core' ) );
+			return new WP_Error( 'invalid_settings', __( 'Settings payload must be an object.', 'fanxie-warden' ) );
 		}
 
 		$was_scanning = $this->module->wporg_scan_enabled();

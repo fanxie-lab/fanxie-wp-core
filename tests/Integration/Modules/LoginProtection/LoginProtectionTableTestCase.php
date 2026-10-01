@@ -2,20 +2,20 @@
 /**
  * Shared base for Login Protection custom-table integration tests.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Integration\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Integration\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Modules\LoginProtection\BanRepository;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
+use FanxieLab\Warden\Modules\LoginProtection\BanRepository;
+use FanxieLab\Warden\Modules\LoginProtection\LoginLogRepository;
 use WP_UnitTestCase;
 
 /**
- * Guarantees each test begins with empty `fanxie_core_login_log` and
- * `fanxie_core_login_bans` tables, independent of suite execution order.
+ * Guarantees each test begins with empty `fx_warden_login_log` and
+ * `fx_warden_login_bans` tables, independent of suite execution order.
  *
  * `WP_UnitTestCase` wraps every test in a database transaction that is rolled
  * back on teardown, which resets WordPress' own tables. The Login Protection

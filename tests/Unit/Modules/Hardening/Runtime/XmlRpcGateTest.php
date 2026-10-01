@@ -2,16 +2,16 @@
 /**
  * Unit tests for XmlRpcGate.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\XmlRpcGate;
+use FanxieLab\Warden\Modules\Hardening\Runtime\XmlRpcGate;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,8 +19,18 @@ use PHPUnit\Framework\TestCase;
  */
 final class XmlRpcGateTest extends TestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
 	protected function setUp(): void {
 		parent::setUp();
+
+		$this->server_backup = $_SERVER;
 		Monkey\setUp();
 		Functions\when( '__' )->returnArg( 1 );
 		Functions\when( 'sanitize_text_field' )->alias( static fn ( $v ) => is_string( $v ) ? trim( $v ) : '' );
@@ -28,7 +38,7 @@ final class XmlRpcGateTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
-		unset( $_SERVER['REMOTE_ADDR'] );
+		$_SERVER = $this->server_backup;
 		Monkey\tearDown();
 		parent::tearDown();
 	}

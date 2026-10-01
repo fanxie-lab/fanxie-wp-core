@@ -2,18 +2,18 @@
 /**
  * Unit tests for SettingsPage menu registration.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Admin
+ * @package FanxieLab\Warden\Tests\Unit\Admin
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Admin;
+namespace FanxieLab\Warden\Tests\Unit\Admin;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Admin\SettingsPage;
-use FanxieLab\WPCore\Modules\ModuleRegistry;
-use FanxieLab\WPCore\Plugin;
+use FanxieLab\Warden\Admin\SettingsPage;
+use FanxieLab\Warden\Modules\ModuleRegistry;
+use FanxieLab\Warden\Plugin;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
@@ -89,7 +89,7 @@ final class SettingsPageTest extends TestCase {
 			'Prod enqueue must register a script_loader_tag filter so the ES-module bundle loads as type="module".'
 		);
 
-		$src = 'http://example.test/wp-content/plugins/fanxie-wp-core/assets/admin/dist/admin.js';
+		$src = 'http://example.test/wp-content/plugins/fanxie-warden/assets/admin/dist/admin.js';
 		// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- test fixture: a sample classic tag fed into the captured filter, not a real enqueue.
 		$classic_tag = sprintf( "<script src='%s' id='%s-js'></script>\n", $src, SettingsPage::ASSET_HANDLE );
 
@@ -172,7 +172,6 @@ final class SettingsPageTest extends TestCase {
 		// branch requires a live Vite hot-file on disk, which a unit test should
 		// not fabricate). `true` => crossorigin.
 		$method = new \ReflectionMethod( SettingsPage::class, 'register_module_tag_filter' );
-		$method->setAccessible( true );
 		$method->invoke( $page, [ SettingsPage::VITE_CLIENT_HANDLE, SettingsPage::ASSET_HANDLE ], true );
 
 		$this->assertIsCallable( $captured );
@@ -198,7 +197,6 @@ final class SettingsPageTest extends TestCase {
 	 */
 	private function set_private_property( object $target, string $property, mixed $value ): void {
 		$reflection = new \ReflectionProperty( $target, $property );
-		$reflection->setAccessible( true );
 		$reflection->setValue( $target, $value );
 	}
 
@@ -208,11 +206,10 @@ final class SettingsPageTest extends TestCase {
 	 */
 	private function reset_tag_filter_guard(): void {
 		$guard = new \ReflectionProperty( SettingsPage::class, 'vite_tag_filter_registered' );
-		$guard->setAccessible( true );
 		$guard->setValue( null, false );
 	}
 
-	public function test_register_menu_adds_top_level_fx_core_menu(): void {
+	public function test_register_menu_adds_top_level_fx_warden_menu(): void {
 		// ModuleRegistry is `final`, so Mockery cannot mock it; register_menu()
 		// never touches the registry, so a real (empty) instance is sufficient.
 		$page = new SettingsPage( new ModuleRegistry() );
@@ -220,7 +217,7 @@ final class SettingsPageTest extends TestCase {
 		Functions\expect( 'add_menu_page' )
 			->once()
 			->with(
-				'Fanxie WP Core',
+				'Fanxie Warden',
 				'FX Core',
 				Plugin::CAPABILITY,
 				SettingsPage::MENU_SLUG,
@@ -228,19 +225,19 @@ final class SettingsPageTest extends TestCase {
 				Mockery::type( 'string' ), // data: URI icon.
 				Mockery::any()
 			)
-			->andReturn( 'toplevel_page_fanxie-wp-core' );
+			->andReturn( 'toplevel_page_fanxie-warden' );
 
 		Functions\expect( 'add_submenu_page' )
 			->once()
 			->with(
 				SettingsPage::MENU_SLUG,
-				'Fanxie WP Core',
+				'Fanxie Warden',
 				'Settings',
 				Plugin::CAPABILITY,
 				SettingsPage::MENU_SLUG,
 				Mockery::type( 'array' )
 			)
-			->andReturn( 'fanxie-wp-core_page' );
+			->andReturn( 'fanxie-warden_page' );
 
 		$page->register_menu();
 

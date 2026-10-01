@@ -11,7 +11,7 @@ parameters:
     # Target PHP runtime — matches composer.json `require.php` (>=8.1).
     phpVersion: 80100
 
-    # Load runtime constants that `fanxie-wp-core.php` defines lazily at request
+    # Load runtime constants that `fanxie-warden.php` defines lazily at request
     # time so PHPStan can resolve them during static analysis. File is also
     # reused by the Phase 0.3 PHPUnit harness.
     bootstrapFiles:
@@ -33,7 +33,7 @@ parameters:
     # pass or fail) — static analysis adds friction without catching real bugs.
     paths:
         - src
-        - fanxie-wp-core.php
+        - fanxie-warden.php
         - uninstall.php
 
     # Paths PHPStan should ignore even if one of the paths above would otherwise

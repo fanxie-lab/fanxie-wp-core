@@ -2,16 +2,16 @@
 /**
  * Integration tests for the Environment Health dashboard widget.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Tests\Integration\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Tests\Integration\Modules\EnvironmentHealth;
 
-use FanxieLab\WPCore\Modules\EnvironmentHealth\DashboardWidget;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\StatusInspector;
+use FanxieLab\Warden\Modules\EnvironmentHealth\DashboardWidget;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\StatusInspector;
 
 /**
  * The widget's contract is narrow but strict: it renders from cache, it never

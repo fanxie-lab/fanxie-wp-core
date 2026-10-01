@@ -2,14 +2,14 @@
 /**
  * Server-state detection probes for the Hardening module.
  *
- * @package FanxieLab\WPCore\Modules\Hardening
+ * @package FanxieLab\Warden\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening;
+namespace FanxieLab\Warden\Modules\Hardening;
 
-use FanxieLab\WPCore\Modules\Hardening\Runtime\RootHtaccessWriter;
+use FanxieLab\Warden\Modules\Hardening\Runtime\RootHtaccessWriter;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,7 +33,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class StatusInspector {
 
-	public const CACHE_KEY     = 'fanxie_wp_core_hardening_status';
+	public const CACHE_KEY     = 'fanxie_warden_hardening_status';
 	public const CACHE_TTL_SEC = 300;
 
 	/**

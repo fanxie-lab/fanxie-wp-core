@@ -2,18 +2,18 @@
 /**
  * Unit tests for the Hardening module class.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\Hardening\Hardening;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\XmlRpcGate;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\Hardening\Hardening;
+use FanxieLab\Warden\Modules\Hardening\Runtime\XmlRpcGate;
 use PHPUnit\Framework\TestCase;
 
 /**

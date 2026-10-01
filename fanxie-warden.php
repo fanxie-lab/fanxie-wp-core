@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name:       Fanxie WP Core
- * Plugin URI:        https://fanxielab.com/plugins/fanxie-wp-core
+ * Plugin Name:       Fanxie Warden
+ * Plugin URI:        https://fanxielab.com/plugins/fanxie-warden
  * Description:       Modular WordPress security, hardening, maintenance, and performance toolkit by Fanxie Lab.
  * Version:           0.1.0-dev
  * Requires at least: 6.4
@@ -11,10 +11,10 @@
  * Author URI:        https://fanxielab.com
  * License:           GPLv2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       fanxie-wp-core
+ * Text Domain:       fanxie-warden
  * Domain Path:       /languages
  *
- * @package FanxieLab\WPCore
+ * @package FanxieLab\Warden
  */
 
 declare( strict_types=1 );
@@ -31,12 +31,12 @@ defined( 'ABSPATH' ) || exit;
  * file runs).
  * -----------------------------------------------------------------------------
  */
-defined( 'FANXIE_WP_CORE_VERSION' ) || define( 'FANXIE_WP_CORE_VERSION', '0.1.0-dev' );
-defined( 'FANXIE_WP_CORE_FILE' ) || define( 'FANXIE_WP_CORE_FILE', __FILE__ );
-defined( 'FANXIE_WP_CORE_PATH' ) || define( 'FANXIE_WP_CORE_PATH', plugin_dir_path( __FILE__ ) );
-defined( 'FANXIE_WP_CORE_URL' ) || define( 'FANXIE_WP_CORE_URL', plugin_dir_url( __FILE__ ) );
-defined( 'FANXIE_WP_CORE_MIN_PHP' ) || define( 'FANXIE_WP_CORE_MIN_PHP', '8.1' );
-defined( 'FANXIE_WP_CORE_MIN_WP' ) || define( 'FANXIE_WP_CORE_MIN_WP', '6.4' );
+defined( 'FANXIE_WARDEN_VERSION' ) || define( 'FANXIE_WARDEN_VERSION', '0.1.0-dev' );
+defined( 'FANXIE_WARDEN_FILE' ) || define( 'FANXIE_WARDEN_FILE', __FILE__ );
+defined( 'FANXIE_WARDEN_PATH' ) || define( 'FANXIE_WARDEN_PATH', plugin_dir_path( __FILE__ ) );
+defined( 'FANXIE_WARDEN_URL' ) || define( 'FANXIE_WARDEN_URL', plugin_dir_url( __FILE__ ) );
+defined( 'FANXIE_WARDEN_MIN_PHP' ) || define( 'FANXIE_WARDEN_MIN_PHP', '8.1' );
+defined( 'FANXIE_WARDEN_MIN_WP' ) || define( 'FANXIE_WARDEN_MIN_WP', '6.4' );
 
 /*
  * -----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ defined( 'FANXIE_WP_CORE_MIN_WP' ) || define( 'FANXIE_WP_CORE_MIN_WP', '6.4' );
  * We deliberately avoid fatal errors: surface a clear admin notice and return.
  * -----------------------------------------------------------------------------
  */
-if ( version_compare( PHP_VERSION, FANXIE_WP_CORE_MIN_PHP, '<' ) ) {
+if ( version_compare( PHP_VERSION, FANXIE_WARDEN_MIN_PHP, '<' ) ) {
 	add_action(
 		'admin_notices',
 		static function (): void {
@@ -54,8 +54,8 @@ if ( version_compare( PHP_VERSION, FANXIE_WP_CORE_MIN_PHP, '<' ) ) {
 				esc_html(
 					sprintf(
 						/* translators: 1: required PHP version, 2: current PHP version */
-						__( 'Fanxie WP Core requires PHP %1$s or higher. You are running PHP %2$s. The plugin is inactive until PHP is upgraded.', 'fanxie-wp-core' ),
-						FANXIE_WP_CORE_MIN_PHP,
+						__( 'Fanxie Warden requires PHP %1$s or higher. You are running PHP %2$s. The plugin is inactive until PHP is upgraded.', 'fanxie-warden' ),
+						FANXIE_WARDEN_MIN_PHP,
 						PHP_VERSION
 					)
 				)
@@ -66,7 +66,7 @@ if ( version_compare( PHP_VERSION, FANXIE_WP_CORE_MIN_PHP, '<' ) ) {
 }
 
 global $wp_version;
-if ( isset( $wp_version ) && version_compare( $wp_version, FANXIE_WP_CORE_MIN_WP, '<' ) ) {
+if ( isset( $wp_version ) && version_compare( $wp_version, FANXIE_WARDEN_MIN_WP, '<' ) ) {
 	add_action(
 		'admin_notices',
 		static function () use ( $wp_version ): void {
@@ -75,8 +75,8 @@ if ( isset( $wp_version ) && version_compare( $wp_version, FANXIE_WP_CORE_MIN_WP
 				esc_html(
 					sprintf(
 						/* translators: 1: required WordPress version, 2: current WordPress version */
-						__( 'Fanxie WP Core requires WordPress %1$s or higher. You are running WordPress %2$s. The plugin is inactive until WordPress is upgraded.', 'fanxie-wp-core' ),
-						FANXIE_WP_CORE_MIN_WP,
+						__( 'Fanxie Warden requires WordPress %1$s or higher. You are running WordPress %2$s. The plugin is inactive until WordPress is upgraded.', 'fanxie-warden' ),
+						FANXIE_WARDEN_MIN_WP,
 						$wp_version
 					)
 				)
@@ -95,31 +95,31 @@ if ( isset( $wp_version ) && version_compare( $wp_version, FANXIE_WP_CORE_MIN_WP
  * Release tarballs ship with `vendor/` so this branch is only hit in dev.
  * -----------------------------------------------------------------------------
  */
-$fanxie_wp_core_autoload = FANXIE_WP_CORE_PATH . 'vendor/autoload.php';
+$fanxie_warden_autoload = FANXIE_WARDEN_PATH . 'vendor/autoload.php';
 
-if ( ! file_exists( $fanxie_wp_core_autoload ) ) {
+if ( ! file_exists( $fanxie_warden_autoload ) ) {
 	add_action(
 		'admin_notices',
 		static function (): void {
 			printf(
 				'<div class="notice notice-error"><p>%s</p></div>',
-				esc_html__( 'Fanxie WP Core: Composer dependencies are missing. Run `composer install` inside the plugin directory.', 'fanxie-wp-core' )
+				esc_html__( 'Fanxie Warden: Composer dependencies are missing. Run `composer install` inside the plugin directory.', 'fanxie-warden' )
 			);
 		}
 	);
 	return;
 }
 
-require_once $fanxie_wp_core_autoload;
-unset( $fanxie_wp_core_autoload );
+require_once $fanxie_warden_autoload;
+unset( $fanxie_warden_autoload );
 
 /*
  * -----------------------------------------------------------------------------
  * Lifecycle hooks.
  * -----------------------------------------------------------------------------
  */
-register_activation_hook( __FILE__, [ \FanxieLab\WPCore\Plugin::class, 'activate' ] );
-register_deactivation_hook( __FILE__, [ \FanxieLab\WPCore\Plugin::class, 'deactivate' ] );
+register_activation_hook( __FILE__, [ \FanxieLab\Warden\Plugin::class, 'activate' ] );
+register_deactivation_hook( __FILE__, [ \FanxieLab\Warden\Plugin::class, 'deactivate' ] );
 
 /*
  * -----------------------------------------------------------------------------
@@ -132,6 +132,6 @@ register_deactivation_hook( __FILE__, [ \FanxieLab\WPCore\Plugin::class, 'deacti
 add_action(
 	'plugins_loaded',
 	static function (): void {
-		\FanxieLab\WPCore\Plugin::boot();
+		\FanxieLab\Warden\Plugin::boot();
 	}
 );

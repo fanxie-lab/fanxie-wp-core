@@ -2,12 +2,12 @@
 /**
  * Runtime guard against WordPress user enumeration vectors.
  *
- * @package FanxieLab\WPCore\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Modules\Hardening\Runtime;
 
 use WP_Error;
 use WP_REST_Request;
@@ -113,7 +113,7 @@ final class UserEnumerationGuard {
 		nocache_headers();
 
 		if ( function_exists( 'wp_die' ) ) {
-			wp_die( esc_html__( 'Not Found', 'fanxie-wp-core' ), '', [ 'response' => 404 ] );
+			wp_die( esc_html__( 'Not Found', 'fanxie-warden' ), '', [ 'response' => 404 ] );
 		}
 	}
 
@@ -148,7 +148,7 @@ final class UserEnumerationGuard {
 
 		return new WP_Error(
 			'rest_user_cannot_view',
-			__( 'Sorry, you are not allowed to list users.', 'fanxie-wp-core' ),
+			__( 'Sorry, you are not allowed to list users.', 'fanxie-warden' ),
 			[ 'status' => 401 ]
 		);
 	}
@@ -160,7 +160,7 @@ final class UserEnumerationGuard {
 		$value = (bool) ( $this->config['user_enumeration']['block_author_archive'] ?? true );
 
 		/**
-		 * Filter: fanxie_wp_core/hardening/should_block_author_enum
+		 * Filter: fanxie_warden/hardening/should_block_author_enum
 		 *
 		 * Per-request override for the author-enumeration block.
 		 *
@@ -168,7 +168,7 @@ final class UserEnumerationGuard {
 		 *
 		 * @param bool $value Current decision (`true` = block).
 		 */
-		return (bool) apply_filters( 'fanxie_wp_core/hardening/should_block_author_enum', $value );
+		return (bool) apply_filters( 'fanxie_warden/hardening/should_block_author_enum', $value );
 	}
 
 	/**

@@ -2,23 +2,23 @@
 /**
  * Core plugin bootstrap class.
  *
- * @package FanxieLab\WPCore
+ * @package FanxieLab\Warden
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore;
+namespace FanxieLab\Warden;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Admin\SettingsPage;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\EnvironmentHealth;
-use FanxieLab\WPCore\Modules\Hardening\Hardening;
-use FanxieLab\WPCore\Modules\LoginProtection\BanRepository;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRepository;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginProtection;
-use FanxieLab\WPCore\Modules\ModuleRegistry;
-use FanxieLab\WPCore\Modules\SecurityHeaders\SecurityHeaders;
-use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Admin\SettingsPage;
+use FanxieLab\Warden\Modules\EnvironmentHealth\EnvironmentHealth;
+use FanxieLab\Warden\Modules\Hardening\Hardening;
+use FanxieLab\Warden\Modules\LoginProtection\BanRepository;
+use FanxieLab\Warden\Modules\LoginProtection\LoginLogRepository;
+use FanxieLab\Warden\Modules\LoginProtection\LoginProtection;
+use FanxieLab\Warden\Modules\ModuleRegistry;
+use FanxieLab\Warden\Modules\SecurityHeaders\SecurityHeaders;
+use FanxieLab\Warden\Modules\SecurityHeaders\ViolationRepository;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
  * Plugin bootstrap and lightweight service container.
  *
  * The class is singleton-ish *only* at the bootstrap layer: `boot()` is the
- * single entry point called from `fanxie-wp-core.php` on `plugins_loaded`.
+ * single entry point called from `fanxie-warden.php` on `plugins_loaded`.
  * Consumers should inject collaborators via the constructor rather than
  * reaching back into the container.
  */
@@ -37,7 +37,7 @@ final class Plugin {
 	 *
 	 * @var string
 	 */
-	public const DB_VERSION_OPTION = 'fanxie_wp_core_db_version';
+	public const DB_VERSION_OPTION = 'fanxie_warden_db_version';
 
 	/**
 	 * Current DB schema version. Bump when custom tables / option shapes change.
@@ -51,7 +51,7 @@ final class Plugin {
 	 *
 	 * @var string
 	 */
-	public const CAPABILITY = 'manage_fanxie_wp_core';
+	public const CAPABILITY = 'manage_fanxie_warden';
 
 	/**
 	 * Singleton instance.
@@ -118,7 +118,7 @@ final class Plugin {
 		// Hardening: drop protection files into uploads (idempotent).
 		// Uses the current option value so a user who's toggled either uploads
 		// flag off on a previous activation doesn't get the files re-created.
-		$hardening_settings = get_option( 'fanxie_wp_core_hardening_settings', [] );
+		$hardening_settings = get_option( 'fanxie_warden_hardening_settings', [] );
 		$hardening_config   = is_array( $hardening_settings ) ? $hardening_settings : [];
 		if (
 			! isset( $hardening_config['uploads']['drop_index'] )
@@ -126,7 +126,7 @@ final class Plugin {
 			|| ! isset( $hardening_config['uploads']['block_php_execution'] )
 			|| ! empty( $hardening_config['uploads']['block_php_execution'] )
 		) {
-			( new \FanxieLab\WPCore\Modules\Hardening\UploadsProtector( $hardening_config ) )->ensure_protection( $hardening_config );
+			( new \FanxieLab\Warden\Modules\Hardening\UploadsProtector( $hardening_config ) )->ensure_protection( $hardening_config );
 		}
 
 		// Hardening: install the root `.htaccess` block for `/readme.html` and
@@ -134,7 +134,7 @@ final class Plugin {
 		$block_readme_license = ! isset( $hardening_config['version_hiding']['block_readme_license'] )
 			|| ! empty( $hardening_config['version_hiding']['block_readme_license'] );
 		if ( $block_readme_license ) {
-			( new \FanxieLab\WPCore\Modules\Hardening\Runtime\RootHtaccessWriter() )->ensure_readme_license_block();
+			( new \FanxieLab\Warden\Modules\Hardening\Runtime\RootHtaccessWriter() )->ensure_readme_license_block();
 		}
 
 		flush_rewrite_rules( false );
@@ -148,7 +148,7 @@ final class Plugin {
 	 * Full cleanup is the uninstall handler's job.
 	 */
 	public static function deactivate(): void {
-		// Clear any scheduled hook we own (`fanxie_wp_core_*`).
+		// Clear any scheduled hook we own (`fanxie_warden_*`).
 		$cron      = _get_cron_array();
 		$to_cancel = [];
 
@@ -158,7 +158,7 @@ final class Plugin {
 					continue;
 				}
 				foreach ( array_keys( $events ) as $hook ) {
-					if ( is_string( $hook ) && str_starts_with( $hook, 'fanxie_wp_core_' ) ) {
+					if ( is_string( $hook ) && str_starts_with( $hook, 'fanxie_warden_' ) ) {
 						$to_cancel[ $hook ] = true;
 					}
 				}

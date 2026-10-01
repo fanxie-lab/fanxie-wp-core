@@ -2,14 +2,14 @@
 /**
  * Integration tests for the REST users endpoint guard.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\Hardening
+ * @package FanxieLab\Warden\Tests\Integration\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\Hardening;
+namespace FanxieLab\Warden\Tests\Integration\Modules\Hardening;
 
-use FanxieLab\WPCore\Modules\Hardening\Runtime\UserEnumerationGuard;
+use FanxieLab\Warden\Modules\Hardening\Runtime\UserEnumerationGuard;
 use WP_REST_Request;
 use WP_UnitTestCase;
 

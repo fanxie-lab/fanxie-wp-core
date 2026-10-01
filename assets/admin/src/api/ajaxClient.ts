@@ -1,13 +1,13 @@
 // Typed wrapper around WordPress's admin-ajax.php.
 //
 // Contract with the PHP side (frozen — see CLAUDE.md §3.4 and the brief):
-//   action       = 'fanxie_wp_core'        (fixed — PHP dispatches on this)
+//   action       = 'fanxie_warden'         (fixed — PHP dispatches on this)
 //   _action      = <subAction>             (PHP AjaxRouter reads this; sanitize_key on PHP side)
-//   _ajax_nonce  = window.fanxieWPCore.nonce  (verified against 'fanxie_wp_core_admin')
+//   _ajax_nonce  = window.fanxieWarden.nonce  (verified against 'fanxie_warden_admin')
 //
 // Response envelope is WP's standard { success: boolean, data: unknown }.
 
-const WP_ACTION = 'fanxie_wp_core' as const;
+const WP_ACTION = 'fanxie_warden' as const;
 
 export interface AjaxOptions {
   /**
@@ -102,7 +102,7 @@ function buildJsonBody(
 }
 
 /**
- * Typed AJAX call to the Fanxie WP Core admin endpoint.
+ * Typed AJAX call to the Fanxie Warden admin endpoint.
  *
  * @typeParam TResponse - Shape of the unwrapped `data` field on success.
  */
@@ -111,11 +111,11 @@ export async function ajax<TResponse>(
   payload?: Record<string, unknown>,
   options: AjaxOptions = {},
 ): Promise<TResponse> {
-  const bootstrap = window.fanxieWPCore;
+  const bootstrap = window.fanxieWarden;
   if (!bootstrap) {
     throw new AjaxError(
       'bootstrap_missing',
-      'window.fanxieWPCore is not available — PHP bootstrap did not run.',
+      'window.fanxieWarden is not available — PHP bootstrap did not run.',
       0,
     );
   }

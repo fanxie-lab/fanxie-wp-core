@@ -2,17 +2,17 @@
 /**
  * Immutable value object representing a single CSP violation row.
  *
- * @package FanxieLab\WPCore\Modules\SecurityHeaders
+ * @package FanxieLab\Warden\Modules\SecurityHeaders
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\SecurityHeaders;
+namespace FanxieLab\Warden\Modules\SecurityHeaders;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Value object mirroring one row of `{$wpdb->prefix}fanxie_core_csp_violations`.
+ * Value object mirroring one row of `{$wpdb->prefix}fx_warden_csp_violations`.
  *
  * The controller constructs a record from a raw CSP report, the repository
  * writes/reads records, and the AJAX layer serialises them back into the

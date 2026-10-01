@@ -2,18 +2,18 @@
 /**
  * Shared integration harness for the Environment Health module.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Tests\Integration\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Tests\Integration\Modules\EnvironmentHealth;
 
-use FanxieLab\WPCore\Modules\EnvironmentHealth\EnvironmentHealth;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\SslProbe;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\WporgScanner;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\StatusInspector;
-use FanxieLab\WPCore\Plugin;
+use FanxieLab\Warden\Modules\EnvironmentHealth\EnvironmentHealth;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\SslProbe;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\WporgScanner;
+use FanxieLab\Warden\Modules\EnvironmentHealth\StatusInspector;
+use FanxieLab\Warden\Plugin;
 use WP_UnitTestCase;
 
 /**
@@ -32,7 +32,7 @@ abstract class EnvironmentHealthTestCase extends WP_UnitTestCase {
 	/**
 	 * Option key the module persists its settings under.
 	 */
-	protected const OPTION_KEY = 'fanxie_wp_core_environment-health_settings';
+	protected const OPTION_KEY = 'fanxie_warden_environment-health_settings';
 
 	/**
 	 * Administrator created for every test.

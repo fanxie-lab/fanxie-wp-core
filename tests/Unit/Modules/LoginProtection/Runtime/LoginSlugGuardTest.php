@@ -2,16 +2,16 @@
 /**
  * Unit tests for the Login Protection hide-login slug guard.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\LoginSlugGuard;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\LoginSlugGuard;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -20,15 +20,24 @@ use PHPUnit\Framework\TestCase;
  * redirect + exit) are exercised through the real WordPress hooks in the
  * integration suite; here we assert the decision surface only.
  *
- * Constant-dependent cases (`FX_CORE_LOGIN_SLUG`, `DOING_AJAX`, `DOING_CRON`,
+ * Constant-dependent cases (`FX_WARDEN_LOGIN_SLUG`, `DOING_AJAX`, `DOING_CRON`,
  * `REST_REQUEST`) run in isolated processes so a constant defined by one test
  * can never leak into another test — or another test file — in the shared unit
  * process.
  */
 final class LoginSlugGuardTest extends TestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
 	protected function setUp(): void {
 		parent::setUp();
+		$this->server_backup = $_SERVER;
 		Monkey\setUp();
 		Functions\when( '__' )->returnArg( 1 );
 
@@ -69,8 +78,8 @@ final class LoginSlugGuardTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
+		$_SERVER = $this->server_backup;
 		unset(
-			$_SERVER['REQUEST_URI'],
 			$_REQUEST['action'],
 			$_GET['action'],
 			$_GET['my-login']
@@ -123,7 +132,7 @@ final class LoginSlugGuardTest extends TestCase {
 	 * @preserveGlobalState disabled
 	 */
 	public function test_constant_overrides_stored_slug(): void {
-		define( 'FX_CORE_LOGIN_SLUG', 'Constant Gate' );
+		define( 'FX_WARDEN_LOGIN_SLUG', 'Constant Gate' );
 		$guard = $this->guard( [ 'enabled' => true, 'slug' => 'stored-login' ] );
 		$this->assertSame( 'constant-gate', $guard->effective_slug() );
 		$this->assertTrue( $guard->is_active() );
@@ -137,7 +146,7 @@ final class LoginSlugGuardTest extends TestCase {
 	 * @preserveGlobalState disabled
 	 */
 	public function test_reserved_constant_falls_back_to_stored_slug(): void {
-		define( 'FX_CORE_LOGIN_SLUG', 'wp-admin' );
+		define( 'FX_WARDEN_LOGIN_SLUG', 'wp-admin' );
 		$guard = $this->guard( [ 'enabled' => true, 'slug' => 'stored-login' ] );
 		$this->assertSame( 'stored-login', $guard->effective_slug() );
 	}

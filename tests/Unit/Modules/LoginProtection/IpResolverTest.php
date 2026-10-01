@@ -2,14 +2,14 @@
 /**
  * Unit tests for the Login Protection client IP resolver.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Unit\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Unit\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Modules\LoginProtection\IpResolver;
+use FanxieLab\Warden\Modules\LoginProtection\IpResolver;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,8 +17,21 @@ use PHPUnit\Framework\TestCase;
  */
 final class IpResolverTest extends TestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
+	protected function setUp(): void {
+		parent::setUp();
+		$this->server_backup = $_SERVER;
+	}
+
 	protected function tearDown(): void {
-		unset( $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_X_FORWARDED_FOR'] );
+		$_SERVER = $this->server_backup;
 		parent::tearDown();
 	}
 

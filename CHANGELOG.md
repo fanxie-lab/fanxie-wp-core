@@ -1,11 +1,24 @@
 # Changelog
 
-All notable changes to Fanxie WP Core are documented here.
+All notable changes to Fanxie Warden (formerly Fanxie WP Core) are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+- **Renamed the plugin to Fanxie Warden** (slug and text domain `fanxie-warden`,
+  bootstrap file `fanxie-warden.php`). wordpress.org rejects "wp" in plugin
+  names and slugs (Plugin Check `trademarked_term`). Internal identifiers follow:
+  namespace `FanxieLab\Warden`, constants `FANXIE_WARDEN_*`, and the
+  `fanxie_warden` prefix on options, hooks, AJAX actions, nonces, cron events and
+  the `manage_fanxie_warden` capability; REST namespace `fanxie-warden/v1`; admin
+  global `window.fanxieWarden`. The user-facing names follow too: custom tables
+  are now `{prefix}fx_warden_*`, the WP-CLI root is `wp fx-warden`, and wp-config
+  override constants are `FX_WARDEN_*` (e.g. `FX_WARDEN_LOGIN_SLUG`,
+  `FX_WARDEN_DELETE_ALL_DATA`). Nothing had shipped, so no data migration is
+  provided — existing dev installs should be wiped and reinstalled.
 
 ### Removed
 - Three modules cut from the v1.0 scope: **Turnstile** (PRD §6), **Media

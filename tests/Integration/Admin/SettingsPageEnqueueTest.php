@@ -6,15 +6,15 @@
  * exercising the real `wp_enqueue_script()` + `script_loader_tag` pipeline so
  * we assert on the actual `<script>` tag WordPress emits.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Admin
+ * @package FanxieLab\Warden\Tests\Integration\Admin
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Admin;
+namespace FanxieLab\Warden\Tests\Integration\Admin;
 
-use FanxieLab\WPCore\Admin\SettingsPage;
-use FanxieLab\WPCore\Plugin;
+use FanxieLab\Warden\Admin\SettingsPage;
+use FanxieLab\Warden\Plugin;
 use ReflectionProperty;
 use WP_UnitTestCase;
 
@@ -116,7 +116,6 @@ final class SettingsPageEnqueueTest extends WP_UnitTestCase {
 	 */
 	private function reset_tag_filter_guard(): void {
 		$guard = new ReflectionProperty( SettingsPage::class, 'vite_tag_filter_registered' );
-		$guard->setAccessible( true );
 		$guard->setValue( null, false );
 	}
 }

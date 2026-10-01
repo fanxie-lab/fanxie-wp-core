@@ -2,14 +2,14 @@
 /**
  * Integration tests for the Login Protection strong-password policy.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection
+ * @package FanxieLab\Warden\Tests\Integration\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\LoginProtection;
+namespace FanxieLab\Warden\Tests\Integration\Modules\LoginProtection;
 
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\PasswordPolicy;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\PasswordPolicy;
 use WP_Error;
 use WP_UnitTestCase;
 
@@ -63,7 +63,7 @@ final class PasswordPolicyIntegrationTest extends WP_UnitTestCase {
 		$this->run_profile_update( $errors );
 
 		$this->assertNotEmpty( $errors->get_error_messages() );
-		$this->assertContains( 'fanxie_wp_core_weak_password', $errors->get_error_codes() );
+		$this->assertContains( 'fanxie_warden_weak_password', $errors->get_error_codes() );
 	}
 
 	public function test_strong_password_on_profile_update_passes(): void {
@@ -97,7 +97,7 @@ final class PasswordPolicyIntegrationTest extends WP_UnitTestCase {
 		do_action( 'validate_password_reset', $errors, $user );
 
 		$this->assertNotEmpty( $errors->get_error_messages() );
-		$this->assertContains( 'fanxie_wp_core_weak_password', $errors->get_error_codes() );
+		$this->assertContains( 'fanxie_warden_weak_password', $errors->get_error_codes() );
 	}
 
 	public function test_registration_filter_validates_custom_password_field(): void {

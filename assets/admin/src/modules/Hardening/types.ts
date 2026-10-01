@@ -14,7 +14,7 @@ export type XmlRpcMode =
 /** Detected web-server family. `unknown` when detection is inconclusive. */
 export type ServerType = 'apache' | 'nginx' | 'litespeed' | 'iis' | 'unknown';
 
-/** Toggle payload persisted under `fanxie_wp_core_hardening_settings`. */
+/** Toggle payload persisted under `fanxie_warden_hardening_settings`. */
 export interface HardeningConfig {
   user_enumeration: {
     block_author_archive: boolean;

@@ -2,16 +2,16 @@
 /**
  * Unit tests for ModuleBase — focused on the nested-schema sanitiser.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules
+ * @package FanxieLab\Warden\Tests\Unit\Modules
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules;
+namespace FanxieLab\Warden\Tests\Unit\Modules;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\ModuleBase;
+use FanxieLab\Warden\Modules\ModuleBase;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -301,7 +301,7 @@ final class ModuleBaseTest extends TestCase {
 		$module = new FanxieNestedTestModule();
 
 		// Simulate a corrupted option (not an array).
-		$this->options_store['fanxie_wp_core_nested-test_settings'] = 'corrupted';
+		$this->options_store['fanxie_warden_nested-test_settings'] = 'corrupted';
 
 		$stored = $module->get_config();
 

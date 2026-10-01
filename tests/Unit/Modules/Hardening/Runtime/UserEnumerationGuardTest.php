@@ -2,16 +2,16 @@
 /**
  * Unit tests for UserEnumerationGuard.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\UserEnumerationGuard;
+use FanxieLab\Warden\Modules\Hardening\Runtime\UserEnumerationGuard;
 use PHPUnit\Framework\TestCase;
 use WP_Error;
 use WP_REST_Request;

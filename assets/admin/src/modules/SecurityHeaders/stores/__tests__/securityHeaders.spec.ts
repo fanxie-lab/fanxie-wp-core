@@ -24,7 +24,7 @@ function makeConfig(): SecurityHeadersConfig {
       directives: {
         'default-src': ["'self'"],
       },
-      report_uri: 'https://example.test/wp-json/fanxie-wp-core/v1/csp-report',
+      report_uri: 'https://example.test/wp-json/fanxie-warden/v1/csp-report',
     },
   };
 }
@@ -39,7 +39,7 @@ function makeConfigResponse(
       hsts_detected: false,
       csp_detected: false,
       report_endpoint:
-        'https://example.test/wp-json/fanxie-wp-core/v1/csp-report',
+        'https://example.test/wp-json/fanxie-warden/v1/csp-report',
       active: true,
       active_header_count: 5,
       csp_active: true,

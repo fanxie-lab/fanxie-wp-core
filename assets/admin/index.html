@@ -1,7 +1,7 @@
 <!--
   Standalone Vite sandbox shell. Used ONLY when you open Vite's URL directly
   (e.g., http://localhost:5173) for pure component work with a mocked
-  `window.fanxieWPCore`. When running integrated against WP, the hot-file
+  `window.fanxieWarden`. When running integrated against WP, the hot-file
   marker at `assets/admin/.vite-hot` tells PHP to load `/src/main.ts` from
   the dev server inside the real WP admin page, and this `index.html` is
   unused. See README → "Dev modes".
@@ -11,26 +11,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fanxie WP Core — Admin (dev)</title>
+    <title>Fanxie Warden — Admin (dev)</title>
     <meta name="robots" content="noindex, nofollow" />
     <!--
       Dev-only shell. This file is NEVER shipped to production — in WordPress, the
       plugin renders its own admin page and enqueues dist/admin.js + dist/admin.css.
-      We pre-populate window.fanxieWPCore here so components render standalone
+      We pre-populate window.fanxieWarden here so components render standalone
       under `vite dev`. Keep the shape in sync with src/types/global.d.ts.
     -->
     <script>
-      window.fanxieWPCore = {
+      window.fanxieWarden = {
         version: '0.1.0-dev',
         ajaxUrl: '/wp-admin/admin-ajax.php',
         adminUrl: '/wp-admin/',
         restUrl: '/wp-json/',
         nonce: 'dev-nonce-not-valid',
-        assetsUrl: '/wp-content/plugins/fanxie-wp-core/assets/',
+        assetsUrl: '/wp-content/plugins/fanxie-warden/assets/',
         user: {
           id: 1,
           caps: {
-            manage_fanxie_wp_core: true,
+            manage_fanxie_warden: true,
             manage_options: true,
           },
         },
@@ -50,7 +50,7 @@
     </script>
   </head>
   <body>
-    <div id="fanxie-wp-core-admin"></div>
+    <div id="fanxie-warden-admin"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

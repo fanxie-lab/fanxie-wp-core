@@ -1,12 +1,12 @@
-# Fanxie WP Core
+# Fanxie Warden
 
 > WordPress plugin consolidating security, performance, and maintenance modules by Fanxie Lab.
 
-[![CI](https://github.com/fanxie-lab/fanxie-wp-core/actions/workflows/ci.yml/badge.svg)](https://github.com/fanxie-lab/fanxie-wp-core/actions/workflows/ci.yml)
+[![CI](https://github.com/fanxie-lab/fanxie-warden/actions/workflows/ci.yml/badge.svg)](https://github.com/fanxie-lab/fanxie-warden/actions/workflows/ci.yml)
 
 ## About
 
-Most production WordPress sites stack 5–6 overlapping plugins for security headers, hardening, login protection, bot mitigation, maintenance, and asset management — each with its own UI, options table, and footprint. Fanxie WP Core replaces that stack with a single opinionated plugin whose modules share one bootstrap, one options prefix, and one admin surface, and cost nothing at runtime when disabled. Primary audience: Fanxie Lab client deployments and WordPress operators who prefer an integrated, auditable toolkit over a plugin sprawl.
+Most production WordPress sites stack 5–6 overlapping plugins for security headers, hardening, login protection, bot mitigation, maintenance, and asset management — each with its own UI, options table, and footprint. Fanxie Warden replaces that stack with a single opinionated plugin whose modules share one bootstrap, one options prefix, and one admin surface, and cost nothing at runtime when disabled. Primary audience: Fanxie Lab client deployments and WordPress operators who prefer an integrated, auditable toolkit over a plugin sprawl.
 
 Full product scope lives in [`_PRD/prd-fanxie-wp-core-v0.5.md`](./_PRD/prd-fanxie-wp-core-v0.5.md). User-facing copy ships in [`readme.txt`](./readme.txt) (wp.org format) — this README is the developer/contributor entry point.
 
@@ -30,7 +30,7 @@ npm run env:start
 (cd assets/admin && npm run dev)   # Vite HMR, optional
 ```
 
-Then visit <http://localhost:8888/wp-admin/options-general.php?page=fanxie-wp-core>.
+Then visit <http://localhost:8888/wp-admin/options-general.php?page=fanxie-warden>.
 
 Default wp-env credentials: **admin** / **password**. (Do not use these outside local dev.)
 
@@ -45,13 +45,13 @@ Ports 8888/8889 already taken by another wp-env instance? See [port conflicts](.
 | `composer run test:integration` | PHPUnit integration suite (against `@wordpress/env` tests-cli) |
 | `cd assets/admin && npm run check` | Prettier + ESLint + `tsc --noEmit` + Vitest |
 | `npm run test:e2e` | Playwright smoke tests |
-| `npm run env:cli -- plugin check fanxie-wp-core` | WordPress Plugin Check (wp.org compliance) |
+| `npm run env:cli -- plugin check fanxie-warden` | WordPress Plugin Check (wp.org compliance) |
 
 All of the above must be green before a phase is considered complete — see the exit criteria at the top of [`_PRD/checklist-fanxie-wp-core.md`](./_PRD/checklist-fanxie-wp-core.md).
 
 ## Architecture
 
-PHP runtime follows strict WordPress + PSR-4 conventions under the `FanxieLab\WPCore` namespace, with every module extending `ModuleBase` and costing zero when disabled. The admin UI is a Vue 3 + TypeScript + Pinia SPA loaded only on plugin screens and talking to PHP via nonce-gated `admin-ajax.php` actions. See [`CLAUDE.md`](./CLAUDE.md) §3 (PHP conventions), §3.4 (Vue SPA), and the public hooks contract in [`docs/hooks.md`](./docs/hooks.md).
+PHP runtime follows strict WordPress + PSR-4 conventions under the `FanxieLab\Warden` namespace, with every module extending `ModuleBase` and costing zero when disabled. The admin UI is a Vue 3 + TypeScript + Pinia SPA loaded only on plugin screens and talking to PHP via nonce-gated `admin-ajax.php` actions. See [`CLAUDE.md`](./CLAUDE.md) §3 (PHP conventions), §3.4 (Vue SPA), and the public hooks contract in [`docs/hooks.md`](./docs/hooks.md).
 
 ## Contributing
 
@@ -60,4 +60,4 @@ PHP runtime follows strict WordPress + PSR-4 conventions under the `FanxieLab\WP
 
 ## License
 
-GPL-2.0-or-later — same as WordPress core. See the `License` line in [`readme.txt`](./readme.txt) and the plugin header in [`fanxie-wp-core.php`](./fanxie-wp-core.php).
+GPL-2.0-or-later — same as WordPress core. See the `License` line in [`readme.txt`](./readme.txt) and the plugin header in [`fanxie-warden.php`](./fanxie-warden.php).

@@ -2,17 +2,17 @@
 /**
  * Unit tests for UploadsProtector.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening;
 
 use Brain\Monkey;
 use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\Hardening\UploadsProtector;
+use FanxieLab\Warden\Modules\Hardening\UploadsProtector;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -20,10 +20,20 @@ use PHPUnit\Framework\TestCase;
  */
 final class UploadsProtectorTest extends TestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
 	private string $uploads_dir = '';
 
 	protected function setUp(): void {
 		parent::setUp();
+
+		$this->server_backup = $_SERVER;
 		Monkey\setUp();
 
 		Functions\when( '__' )->returnArg( 1 );
@@ -40,7 +50,7 @@ final class UploadsProtectorTest extends TestCase {
 				'baseurl' => 'https://example.test/wp-content/uploads',
 			]
 		);
-		Filters\expectApplied( 'fanxie_wp_core/hardening/uploads_dir' )
+		Filters\expectApplied( 'fanxie_warden/hardening/uploads_dir' )
 			->zeroOrMoreTimes()
 			->andReturnFirstArg();
 	}
@@ -60,7 +70,7 @@ final class UploadsProtectorTest extends TestCase {
 			}
 			rmdir( $this->uploads_dir );
 		}
-		unset( $_SERVER['SERVER_SOFTWARE'] );
+		$_SERVER = $this->server_backup;
 		Monkey\tearDown();
 		parent::tearDown();
 	}

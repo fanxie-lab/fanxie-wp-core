@@ -2,17 +2,17 @@
 /**
  * Unit tests for VersionHider.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\RootHtaccessWriter;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\VersionHider;
+use FanxieLab\Warden\Modules\Hardening\Runtime\RootHtaccessWriter;
+use FanxieLab\Warden\Modules\Hardening\Runtime\VersionHider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -20,8 +20,18 @@ use PHPUnit\Framework\TestCase;
  */
 final class VersionHiderTest extends TestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
 	protected function setUp(): void {
 		parent::setUp();
+
+		$this->server_backup = $_SERVER;
 		Monkey\setUp();
 		Functions\when( '__' )->returnArg( 1 );
 		Functions\when( 'esc_html__' )->returnArg( 1 );
@@ -46,6 +56,7 @@ final class VersionHiderTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
+		$_SERVER = $this->server_backup;
 		Monkey\tearDown();
 		parent::tearDown();
 	}
@@ -110,7 +121,7 @@ final class VersionHiderTest extends TestCase {
 
 	public function test_ensure_readme_license_block_removes_block_when_toggle_off(): void {
 		$tmp = sys_get_temp_dir() . '/fanxie-htaccess-' . uniqid( '', true );
-		file_put_contents( $tmp, "# BEGIN Fanxie WP Core\nrule\n# END Fanxie WP Core\n" );
+		file_put_contents( $tmp, "# BEGIN Fanxie Warden\nrule\n# END Fanxie Warden\n" );
 
 		try {
 			$writer = new RootHtaccessWriter( $tmp );
@@ -147,8 +158,6 @@ final class VersionHiderTest extends TestCase {
 			$this->fail( 'Expected wp_die' );
 		} catch ( \RuntimeException $e ) {
 			$this->assertSame( 'wp_die', $e->getMessage() );
-		} finally {
-			unset( $_SERVER['REQUEST_URI'] );
 		}
 	}
 }

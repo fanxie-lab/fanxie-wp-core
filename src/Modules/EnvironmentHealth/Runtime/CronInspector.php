@@ -2,14 +2,14 @@
 /**
  * WP-Cron health checks for the Environment Health module.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth\Runtime;
 
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -127,24 +127,24 @@ final class CronInspector {
 		$crontab_snippet = HealthCheck::snippet(
 			'bash',
 			"# crontab -e — run WordPress's scheduler every five minutes.\n*/5 * * * * wget -q -O - " . site_url( 'wp-cron.php?doing_wp_cron' ) . ' >/dev/null 2>&1',
-			__( 'System crontab entry', 'fanxie-wp-core' )
+			__( 'System crontab entry', 'fanxie-warden' )
 		);
 
 		$wp_config_snippet = HealthCheck::snippet(
 			'php',
 			"// wp-config.php — stop WordPress running the scheduler on page loads.\ndefine( 'DISABLE_WP_CRON', true );",
-			__( 'Disable the page-load scheduler', 'fanxie-wp-core' )
+			__( 'Disable the page-load scheduler', 'fanxie-warden' )
 		);
 
 		if ( $disabled && $backlog ) {
 			return new HealthCheck(
 				'cron_disabled',
 				HealthCheck::GROUP_CRON,
-				__( 'WP-Cron configuration', 'fanxie-wp-core' ),
+				__( 'WP-Cron configuration', 'fanxie-warden' ),
 				HealthCheck::STATUS_CRITICAL,
 				'DISABLE_WP_CRON = true',
-				__( 'The page-load scheduler is off and nothing is running the queue in its place.', 'fanxie-wp-core' ),
-				__( 'Defining DISABLE_WP_CRON is only safe when a real system cron calls wp-cron.php. Events are overdue, so that call is either missing or failing. Add the crontab entry below, or remove the constant to fall back to the page-load scheduler.', 'fanxie-wp-core' ),
+				__( 'The page-load scheduler is off and nothing is running the queue in its place.', 'fanxie-warden' ),
+				__( 'Defining DISABLE_WP_CRON is only safe when a real system cron calls wp-cron.php. Events are overdue, so that call is either missing or failing. Add the crontab entry below, or remove the constant to fall back to the page-load scheduler.', 'fanxie-warden' ),
 				[ $crontab_snippet ],
 				[ 'disable_wp_cron' => true ]
 			);
@@ -154,10 +154,10 @@ final class CronInspector {
 			return new HealthCheck(
 				'cron_disabled',
 				HealthCheck::GROUP_CRON,
-				__( 'WP-Cron configuration', 'fanxie-wp-core' ),
+				__( 'WP-Cron configuration', 'fanxie-warden' ),
 				HealthCheck::STATUS_OK,
 				'DISABLE_WP_CRON = true',
-				__( 'Driven by a real system cron — the recommended setup.', 'fanxie-wp-core' ),
+				__( 'Driven by a real system cron — the recommended setup.', 'fanxie-warden' ),
 				'',
 				[],
 				[ 'disable_wp_cron' => true ]
@@ -167,11 +167,11 @@ final class CronInspector {
 		return new HealthCheck(
 			'cron_disabled',
 			HealthCheck::GROUP_CRON,
-			__( 'WP-Cron configuration', 'fanxie-wp-core' ),
+			__( 'WP-Cron configuration', 'fanxie-warden' ),
 			HealthCheck::STATUS_OK,
 			'DISABLE_WP_CRON = false',
-			__( 'Scheduled work runs on visitor page loads.', 'fanxie-wp-core' ),
-			__( 'This is the WordPress default and it works. On a busy site it adds latency to a random visitor’s request; on a quiet one, events can be hours late because nobody visited. Moving to a system crontab fixes both — apply the two snippets together.', 'fanxie-wp-core' ),
+			__( 'Scheduled work runs on visitor page loads.', 'fanxie-warden' ),
+			__( 'This is the WordPress default and it works. On a busy site it adds latency to a random visitor’s request; on a quiet one, events can be hours late because nobody visited. Moving to a system crontab fixes both — apply the two snippets together.', 'fanxie-warden' ),
 			[ $wp_config_snippet, $crontab_snippet ],
 			[ 'disable_wp_cron' => false ]
 		);
@@ -187,10 +187,10 @@ final class CronInspector {
 			return new HealthCheck(
 				'cron_lock',
 				HealthCheck::GROUP_CRON,
-				__( 'Cron lock', 'fanxie-wp-core' ),
+				__( 'Cron lock', 'fanxie-warden' ),
 				HealthCheck::STATUS_OK,
-				__( 'Not held', 'fanxie-wp-core' ),
-				__( 'No cron run is in progress.', 'fanxie-wp-core' ),
+				__( 'Not held', 'fanxie-warden' ),
+				__( 'No cron run is in progress.', 'fanxie-warden' ),
 				'',
 				[],
 				[ 'locked_since' => null ]
@@ -204,10 +204,10 @@ final class CronInspector {
 			return new HealthCheck(
 				'cron_lock',
 				HealthCheck::GROUP_CRON,
-				__( 'Cron lock', 'fanxie-wp-core' ),
+				__( 'Cron lock', 'fanxie-warden' ),
 				HealthCheck::STATUS_OK,
-				__( 'Run in progress', 'fanxie-wp-core' ),
-				__( 'A cron run is currently in progress.', 'fanxie-wp-core' ),
+				__( 'Run in progress', 'fanxie-warden' ),
+				__( 'A cron run is currently in progress.', 'fanxie-warden' ),
 				'',
 				[],
 				[ 'locked_since' => (int) $started ]
@@ -217,16 +217,16 @@ final class CronInspector {
 		return new HealthCheck(
 			'cron_lock',
 			HealthCheck::GROUP_CRON,
-			__( 'Cron lock', 'fanxie-wp-core' ),
+			__( 'Cron lock', 'fanxie-warden' ),
 			HealthCheck::STATUS_WARNING,
 			$this->format_duration( $age ),
-			__( 'A cron run started but never finished.', 'fanxie-wp-core' ),
-			__( 'WordPress sets a lock when it begins processing the queue and clears it on completion. A lock this old means the run was killed part-way — usually a PHP fatal error, a memory limit, or a request timeout in a scheduled task. Check the PHP error log for what ran last, then let the lock expire or clear the doing_cron transient.', 'fanxie-wp-core' ),
+			__( 'A cron run started but never finished.', 'fanxie-warden' ),
+			__( 'WordPress sets a lock when it begins processing the queue and clears it on completion. A lock this old means the run was killed part-way — usually a PHP fatal error, a memory limit, or a request timeout in a scheduled task. Check the PHP error log for what ran last, then let the lock expire or clear the doing_cron transient.', 'fanxie-warden' ),
 			[
 				HealthCheck::snippet(
 					'bash',
 					'wp transient delete doing_cron',
-					__( 'Clear the stuck lock (WP-CLI)', 'fanxie-wp-core' )
+					__( 'Clear the stuck lock (WP-CLI)', 'fanxie-warden' )
 				),
 			],
 			[ 'locked_since' => (int) $started ]
@@ -245,10 +245,10 @@ final class CronInspector {
 			return new HealthCheck(
 				'cron_overdue_events',
 				HealthCheck::GROUP_CRON,
-				__( 'Overdue scheduled events', 'fanxie-wp-core' ),
+				__( 'Overdue scheduled events', 'fanxie-warden' ),
 				HealthCheck::STATUS_OK,
 				'0',
-				__( 'Every scheduled event is running on time.', 'fanxie-wp-core' ),
+				__( 'Every scheduled event is running on time.', 'fanxie-warden' ),
 				'',
 				[],
 				[
@@ -262,13 +262,13 @@ final class CronInspector {
 		$status       = $core_overdue > 0 ? HealthCheck::STATUS_CRITICAL : HealthCheck::STATUS_WARNING;
 
 		$detail = $core_overdue > 0
-			? __( 'WordPress’s own maintenance events are late, which means the scheduler is not running at all — update checks, transient cleanup, and trash emptying have all stopped. Wire wp-cron.php to a system crontab.', 'fanxie-wp-core' )
-			: __( 'Core’s own events are on time, so the scheduler itself works. One or more plugin tasks are late — usually a task that fatals, or one scheduled with a hook nothing listens to any more.', 'fanxie-wp-core' );
+			? __( 'WordPress’s own maintenance events are late, which means the scheduler is not running at all — update checks, transient cleanup, and trash emptying have all stopped. Wire wp-cron.php to a system crontab.', 'fanxie-warden' )
+			: __( 'Core’s own events are on time, so the scheduler itself works. One or more plugin tasks are late — usually a task that fatals, or one scheduled with a hook nothing listens to any more.', 'fanxie-warden' );
 
 		return new HealthCheck(
 			'cron_overdue_events',
 			HealthCheck::GROUP_CRON,
-			__( 'Overdue scheduled events', 'fanxie-wp-core' ),
+			__( 'Overdue scheduled events', 'fanxie-warden' ),
 			$status,
 			(string) $overdue['count'],
 			sprintf(
@@ -277,7 +277,7 @@ final class CronInspector {
 					'%1$d event is more than %2$d minutes overdue.',
 					'%1$d events are more than %2$d minutes overdue.',
 					$overdue['count'],
-					'fanxie-wp-core'
+					'fanxie-warden'
 				),
 				$overdue['count'],
 				$threshold_minutes
@@ -287,7 +287,7 @@ final class CronInspector {
 				HealthCheck::snippet(
 					'bash',
 					'wp cron event list --fields=hook,next_run_relative,recurrence',
-					__( 'Inspect the queue (WP-CLI)', 'fanxie-wp-core' )
+					__( 'Inspect the queue (WP-CLI)', 'fanxie-warden' )
 				),
 			],
 			[
@@ -367,7 +367,7 @@ final class CronInspector {
 	private function format_duration( int $seconds ): string {
 		return sprintf(
 			/* translators: %s: human-readable time difference, e.g. "2 hours". */
-			__( 'Held for %s', 'fanxie-wp-core' ),
+			__( 'Held for %s', 'fanxie-warden' ),
 			human_time_diff( $this->now() - max( 0, $seconds ), $this->now() )
 		);
 	}

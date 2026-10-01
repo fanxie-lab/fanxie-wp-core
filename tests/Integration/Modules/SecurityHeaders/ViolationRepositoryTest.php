@@ -2,15 +2,15 @@
 /**
  * Integration tests for ViolationRepository.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\SecurityHeaders
+ * @package FanxieLab\Warden\Tests\Integration\Modules\SecurityHeaders
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\SecurityHeaders;
+namespace FanxieLab\Warden\Tests\Integration\Modules\SecurityHeaders;
 
-use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRecord;
-use FanxieLab\WPCore\Modules\SecurityHeaders\ViolationRepository;
+use FanxieLab\Warden\Modules\SecurityHeaders\ViolationRecord;
+use FanxieLab\Warden\Modules\SecurityHeaders\ViolationRepository;
 use WP_UnitTestCase;
 
 /**

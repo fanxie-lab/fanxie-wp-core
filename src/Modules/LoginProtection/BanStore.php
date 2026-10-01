@@ -2,12 +2,12 @@
 /**
  * Ban-management contract consumed by the login-protection runtime.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection
+ * @package FanxieLab\Warden\Modules\LoginProtection
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection;
+namespace FanxieLab\Warden\Modules\LoginProtection;
 
 defined( 'ABSPATH' ) || exit;
 

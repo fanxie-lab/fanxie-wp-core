@@ -1,13 +1,13 @@
 <?php
 /**
- * Abstract base class for every Fanxie WP Core module.
+ * Abstract base class for every Fanxie Warden module.
  *
- * @package FanxieLab\WPCore\Modules
+ * @package FanxieLab\Warden\Modules
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules;
+namespace FanxieLab\Warden\Modules;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * individual settings to decide what, if anything, to do.
  *
  * Options layout per module:
- *   - `fanxie_wp_core_<id>_settings` — array of module-specific config.
+ *   - `fanxie_warden_<id>_settings` — array of module-specific config.
  *
  * Settings schema is declared via `get_settings_fields()`. Each field carries
  * a `sanitizer` key identifying a sanitizer callback the registry understands,
@@ -149,7 +149,7 @@ abstract class ModuleBase {
 	 * Option name storing the module's settings array.
 	 */
 	protected function settings_option_key(): string {
-		return 'fanxie_wp_core_' . $this->id() . '_settings';
+		return 'fanxie_warden_' . $this->id() . '_settings';
 	}
 
 	/**

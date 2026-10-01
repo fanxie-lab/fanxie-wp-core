@@ -78,7 +78,7 @@ function HotFilePlugin(): Plugin {
   };
 
   return {
-    name: 'fanxie-wp-core:hot-file',
+    name: 'fanxie-warden:hot-file',
     apply: 'serve',
 
     configureServer(server: ViteDevServer) {

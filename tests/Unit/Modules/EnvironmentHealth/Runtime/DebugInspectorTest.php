@@ -2,17 +2,17 @@
 /**
  * Unit tests for the debug-mode exposure checks.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\DebugInspector;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\DebugInspector;
 use PHPUnit\Framework\TestCase;
 
 /**

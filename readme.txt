@@ -1,4 +1,4 @@
-=== Fanxie WP Core ===
+=== Fanxie Warden ===
 Contributors: fanxielab
 Tags: security, performance, maintenance, optimization, hardening
 Requires at least: 6.4
@@ -12,7 +12,7 @@ Modular security, hardening, maintenance, and performance toolkit — replaces 5
 
 == Description ==
 
-Fanxie WP Core consolidates the infrastructure fixes every WordPress site needs — security headers, hardening, login protection, environment health, database maintenance, activity logging, and asset management — into a single modular plugin. Each module can be enabled independently and has zero runtime cost when disabled, so you only pay for what you use.
+Fanxie Warden consolidates the infrastructure fixes every WordPress site needs — security headers, hardening, login protection, environment health, database maintenance, activity logging, and asset management — into a single modular plugin. Each module can be enabled independently and has zero runtime cost when disabled, so you only pay for what you use.
 
 Built for Fanxie Lab client deployments and released openly for the wider WordPress community. The plugin is opinionated in defaults, conservative in destructive operations, and transparent about trade-offs (every potentially-disruptive toggle ships with a clear warning and a dry-run path where applicable).
 
@@ -44,9 +44,9 @@ The Environment Health module also opens a short-lived TLS connection **to your 
 
 == Installation ==
 
-1. Upload the `fanxie-wp-core` folder to `/wp-content/plugins/`, or install via the Plugins screen in WordPress.
+1. Upload the `fanxie-warden` folder to `/wp-content/plugins/`, or install via the Plugins screen in WordPress.
 2. Activate the plugin through the "Plugins" screen in WordPress.
-3. Visit **Settings → Fanxie WP Core** to enable and configure individual modules.
+3. Visit **Settings → Fanxie Warden** to enable and configure individual modules.
 
 == Frequently Asked Questions ==
 
@@ -56,7 +56,7 @@ No module is enabled out of the box. Each module ships with conservative default
 
 = Is my data deleted when I uninstall the plugin? =
 
-No, not by default. The plugin leaves all options and tables intact on uninstall unless you explicitly opt in via the admin setting or by defining `FX_CORE_DELETE_ALL_DATA` in `wp-config.php`. This protects you from accidentally wiping configuration when re-installing.
+No, not by default. The plugin leaves all options and tables intact on uninstall unless you explicitly opt in via the admin setting or by defining `FX_WARDEN_DELETE_ALL_DATA` in `wp-config.php`. This protects you from accidentally wiping configuration when re-installing.
 
 == Screenshots ==
 

@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Fanxie WP Core — Admin Design System</title>
-<meta name="description" content="Design specification for the Fanxie WP Core admin SPA — tokens, typography, layout, sidebar, and components. Portable reference for recreating the look in another plugin." />
+<title>Fanxie Warden — Admin Design System</title>
+<meta name="description" content="Design specification for the Fanxie Warden admin SPA — tokens, typography, layout, sidebar, and components. Portable reference for recreating the look in another plugin." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lexend:wght@500;600;800&display=swap" rel="stylesheet" />
 <style>
 /* ============================================================================
- * FANXIE WP CORE — DESIGN TOKENS
+ * FANXIE WARDEN — DESIGN TOKENS
  * These are the exact tokens from assets/admin/src/styles/main.css.
- * In the real plugin they are scoped under `#fanxie-wp-core-admin`; here they
+ * In the real plugin they are scoped under `#fanxie-warden-admin`; here they
  * live on :root so the whole reference doc renders in the system it documents.
  * ==========================================================================*/
 :root {
@@ -495,7 +495,7 @@ pre.code .n { color: #f2f2f0; }        /* value    */
   <!-- ===================== DOC SIDEBAR (live demo of the plugin sidebar) ===================== -->
   <aside class="doc-nav" id="docNav">
     <div class="doc-nav__header">
-      <span class="doc-nav__brand">Fanxie WP Core</span>
+      <span class="doc-nav__brand">Fanxie Warden</span>
       <span class="doc-nav__pill">Design&nbsp;Spec</span>
     </div>
     <nav class="doc-nav__group" aria-label="Sections">
@@ -546,7 +546,7 @@ pre.code .n { color: #f2f2f0; }        /* value    */
     <section class="doc-section" id="overview">
       <p class="fx-breadcrumb"><span class="fx-breadcrumb__group">Reference</span><span class="fx-breadcrumb__sep">/</span><span>Design system</span></p>
       <h1 class="doc-eyebrow">Admin Design System</h1>
-      <p class="doc-lead">The complete visual language of the Fanxie WP Core admin SPA: every token, layout rule, and component needed to recreate the same look and feel in another plugin.</p>
+      <p class="doc-lead">The complete visual language of the Fanxie Warden admin SPA: every token, layout rule, and component needed to recreate the same look and feel in another plugin.</p>
       <p class="doc-note">The palette and type are derived from <a href="https://fanxielab.com">fanxielab.com</a> so the plugin inherits the studio identity: <strong>brand mint</strong> on a warm-neutral canvas, <strong>Lexend</strong> for display and <strong>Inter</strong> for UI, <strong>light mode only</strong>, restrained shadows, and a mint glow reserved for primary emphasis. Everything is a CSS custom property prefixed <span class="token">--fx-*</span>.</p>
       <div class="callout">
         <strong>How to port this.</strong> Copy the <a href="#tokens">token CSS block</a> into your plugin (scoped under your admin mount id), self-host Lexend + Inter, then rebuild components from the specs below. The component CSS in each example is lifted verbatim from the source and is drop-in reusable.
@@ -556,7 +556,7 @@ pre.code .n { color: #f2f2f0; }        /* value    */
         <li><span class="k">Signature color</span><span class="v"><code>#00e298</code> brand mint — CTAs, active nav, focus, glow</span></li>
         <li><span class="k">Canvas</span><span class="v"><code>#f7f7f5</code> warm off-white · surfaces pure white <code>#ffffff</code></span></li>
         <li><span class="k">Theme</span><span class="v">Light mode only — no dark theme</span></li>
-        <li><span class="k">Scoping</span><span class="v">All tokens &amp; styles live under <span class="token">#fanxie-wp-core-admin</span> to avoid leaking into WP admin chrome</span></li>
+        <li><span class="k">Scoping</span><span class="v">All tokens &amp; styles live under <span class="token">#fanxie-warden-admin</span> to avoid leaking into WP admin chrome</span></li>
         <li><span class="k">Spacing base</span><span class="v">4px grid (<code>--fx-space-1</code> … <code>--fx-space-7</code>)</span></li>
       </ul>
     </section>
@@ -739,7 +739,7 @@ pre.code .n { color: #f2f2f0; }        /* value    */
       <div class="demo" style="max-width:20rem">
         <div style="display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--fx-color-border);margin-bottom:8px;">
-            <span style="font-family:var(--fx-font-heading);font-weight:600;font-size:var(--fx-font-size-lg);">Fanxie WP Core</span>
+            <span style="font-family:var(--fx-font-heading);font-weight:600;font-size:var(--fx-font-size-lg);">Fanxie Warden</span>
             <span class="doc-nav__pill">v0.1.0</span>
           </div>
           <div class="doc-nav__group-label">Security</div>
@@ -980,7 +980,7 @@ pre.code .n { color: #f2f2f0; }        /* value    */
     <section class="doc-section" id="tokens">
       <h2>Token CSS — copy &amp; paste</h2>
       <p class="doc-note">The full token set. Paste this into your plugin's admin stylesheet, changing the scope selector to your mount id (or <code>:root</code> if the SPA owns the whole screen). Then set base typography on the same selector as shown at the bottom.</p>
-      <pre class="code" id="tokenBlock"><button class="copy-btn" data-copy="tokenBlock">Copy</button><span class="c">/* Fanxie WP Core — design tokens. Scope to your admin mount node. */</span>
+      <pre class="code" id="tokenBlock"><button class="copy-btn" data-copy="tokenBlock">Copy</button><span class="c">/* Fanxie Warden — design tokens. Scope to your admin mount node. */</span>
 <span class="n">#your-plugin-admin</span> {
   <span class="c">/* Brand (mint) */</span>
   <span class="p">--fx-color-primary</span>: <span class="n">#00e298</span>;
@@ -1067,7 +1067,7 @@ pre.code .n { color: #f2f2f0; }        /* value    */
       <h2>Implementation guardrails</h2>
       <p class="doc-note">The conventions that keep this system consistent and wp.org-compliant. Carry these over, not just the colors.</p>
       <ul class="spec-list">
-        <li><span class="k">Scope everything</span><span class="v">Tokens + all styles live under one mount id (<code>#fanxie-wp-core-admin</code>) so nothing leaks into WP admin chrome. Components use <code>&lt;style scoped&gt;</code>.</span></li>
+        <li><span class="k">Scope everything</span><span class="v">Tokens + all styles live under one mount id (<code>#fanxie-warden-admin</code>) so nothing leaks into WP admin chrome. Components use <code>&lt;style scoped&gt;</code>.</span></li>
         <li><span class="k">Light mode only</span><span class="v">No dark theme. Don't add <code>prefers-color-scheme</code> palettes.</span></li>
         <li><span class="k">Self-hosted fonts</span><span class="v">No CDN at runtime — bundle Lexend + Inter via @fontsource.</span></li>
         <li><span class="k">Focus ring</span><span class="v"><code>:focus-visible</code> → 2px <code>--fx-color-focus-ring</code> outline, 2px offset. UA ring suppressed on nav; mouse click shows nothing, keyboard shows the mint ring.</span></li>
@@ -1085,7 +1085,7 @@ pre.code .n { color: #f2f2f0; }        /* value    */
     </section>
 
     <footer style="padding-top:var(--fx-space-5); border-top:1px solid var(--fx-color-border); color:var(--fx-color-text-dim); font-size:var(--fx-font-size-sm);">
-      Fanxie WP Core · Admin design system · Built by Fanxie Lab
+      Fanxie Warden · Admin design system · Built by Fanxie Lab
     </footer>
 
   </main>

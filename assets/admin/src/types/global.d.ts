@@ -1,4 +1,4 @@
-// Ambient declaration of the window.fanxieWPCore contract hydrated by the PHP
+// Ambient declaration of the window.fanxieWarden contract hydrated by the PHP
 // side via wp_add_inline_script(..., 'before'). Shape is frozen — coordinate
 // any change with the WordPress development agent (see CLAUDE.md §3.4).
 
@@ -28,7 +28,7 @@ declare global {
     // stripping inline scripts, cache edge cases, etc.). Callers MUST guard
     // access at boundaries; the store's `snapshotBootstrap` asserts presence
     // after `main.ts` has done the runtime check.
-    fanxieWPCore?: FanxieBootstrap;
+    fanxieWarden?: FanxieBootstrap;
   }
 }
 

@@ -1,6 +1,6 @@
-# Fanxie WP Core — Admin SPA
+# Fanxie Warden — Admin SPA
 
-Vue 3 + TypeScript + Pinia single-page app that renders the plugin's Settings → Fanxie WP Core screen. This workspace is independent from the repo-root `package.json` (which only wires wp-env).
+Vue 3 + TypeScript + Pinia single-page app that renders the plugin's Settings → Fanxie Warden screen. This workspace is independent from the repo-root `package.json` (which only wires wp-env).
 
 ## Stack
 
@@ -36,7 +36,7 @@ npm run dev
 # then open http://localhost:5173 directly
 ```
 
-Vite serves `index.html`, which pre-populates `window.fanxieWPCore` with a mocked bootstrap so components render without WordPress. **`index.html` is never shipped** — it exists only for this mode.
+Vite serves `index.html`, which pre-populates `window.fanxieWarden` with a mocked bootstrap so components render without WordPress. **`index.html` is never shipped** — it exists only for this mode.
 
 ### 2. Integrated / WP HMR (recommended for real features)
 
@@ -46,7 +46,7 @@ HMR inside the actual WordPress admin — real session, real AJAX, real nonces, 
 cd assets/admin
 npm run dev            # leave this running
 # then, in a browser:
-# http://localhost:8888/wp-admin/options-general.php?page=fanxie-wp-core
+# http://localhost:8888/wp-admin/options-general.php?page=fanxie-warden
 ```
 
 How it works: when the Vite dev server starts, it writes a hot-file marker at `assets/admin/.vite-hot` containing the dev server URL (e.g., `http://localhost:5173`). `SettingsPage.php` detects the marker and enqueues modules directly from `http://localhost:5173/src/main.ts` instead of the built `dist/` bundle. HMR flows through the WP admin page, untouched. When you `Ctrl-C` the dev server, the marker is removed and WP falls back to `dist/`.
@@ -74,10 +74,10 @@ Source maps are emitted to `dist/**/*.map` and excluded from git via the root `.
 
 | Piece | Value |
 |---|---|
-| Mount node | `#fanxie-wp-core-admin` |
-| Bootstrap global | `window.fanxieWPCore` (shape in `src/types/global.d.ts`) |
-| AJAX endpoint | `window.fanxieWPCore.ajaxUrl` (POST) |
-| Fixed `action` field | `fanxie_wp_core` |
+| Mount node | `#fanxie-warden-admin` |
+| Bootstrap global | `window.fanxieWarden` (shape in `src/types/global.d.ts`) |
+| AJAX endpoint | `window.fanxieWarden.ajaxUrl` (POST) |
+| Fixed `action` field | `fanxie_warden` |
 | Sub-action field | `_action` |
 | Nonce field | `_ajax_nonce` |
 | Response envelope | `{ success: boolean; data: unknown }` |
@@ -93,13 +93,13 @@ assets/admin/
 ├── tsconfig.node.json      # for vite.config.ts
 ├── vite.config.ts          # build outputs admin.js + admin.css
 └── src/
-    ├── main.ts             # entry — mounts to #fanxie-wp-core-admin
+    ├── main.ts             # entry — mounts to #fanxie-warden-admin
     ├── App.vue             # root component + ARIA tablist
     ├── api/ajaxClient.ts   # typed admin-ajax.php wrapper + AjaxError
     ├── stores/app.ts       # Pinia store, bootstrap + ping()
     ├── components/         # shared primitives (Toggle, TextField, etc.)
     ├── styles/main.css     # tokens + scoped base styles
-    └── types/global.d.ts   # window.fanxieWPCore contract
+    └── types/global.d.ts   # window.fanxieWarden contract
 ```
 
 ## Linting & formatting
@@ -126,7 +126,7 @@ Editor integration: a `.editorconfig` ships alongside `prettier.config.js` so ed
 
 ## Testing
 
-The admin SPA uses **Vitest + Vue Test Utils + MSW** on top of **happy-dom**. Tests live co-located under `__tests__/` folders next to the unit under test (e.g. `src/stores/__tests__/app.spec.ts`). The shared setup at `tests/setup.ts` wires MSW, exposes `mockAjaxResponse(subAction, response, opts)`, and resets `window.fanxieWPCore` to a known bootstrap before every test.
+The admin SPA uses **Vitest + Vue Test Utils + MSW** on top of **happy-dom**. Tests live co-located under `__tests__/` folders next to the unit under test (e.g. `src/stores/__tests__/app.spec.ts`). The shared setup at `tests/setup.ts` wires MSW, exposes `mockAjaxResponse(subAction, response, opts)`, and resets `window.fanxieWarden` to a known bootstrap before every test.
 
 ```bash
 cd assets/admin

@@ -1,10 +1,10 @@
 // Global Vitest setup — runs once per test file before any test.
 //
 // Responsibilities:
-//   1. Boot an MSW server that intercepts `fetch` to window.fanxieWPCore.ajaxUrl.
+//   1. Boot an MSW server that intercepts `fetch` to window.fanxieWarden.ajaxUrl.
 //   2. Provide a reusable `mockAjaxResponse` helper that registers a handler
 //      keyed by the WP admin-ajax sub-action (the `_action` form field).
-//   3. Reset window.fanxieWPCore to a known bootstrap before every test so
+//   3. Reset window.fanxieWarden to a known bootstrap before every test so
 //      store tests read consistent defaults.
 
 import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest';
@@ -22,11 +22,11 @@ export function defaultBootstrap(): FanxieBootstrap {
     adminUrl: 'http://localhost/wp-admin/',
     restUrl: 'http://localhost/wp-json/',
     nonce: 'test-nonce-abcdef',
-    assetsUrl: 'http://localhost/wp-content/plugins/fanxie-wp-core/assets/',
+    assetsUrl: 'http://localhost/wp-content/plugins/fanxie-warden/assets/',
     user: {
       id: 1,
       caps: {
-        manage_fanxie_wp_core: true,
+        manage_fanxie_warden: true,
         manage_options: true,
       },
     },
@@ -119,7 +119,7 @@ beforeEach(() => {
   // Every test sees the same bootstrap. Stores are created in their own
   // `beforeEach`, so this runs first — ordering across setup files is by
   // registration, and our setup file is the only one.
-  window.fanxieWPCore = defaultBootstrap();
+  window.fanxieWarden = defaultBootstrap();
 });
 
 afterEach(() => {

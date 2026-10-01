@@ -2,15 +2,15 @@
 /**
  * Integration test — StatusInspector reports Application Password holders.
  *
- * @package FanxieLab\WPCore\Tests\Integration\Modules\Hardening
+ * @package FanxieLab\Warden\Tests\Integration\Modules\Hardening
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Integration\Modules\Hardening;
+namespace FanxieLab\Warden\Tests\Integration\Modules\Hardening;
 
-use FanxieLab\WPCore\Modules\Hardening\StatusInspector;
-use FanxieLab\WPCore\Modules\Hardening\UploadsProtector;
+use FanxieLab\Warden\Modules\Hardening\StatusInspector;
+use FanxieLab\Warden\Modules\Hardening\UploadsProtector;
 use WP_Application_Passwords;
 use WP_UnitTestCase;
 

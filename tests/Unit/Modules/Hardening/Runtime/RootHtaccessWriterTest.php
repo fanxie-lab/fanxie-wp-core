@@ -2,20 +2,20 @@
 /**
  * Unit tests for RootHtaccessWriter.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\Hardening\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\Hardening\Runtime\RootHtaccessWriter;
+use FanxieLab\Warden\Modules\Hardening\Runtime\RootHtaccessWriter;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Verifies the idempotent `# BEGIN Fanxie WP Core` block management.
+ * Verifies the idempotent `# BEGIN Fanxie Warden` block management.
  */
 final class RootHtaccessWriterTest extends TestCase {
 
@@ -81,7 +81,7 @@ final class RootHtaccessWriterTest extends TestCase {
 	public function test_remove_block_strips_only_our_section(): void {
 		file_put_contents(
 			$this->path,
-			"# BEGIN WordPress\nRewriteRule /foo /bar\n# END WordPress\n\n# BEGIN Fanxie WP Core\nrule\n# END Fanxie WP Core\n"
+			"# BEGIN WordPress\nRewriteRule /foo /bar\n# END WordPress\n\n# BEGIN Fanxie Warden\nrule\n# END Fanxie Warden\n"
 		);
 
 		$writer = new RootHtaccessWriter( $this->path );

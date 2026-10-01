@@ -2,16 +2,16 @@
 /**
  * Tiered brute-force attempt limiter.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection\Runtime
+ * @package FanxieLab\Warden\Modules\LoginProtection\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection\Runtime;
+namespace FanxieLab\Warden\Modules\LoginProtection\Runtime;
 
-use FanxieLab\WPCore\Modules\LoginProtection\BanStore;
-use FanxieLab\WPCore\Modules\LoginProtection\IpResolver;
-use FanxieLab\WPCore\Modules\LoginProtection\LoginLogRecorder;
+use FanxieLab\Warden\Modules\LoginProtection\BanStore;
+use FanxieLab\Warden\Modules\LoginProtection\IpResolver;
+use FanxieLab\Warden\Modules\LoginProtection\LoginLogRecorder;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -33,7 +33,7 @@ final class AttemptLimiter {
 	 *
 	 * @var string
 	 */
-	private const PREFIX = 'fanxie_wp_core_lp_';
+	private const PREFIX = 'fanxie_warden_lp_';
 
 	/**
 	 * Constructor.
@@ -85,7 +85,7 @@ final class AttemptLimiter {
 
 		return new WP_Error(
 			'fanxie_login_locked',
-			__( 'Too many failed attempts. Try again later.', 'fanxie-wp-core' )
+			__( 'Too many failed attempts. Try again later.', 'fanxie-warden' )
 		);
 	}
 
@@ -157,7 +157,7 @@ final class AttemptLimiter {
 	 *
 	 * A static, config-independent entry point (the transient keys derive only
 	 * from the subject, never from settings) shared by the admin
-	 * `login_protection/clear-lockout` AJAX action and the `wp fx-core login
+	 * `login_protection/clear-lockout` AJAX action and the `wp fx-warden login
 	 * unlock` CLI command. `$type` accepts the module's canonical subject types
 	 * — `ip` or `username` — and maps `username` onto the internal `user`
 	 * counter dimension so callers speak the same vocabulary the bans + log use.
@@ -182,7 +182,7 @@ final class AttemptLimiter {
 	 *
 	 * The read-seam companion to {@see self::clear_subject()}: both derive their
 	 * key from the single private {@see self::lock_key()} builder, so the lock-key
-	 * format has exactly one source of truth. Used by the `wp fx-core login unlock
+	 * format has exactly one source of truth. Used by the `wp fx-warden login unlock
 	 * --dry-run` CLI report to inspect lock state without reconstructing the
 	 * private key scheme.
 	 *

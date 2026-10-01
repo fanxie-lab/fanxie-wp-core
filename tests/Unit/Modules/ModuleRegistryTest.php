@@ -5,17 +5,17 @@
  * Runs in unit mode (no WordPress). Brain Monkey stubs `do_action` so that
  * ModuleRegistry::register() executes cleanly without a real WP runtime.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules
+ * @package FanxieLab\Warden\Tests\Unit\Modules
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules;
+namespace FanxieLab\Warden\Tests\Unit\Modules;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\ModuleBase;
-use FanxieLab\WPCore\Modules\ModuleRegistry;
+use FanxieLab\Warden\Modules\ModuleBase;
+use FanxieLab\Warden\Modules\ModuleRegistry;
 use PHPUnit\Framework\TestCase;
 
 /**

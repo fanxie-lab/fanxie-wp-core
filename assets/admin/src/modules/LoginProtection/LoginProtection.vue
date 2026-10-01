@@ -153,7 +153,7 @@ function removeTier(index: number): void {
 
 // --- Hide Login -------------------------------------------------------------
 
-/** True when the login slug is pinned by the `FX_CORE_LOGIN_SLUG` constant. */
+/** True when the login slug is pinned by the `FX_WARDEN_LOGIN_SLUG` constant. */
 const isSlugLocked = computed<boolean>(() => store.slugSource === 'constant');
 
 /**
@@ -567,7 +567,7 @@ onMounted(() => {
               :disabled="isSlugLocked"
               :help="
                 isSlugLocked
-                  ? 'Set by the FX_CORE_LOGIN_SLUG constant in wp-config.php and cannot be changed here.'
+                  ? 'Set by the FX_WARDEN_LOGIN_SLUG constant in wp-config.php and cannot be changed here.'
                   : 'The path your login form lives at, e.g. my-secret-door.'
               "
               placeholder="my-secret-door"
@@ -578,10 +578,10 @@ onMounted(() => {
           <!-- Recovery guidance -->
           <HelpText tone="warn">
             Locked out? Define
-            <code>FX_CORE_LOGIN_SLUG</code> in <code>wp-config.php</code> to pin
-            a known slug, or run <code>wp fx-core login reveal</code> from the
-            server to print the current one. Changing the slug also emails the
-            site administrator the new address.
+            <code>FX_WARDEN_LOGIN_SLUG</code> in <code>wp-config.php</code> to
+            pin a known slug, or run <code>wp fx-warden login reveal</code> from
+            the server to print the current one. Changing the slug also emails
+            the site administrator the new address.
           </HelpText>
         </div>
       </section>
@@ -595,8 +595,8 @@ onMounted(() => {
       >
         Hiding <code>wp-login.php</code> can lock you out if the new slug is
         forgotten or a plugin conflicts. Note the recovery options first: the
-        <code>FX_CORE_LOGIN_SLUG</code> wp-config constant and the
-        <code>wp fx-core login reveal</code> CLI command. Continue?
+        <code>FX_WARDEN_LOGIN_SLUG</code> wp-config constant and the
+        <code>wp fx-warden login reveal</code> CLI command. Continue?
       </ConfirmDialog>
 
       <!-- 4. Passwords -->

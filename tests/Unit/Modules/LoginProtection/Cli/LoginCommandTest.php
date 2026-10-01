@@ -2,18 +2,18 @@
 /**
  * Unit tests for the Login Protection WP-CLI recovery command.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Cli
+ * @package FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Cli
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\LoginProtection\Cli;
+namespace FanxieLab\Warden\Tests\Unit\Modules\LoginProtection\Cli;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\LoginProtection\BanStore;
-use FanxieLab\WPCore\Modules\LoginProtection\Cli\LoginCommand;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
+use FanxieLab\Warden\Modules\LoginProtection\BanStore;
+use FanxieLab\Warden\Modules\LoginProtection\Cli\LoginCommand;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\AttemptLimiter;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
@@ -86,8 +86,8 @@ final class LoginCommandTest extends TestCase {
 
 		// `clear_subject('ip', …)` and `clear_subject('user', …)` each delete the
 		// lock transient for their dimension — proof both dimensions were cleared.
-		$this->assertContains( 'fanxie_wp_core_lp_lock_ip_' . md5( $subject ), $deleted );
-		$this->assertContains( 'fanxie_wp_core_lp_lock_user_' . md5( $subject ), $deleted );
+		$this->assertContains( 'fanxie_warden_lp_lock_ip_' . md5( $subject ), $deleted );
+		$this->assertContains( 'fanxie_warden_lp_lock_user_' . md5( $subject ), $deleted );
 		$this->assertNotEmpty( \WP_CLI::messages_for( 'success' ) );
 	}
 
@@ -207,7 +207,7 @@ final class LoginCommandTest extends TestCase {
 	 * @preserveGlobalState disabled
 	 */
 	public function test_reveal_reports_slug_source_as_constant_when_defined(): void {
-		define( 'FX_CORE_LOGIN_SLUG', 'wpconfig-slug' );
+		define( 'FX_WARDEN_LOGIN_SLUG', 'wpconfig-slug' );
 
 		Functions\when( 'sanitize_title' )->returnArg( 1 );
 		Functions\when( 'get_option' )->justReturn( '' );
@@ -224,6 +224,6 @@ final class LoginCommandTest extends TestCase {
 
 		$text = \WP_CLI::all_text();
 		$this->assertStringContainsString( 'wpconfig-slug', $text );
-		$this->assertStringContainsString( 'FX_CORE_LOGIN_SLUG', $text );
+		$this->assertStringContainsString( 'FX_WARDEN_LOGIN_SLUG', $text );
 	}
 }

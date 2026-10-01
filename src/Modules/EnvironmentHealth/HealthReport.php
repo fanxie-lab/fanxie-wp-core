@@ -2,12 +2,12 @@
 /**
  * Immutable value object wrapping a full environment health report.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth;
 
 defined( 'ABSPATH' ) || exit;
 

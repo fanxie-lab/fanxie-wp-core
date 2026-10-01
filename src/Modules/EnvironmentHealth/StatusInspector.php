@@ -2,19 +2,19 @@
 /**
  * Read-only environment probing for the Environment Health module.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth;
 
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\CronInspector;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\DebugInspector;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\PluginThemeInspector;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\SslProbe;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\VersionInspector;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\WporgScanner;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\CronInspector;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\DebugInspector;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\PluginThemeInspector;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\SslProbe;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\VersionInspector;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\WporgScanner;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -45,7 +45,7 @@ final class StatusInspector {
 	 *
 	 * @var string
 	 */
-	public const CACHE_KEY = 'fanxie_wp_core_environment_health_report';
+	public const CACHE_KEY = 'fanxie_warden_environment_health_report';
 
 	/**
 	 * Report cache lifetime, in seconds.

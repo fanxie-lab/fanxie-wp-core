@@ -2,15 +2,15 @@
 /**
  * Version + transport checks for the Environment Health module.
  *
- * @package FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime
+ * @package FanxieLab\Warden\Modules\EnvironmentHealth\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime;
+namespace FanxieLab\Warden\Modules\EnvironmentHealth\Runtime;
 
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\SupportMatrix;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\SupportMatrix;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -75,11 +75,11 @@ final class VersionInspector {
 			return new HealthCheck(
 				'wordpress_version',
 				HealthCheck::GROUP_VERSIONS,
-				__( 'WordPress version', 'fanxie-wp-core' ),
+				__( 'WordPress version', 'fanxie-warden' ),
 				HealthCheck::STATUS_UNKNOWN,
 				$current,
-				__( 'Could not determine the latest WordPress release.', 'fanxie-wp-core' ),
-				__( 'WordPress has not yet stored the result of its own update check for this site, so there is nothing to compare against. Visit Dashboard → Updates to run one.', 'fanxie-wp-core' ),
+				__( 'Could not determine the latest WordPress release.', 'fanxie-warden' ),
+				__( 'WordPress has not yet stored the result of its own update check for this site, so there is nothing to compare against. Visit Dashboard → Updates to run one.', 'fanxie-warden' ),
 				[],
 				[ 'latest' => null ]
 			);
@@ -89,10 +89,10 @@ final class VersionInspector {
 			return new HealthCheck(
 				'wordpress_version',
 				HealthCheck::GROUP_VERSIONS,
-				__( 'WordPress version', 'fanxie-wp-core' ),
+				__( 'WordPress version', 'fanxie-warden' ),
 				HealthCheck::STATUS_OK,
 				$current,
-				__( 'Running the latest WordPress release.', 'fanxie-wp-core' ),
+				__( 'Running the latest WordPress release.', 'fanxie-warden' ),
 				'',
 				[],
 				[ 'latest' => $latest ]
@@ -106,15 +106,15 @@ final class VersionInspector {
 			// A patch release on the current branch is a maintenance/security
 			// release — core does not ship feature work in those.
 			$status  = HealthCheck::STATUS_CRITICAL;
-			$summary = __( 'A maintenance or security release is available for your branch.', 'fanxie-wp-core' );
+			$summary = __( 'A maintenance or security release is available for your branch.', 'fanxie-warden' );
 		} elseif ( 1 === $minors_behind ) {
 			$status  = HealthCheck::STATUS_WARNING;
-			$summary = __( 'One feature release behind.', 'fanxie-wp-core' );
+			$summary = __( 'One feature release behind.', 'fanxie-warden' );
 		} else {
 			$status  = HealthCheck::STATUS_CRITICAL;
 			$summary = sprintf(
 				/* translators: %d: number of WordPress feature releases the site is behind. */
-				_n( '%d feature release behind.', '%d feature releases behind.', $minors_behind, 'fanxie-wp-core' ),
+				_n( '%d feature release behind.', '%d feature releases behind.', $minors_behind, 'fanxie-warden' ),
 				$minors_behind
 			);
 		}
@@ -122,17 +122,17 @@ final class VersionInspector {
 		return new HealthCheck(
 			'wordpress_version',
 			HealthCheck::GROUP_VERSIONS,
-			__( 'WordPress version', 'fanxie-wp-core' ),
+			__( 'WordPress version', 'fanxie-warden' ),
 			$status,
 			$current,
 			$summary,
 			sprintf(
 				/* translators: %s: latest available WordPress version. */
-				__( 'WordPress %s is available. Core updates carry security fixes; apply them on a staging copy first if the site is business-critical.', 'fanxie-wp-core' ),
+				__( 'WordPress %s is available. Core updates carry security fixes; apply them on a staging copy first if the site is business-critical.', 'fanxie-warden' ),
 				$latest
 			),
 			[
-				HealthCheck::link( admin_url( 'update-core.php' ), __( 'Open Dashboard → Updates', 'fanxie-wp-core' ) ),
+				HealthCheck::link( admin_url( 'update-core.php' ), __( 'Open Dashboard → Updates', 'fanxie-warden' ) ),
 			],
 			[
 				'latest'        => $latest,
@@ -149,16 +149,16 @@ final class VersionInspector {
 		$verdict = SupportMatrix::php( $version, $this->now() );
 
 		$remediation = [
-			HealthCheck::link( 'https://www.php.net/supported-versions.php', __( 'PHP supported versions', 'fanxie-wp-core' ) ),
+			HealthCheck::link( 'https://www.php.net/supported-versions.php', __( 'PHP supported versions', 'fanxie-warden' ) ),
 		];
 
 		return new HealthCheck(
 			'php_version',
 			HealthCheck::GROUP_VERSIONS,
-			__( 'PHP version', 'fanxie-wp-core' ),
+			__( 'PHP version', 'fanxie-warden' ),
 			$verdict['status'],
 			$version,
-			$this->matrix_summary( $verdict, __( 'PHP', 'fanxie-wp-core' ) ),
+			$this->matrix_summary( $verdict, __( 'PHP', 'fanxie-warden' ) ),
 			$this->matrix_detail( $verdict ),
 			HealthCheck::STATUS_OK === $verdict['status'] ? [] : $remediation,
 			$this->matrix_meta( $verdict )
@@ -175,11 +175,11 @@ final class VersionInspector {
 			return new HealthCheck(
 				'database_version',
 				HealthCheck::GROUP_VERSIONS,
-				__( 'Database version', 'fanxie-wp-core' ),
+				__( 'Database version', 'fanxie-warden' ),
 				HealthCheck::STATUS_UNKNOWN,
 				'',
-				__( 'Could not read the database server version.', 'fanxie-wp-core' ),
-				__( 'The database driver did not report a version string. This is normal on some managed or proxied database services.', 'fanxie-wp-core' ),
+				__( 'Could not read the database server version.', 'fanxie-warden' ),
+				__( 'The database driver did not report a version string. This is normal on some managed or proxied database services.', 'fanxie-warden' ),
 				[],
 				[ 'server' => null ]
 			);
@@ -191,7 +191,7 @@ final class VersionInspector {
 			? SupportMatrix::mariadb( $version, $this->now() )
 			: SupportMatrix::mysql( $version, $this->now() );
 
-		$server_name = $is_mariadb ? __( 'MariaDB', 'fanxie-wp-core' ) : __( 'MySQL', 'fanxie-wp-core' );
+		$server_name = $is_mariadb ? __( 'MariaDB', 'fanxie-warden' ) : __( 'MySQL', 'fanxie-warden' );
 
 		$meta           = $this->matrix_meta( $verdict );
 		$meta['server'] = $is_mariadb ? 'mariadb' : 'mysql';
@@ -199,7 +199,7 @@ final class VersionInspector {
 		return new HealthCheck(
 			'database_version',
 			HealthCheck::GROUP_VERSIONS,
-			__( 'Database version', 'fanxie-wp-core' ),
+			__( 'Database version', 'fanxie-warden' ),
 			$verdict['status'],
 			$server_name . ' ' . $version,
 			$this->matrix_summary( $verdict, $server_name ),
@@ -210,7 +210,7 @@ final class VersionInspector {
 					HealthCheck::link(
 						$is_mariadb ? 'https://endoflife.date/mariadb' : 'https://endoflife.date/mysql',
 						/* translators: %s: database server name, e.g. MySQL. */
-						sprintf( __( '%s release lifecycle', 'fanxie-wp-core' ), $server_name )
+						sprintf( __( '%s release lifecycle', 'fanxie-warden' ), $server_name )
 					),
 				],
 			$meta
@@ -221,7 +221,7 @@ final class VersionInspector {
 	 * TLS certificate expiry, degrading to `unknown` when the probe cannot run.
 	 */
 	private function ssl_check(): HealthCheck {
-		$label = __( 'SSL certificate', 'fanxie-wp-core' );
+		$label = __( 'SSL certificate', 'fanxie-warden' );
 
 		if ( ! $this->ssl_enabled() ) {
 			return new HealthCheck(
@@ -230,7 +230,7 @@ final class VersionInspector {
 				$label,
 				HealthCheck::STATUS_UNKNOWN,
 				'',
-				__( 'Certificate checking is switched off.', 'fanxie-wp-core' ),
+				__( 'Certificate checking is switched off.', 'fanxie-warden' ),
 				'',
 				[],
 				[ 'enabled' => false ]
@@ -245,7 +245,7 @@ final class VersionInspector {
 				$label,
 				HealthCheck::STATUS_UNKNOWN,
 				'',
-				__( 'Could not determine this site’s hostname.', 'fanxie-wp-core' ),
+				__( 'Could not determine this site’s hostname.', 'fanxie-warden' ),
 				'',
 				[],
 				[ 'enabled' => true ]
@@ -261,8 +261,8 @@ final class VersionInspector {
 				$label,
 				HealthCheck::STATUS_UNKNOWN,
 				'',
-				__( 'Not checked yet.', 'fanxie-wp-core' ),
-				__( 'The certificate is read on a schedule and on demand, never while a page is loading. Use Re-run checks to read it now.', 'fanxie-wp-core' ),
+				__( 'Not checked yet.', 'fanxie-warden' ),
+				__( 'The certificate is read on a schedule and on demand, never while a page is loading. Use Re-run checks to read it now.', 'fanxie-warden' ),
 				[],
 				[
 					'enabled' => true,
@@ -278,10 +278,10 @@ final class VersionInspector {
 				$label,
 				HealthCheck::STATUS_UNKNOWN,
 				'',
-				__( 'Couldn’t check — this host may block outbound connections.', 'fanxie-wp-core' ),
-				__( 'We could not open a TLS connection back to this site to read its certificate. That is common on hosts that firewall outbound traffic, and it does not by itself mean anything is wrong with your certificate. Check it from outside the server to be sure.', 'fanxie-wp-core' ),
+				__( 'Couldn’t check — this host may block outbound connections.', 'fanxie-warden' ),
+				__( 'We could not open a TLS connection back to this site to read its certificate. That is common on hosts that firewall outbound traffic, and it does not by itself mean anything is wrong with your certificate. Check it from outside the server to be sure.', 'fanxie-warden' ),
 				[
-					HealthCheck::link( 'https://www.ssllabs.com/ssltest/', __( 'Test this site with SSL Labs', 'fanxie-wp-core' ) ),
+					HealthCheck::link( 'https://www.ssllabs.com/ssltest/', __( 'Test this site with SSL Labs', 'fanxie-warden' ) ),
 				],
 				[
 					'enabled'   => true,
@@ -302,21 +302,21 @@ final class VersionInspector {
 			$status  = HealthCheck::STATUS_CRITICAL;
 			$summary = sprintf(
 				/* translators: %s: certificate expiry date. */
-				__( 'Certificate expired on %s.', 'fanxie-wp-core' ),
+				__( 'Certificate expired on %s.', 'fanxie-warden' ),
 				$expires_label
 			);
 		} elseif ( $days_remaining <= $warning_days ) {
 			$status  = HealthCheck::STATUS_WARNING;
 			$summary = sprintf(
 				/* translators: %d: number of days until the certificate expires. */
-				_n( 'Certificate expires in %d day.', 'Certificate expires in %d days.', $days_remaining, 'fanxie-wp-core' ),
+				_n( 'Certificate expires in %d day.', 'Certificate expires in %d days.', $days_remaining, 'fanxie-warden' ),
 				$days_remaining
 			);
 		} else {
 			$status  = HealthCheck::STATUS_OK;
 			$summary = sprintf(
 				/* translators: %s: certificate expiry date. */
-				__( 'Certificate valid until %s.', 'fanxie-wp-core' ),
+				__( 'Certificate valid until %s.', 'fanxie-warden' ),
 				$expires_label
 			);
 		}
@@ -330,7 +330,7 @@ final class VersionInspector {
 			$summary,
 			HealthCheck::STATUS_OK === $status
 				? ''
-				: __( 'Most certificate authorities renew automatically about a month out. If yours does not, renew now — an expired certificate makes the whole site unreachable in every modern browser.', 'fanxie-wp-core' ),
+				: __( 'Most certificate authorities renew automatically about a month out. If yours does not, renew now — an expired certificate makes the whole site unreachable in every modern browser.', 'fanxie-warden' ),
 			[],
 			[
 				'enabled'        => true,
@@ -361,10 +361,10 @@ final class VersionInspector {
 			return new HealthCheck(
 				'https_enforced',
 				HealthCheck::GROUP_VERSIONS,
-				__( 'HTTPS', 'fanxie-wp-core' ),
+				__( 'HTTPS', 'fanxie-warden' ),
 				HealthCheck::STATUS_OK,
 				$home,
-				__( 'Site and home URLs both use HTTPS.', 'fanxie-wp-core' ),
+				__( 'Site and home URLs both use HTTPS.', 'fanxie-warden' ),
 				'',
 				[],
 				[
@@ -377,20 +377,20 @@ final class VersionInspector {
 		return new HealthCheck(
 			'https_enforced',
 			HealthCheck::GROUP_VERSIONS,
-			__( 'HTTPS', 'fanxie-wp-core' ),
+			__( 'HTTPS', 'fanxie-warden' ),
 			HealthCheck::STATUS_CRITICAL,
 			'' !== $home ? $home : $site_url,
 			$home_https || $site_https
-				? __( 'Only one of the site and home URLs uses HTTPS.', 'fanxie-wp-core' )
-				: __( 'This site is not served over HTTPS.', 'fanxie-wp-core' ),
-			__( 'Passwords, cookies, and admin sessions travel in the clear without HTTPS, and mixed HTTP/HTTPS URLs break logins in subtle ways. Obtain a certificate, then update both URLs under Settings → General.', 'fanxie-wp-core' ),
+				? __( 'Only one of the site and home URLs uses HTTPS.', 'fanxie-warden' )
+				: __( 'This site is not served over HTTPS.', 'fanxie-warden' ),
+			__( 'Passwords, cookies, and admin sessions travel in the clear without HTTPS, and mixed HTTP/HTTPS URLs break logins in subtle ways. Obtain a certificate, then update both URLs under Settings → General.', 'fanxie-warden' ),
 			[
 				HealthCheck::snippet(
 					'php',
 					"// wp-config.php — force HTTPS for the admin and login screens.\ndefine( 'FORCE_SSL_ADMIN', true );",
-					__( 'Force HTTPS in wp-admin', 'fanxie-wp-core' )
+					__( 'Force HTTPS in wp-admin', 'fanxie-warden' )
 				),
-				HealthCheck::link( admin_url( 'options-general.php' ), __( 'Open Settings → General', 'fanxie-wp-core' ) ),
+				HealthCheck::link( admin_url( 'options-general.php' ), __( 'Open Settings → General', 'fanxie-warden' ) ),
 			],
 			[
 				'home_https' => $home_https,
@@ -516,7 +516,7 @@ final class VersionInspector {
 			case SupportMatrix::PHASE_EOL:
 				return sprintf(
 					/* translators: 1: software name, e.g. PHP. 2: branch number, e.g. 8.1. 3: end-of-life date. */
-					__( '%1$s %2$s reached end of life on %3$s and receives no further security fixes.', 'fanxie-wp-core' ),
+					__( '%1$s %2$s reached end of life on %3$s and receives no further security fixes.', 'fanxie-warden' ),
 					$name,
 					$verdict['branch'],
 					$security_until
@@ -525,7 +525,7 @@ final class VersionInspector {
 			case SupportMatrix::PHASE_SECURITY:
 				return sprintf(
 					/* translators: 1: software name, e.g. PHP. 2: branch number. 3: end of security support date. */
-					__( '%1$s %2$s is in security-only support until %3$s.', 'fanxie-wp-core' ),
+					__( '%1$s %2$s is in security-only support until %3$s.', 'fanxie-warden' ),
 					$name,
 					$verdict['branch'],
 					$security_until
@@ -535,7 +535,7 @@ final class VersionInspector {
 				if ( HealthCheck::STATUS_WARNING === $verdict['status'] ) {
 					return sprintf(
 						/* translators: 1: software name. 2: branch number. 3: end of support date. */
-						__( '%1$s %2$s is supported, but support ends on %3$s.', 'fanxie-wp-core' ),
+						__( '%1$s %2$s is supported, but support ends on %3$s.', 'fanxie-warden' ),
 						$name,
 						$verdict['branch'],
 						$security_until
@@ -544,7 +544,7 @@ final class VersionInspector {
 
 				return sprintf(
 					/* translators: 1: software name. 2: branch number. 3: end of support date. */
-					__( '%1$s %2$s is fully supported until %3$s.', 'fanxie-wp-core' ),
+					__( '%1$s %2$s is fully supported until %3$s.', 'fanxie-warden' ),
 					$name,
 					$verdict['branch'],
 					$security_until
@@ -553,7 +553,7 @@ final class VersionInspector {
 			default:
 				return sprintf(
 					/* translators: 1: software name. 2: branch number. */
-					__( '%1$s %2$s is not in our support matrix — we cannot say whether it is still supported.', 'fanxie-wp-core' ),
+					__( '%1$s %2$s is not in our support matrix — we cannot say whether it is still supported.', 'fanxie-warden' ),
 					$name,
 					'' !== $verdict['branch'] ? $verdict['branch'] : '?'
 				);
@@ -569,17 +569,17 @@ final class VersionInspector {
 		if ( SupportMatrix::PHASE_UNKNOWN === $verdict['phase'] ) {
 			return sprintf(
 				/* translators: %s: date the support matrix was last reviewed. */
-				__( 'Our support matrix was last reviewed on %s. A release newer than that will show as unknown until the matrix is updated — that is deliberate, so you are never shown a guess dressed up as a verdict.', 'fanxie-wp-core' ),
+				__( 'Our support matrix was last reviewed on %s. A release newer than that will show as unknown until the matrix is updated — that is deliberate, so you are never shown a guess dressed up as a verdict.', 'fanxie-warden' ),
 				$this->format_date_string( SupportMatrix::REVIEWED_ON )
 			);
 		}
 
 		if ( SupportMatrix::PHASE_EOL === $verdict['phase'] ) {
-			return __( 'Known vulnerabilities found after the end-of-life date are never patched on this branch. Upgrading is the only fix; there is no configuration that makes an unsupported runtime safe.', 'fanxie-wp-core' );
+			return __( 'Known vulnerabilities found after the end-of-life date are never patched on this branch. Upgrading is the only fix; there is no configuration that makes an unsupported runtime safe.', 'fanxie-warden' );
 		}
 
 		if ( SupportMatrix::PHASE_SECURITY === $verdict['phase'] ) {
-			return __( 'Security fixes still arrive, but bug fixes have stopped. Plan the upgrade before the security window closes rather than after.', 'fanxie-wp-core' );
+			return __( 'Security fixes still arrive, but bug fixes have stopped. Plan the upgrade before the security window closes rather than after.', 'fanxie-warden' );
 		}
 
 		return '';

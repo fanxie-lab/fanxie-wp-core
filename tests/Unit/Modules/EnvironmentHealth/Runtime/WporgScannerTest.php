@@ -2,16 +2,16 @@
 /**
  * Unit tests for the throttled wordpress.org freshness scanner.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth\Runtime
+ * @package FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth\Runtime;
+namespace FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth\Runtime;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\WporgScanner;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\WporgScanner;
 use PHPUnit\Framework\TestCase;
 use WP_Error;
 

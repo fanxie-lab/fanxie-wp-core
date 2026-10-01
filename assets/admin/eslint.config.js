@@ -1,4 +1,4 @@
-// ESLint flat config (ESLint 9+) for the Fanxie WP Core admin SPA.
+// ESLint flat config (ESLint 9+) for the Fanxie Warden admin SPA.
 //
 // Layered rule stack — later layers override earlier ones where they collide:
 //   1. @eslint/js recommended

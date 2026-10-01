@@ -2,33 +2,33 @@
 /**
  * WP-CLI recovery commands for the Login Protection module.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection\Cli
+ * @package FanxieLab\Warden\Modules\LoginProtection\Cli
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection\Cli;
+namespace FanxieLab\Warden\Modules\LoginProtection\Cli;
 
-use FanxieLab\WPCore\Modules\LoginProtection\BanStore;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\AttemptLimiter;
-use FanxieLab\WPCore\Modules\LoginProtection\Runtime\LoginSlugGuard;
+use FanxieLab\Warden\Modules\LoginProtection\BanStore;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\AttemptLimiter;
+use FanxieLab\Warden\Modules\LoginProtection\Runtime\LoginSlugGuard;
 use WP_CLI;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * `wp fx-core login <subcommand>` — break-glass recovery from the shell.
+ * `wp fx-warden login <subcommand>` — break-glass recovery from the shell.
  *
  * Two operator lifelines that never depend on being able to log in:
  *
  *   - `reveal` prints the effective hidden-login slug and where it comes from,
- *     so an administrator who forgot it (or set the `FX_CORE_LOGIN_SLUG` escape
+ *     so an administrator who forgot it (or set the `FX_WARDEN_LOGIN_SLUG` escape
  *     hatch in `wp-config.php`) can find their way back to the login screen.
  *   - `unlock <subject>` clears the transient lockouts and persistent bans for
  *     an IP address or username, freeing a locked-out account without touching
  *     the database by hand.
  *
- * Registration is deferred to {@see \FanxieLab\WPCore\Modules\LoginProtection\LoginProtection::register_hooks()}
+ * Registration is deferred to {@see \FanxieLab\Warden\Modules\LoginProtection\LoginProtection::register_hooks()}
  * (guarded by `defined( 'WP_CLI' ) && WP_CLI`), which constructs this class with
  * the live module config and ban repository — this class only defines behaviour.
  */
@@ -49,14 +49,14 @@ final class LoginCommand {
 	/**
 	 * Reveal the effective hidden-login slug and its source.
 	 *
-	 * Prints the slug in force, whether it comes from the `FX_CORE_LOGIN_SLUG`
+	 * Prints the slug in force, whether it comes from the `FX_WARDEN_LOGIN_SLUG`
 	 * wp-config constant or the stored plugin settings, and the full login URL.
 	 * When no slug resolves, reports that the default `wp-login.php` is in use.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Show the hidden login slug and URL.
-	 *     $ wp fx-core login reveal
+	 *     $ wp fx-warden login reveal
 	 *
 	 * @param array<int, string>    $args       Positional arguments (unused).
 	 * @param array<string, string> $assoc_args Associative arguments (unused).
@@ -72,11 +72,11 @@ final class LoginCommand {
 		$slug  = $guard->effective_slug();
 
 		if ( '' === $slug ) {
-			WP_CLI::log( __( 'Hide-login is not active: no custom login slug is configured.', 'fanxie-wp-core' ) );
+			WP_CLI::log( __( 'Hide-login is not active: no custom login slug is configured.', 'fanxie-warden' ) );
 			WP_CLI::log(
 				sprintf(
 					/* translators: %s: default login URL. */
-					__( 'The default login URL is in use: %s', 'fanxie-wp-core' ),
+					__( 'The default login URL is in use: %s', 'fanxie-warden' ),
 					wp_login_url()
 				)
 			);
@@ -86,21 +86,21 @@ final class LoginCommand {
 		WP_CLI::log(
 			sprintf(
 				/* translators: %s: the effective login slug. */
-				__( 'Effective login slug: %s', 'fanxie-wp-core' ),
+				__( 'Effective login slug: %s', 'fanxie-warden' ),
 				$slug
 			)
 		);
 		WP_CLI::log(
 			sprintf(
 				/* translators: %s: where the slug comes from. */
-				__( 'Source: %s', 'fanxie-wp-core' ),
+				__( 'Source: %s', 'fanxie-warden' ),
 				$this->slug_source_label()
 			)
 		);
 		WP_CLI::log(
 			sprintf(
 				/* translators: %s: the full hidden-login URL. */
-				__( 'Login URL: %s', 'fanxie-wp-core' ),
+				__( 'Login URL: %s', 'fanxie-warden' ),
 				$this->login_url( $slug )
 			)
 		);
@@ -109,12 +109,12 @@ final class LoginCommand {
 			WP_CLI::warning(
 				__(
 					'Hide-login is disabled (the "Hide wp-login.php" toggle is off), so this slug is not being enforced.',
-					'fanxie-wp-core'
+					'fanxie-warden'
 				)
 			);
 		}
 
-		WP_CLI::success( __( 'Login slug revealed.', 'fanxie-wp-core' ) );
+		WP_CLI::success( __( 'Login slug revealed.', 'fanxie-warden' ) );
 	}
 
 	/**
@@ -136,10 +136,10 @@ final class LoginCommand {
 	 * ## EXAMPLES
 	 *
 	 *     # Free a locked-out IP address.
-	 *     $ wp fx-core login unlock 203.0.113.7
+	 *     $ wp fx-warden login unlock 203.0.113.7
 	 *
 	 *     # Preview what unlocking a username would clear.
-	 *     $ wp fx-core login unlock admin --dry-run
+	 *     $ wp fx-warden login unlock admin --dry-run
 	 *
 	 * @param array<int, string>    $args       Positional arguments: `[ 0 => subject ]`.
 	 * @param array<string, string> $assoc_args Associative arguments: supports `dry-run`.
@@ -148,7 +148,7 @@ final class LoginCommand {
 		$subject = isset( $args[0] ) ? trim( (string) $args[0] ) : '';
 
 		if ( '' === $subject ) {
-			WP_CLI::error( __( 'A subject (IP address or username) is required.', 'fanxie-wp-core' ) );
+			WP_CLI::error( __( 'A subject (IP address or username) is required.', 'fanxie-warden' ) );
 			return;
 		}
 
@@ -169,14 +169,14 @@ final class LoginCommand {
 		WP_CLI::log(
 			sprintf(
 				/* translators: %s: the subject (IP address or username). */
-				__( 'Cleared lockout transients for "%s" (IP and username dimensions).', 'fanxie-wp-core' ),
+				__( 'Cleared lockout transients for "%s" (IP and username dimensions).', 'fanxie-warden' ),
 				$subject
 			)
 		);
 		WP_CLI::log(
 			sprintf(
 				/* translators: %d: number of ban rows removed. */
-				_n( 'Removed %d persistent ban.', 'Removed %d persistent bans.', $removed, 'fanxie-wp-core' ),
+				_n( 'Removed %d persistent ban.', 'Removed %d persistent bans.', $removed, 'fanxie-warden' ),
 				$removed
 			)
 		);
@@ -184,7 +184,7 @@ final class LoginCommand {
 		WP_CLI::success(
 			sprintf(
 				/* translators: %s: the subject (IP address or username). */
-				__( 'Unlocked "%s".', 'fanxie-wp-core' ),
+				__( 'Unlocked "%s".', 'fanxie-warden' ),
 				$subject
 			)
 		);
@@ -199,7 +199,7 @@ final class LoginCommand {
 		WP_CLI::log(
 			sprintf(
 				/* translators: %s: the subject (IP address or username). */
-				__( 'Dry run for "%s" — nothing will be changed.', 'fanxie-wp-core' ),
+				__( 'Dry run for "%s" — nothing will be changed.', 'fanxie-warden' ),
 				$subject
 			)
 		);
@@ -209,21 +209,21 @@ final class LoginCommand {
 		$ip_banned   = $this->bans->is_banned( 'ip', $subject );
 		$user_banned = $this->bans->is_banned( 'username', $subject );
 
-		WP_CLI::log( $this->dry_run_line( __( 'IP lockout transient', 'fanxie-wp-core' ), $ip_locked ) );
-		WP_CLI::log( $this->dry_run_line( __( 'Username lockout transient', 'fanxie-wp-core' ), $user_locked ) );
-		WP_CLI::log( $this->dry_run_line( __( 'IP ban', 'fanxie-wp-core' ), $ip_banned ) );
-		WP_CLI::log( $this->dry_run_line( __( 'Username ban', 'fanxie-wp-core' ), $user_banned ) );
+		WP_CLI::log( $this->dry_run_line( __( 'IP lockout transient', 'fanxie-warden' ), $ip_locked ) );
+		WP_CLI::log( $this->dry_run_line( __( 'Username lockout transient', 'fanxie-warden' ), $user_locked ) );
+		WP_CLI::log( $this->dry_run_line( __( 'IP ban', 'fanxie-warden' ), $ip_banned ) );
+		WP_CLI::log( $this->dry_run_line( __( 'Username ban', 'fanxie-warden' ), $user_banned ) );
 
 		if ( $ip_locked || $user_locked || $ip_banned || $user_banned ) {
-			WP_CLI::log( __( 'Run without --dry-run to clear the items marked present.', 'fanxie-wp-core' ) );
+			WP_CLI::log( __( 'Run without --dry-run to clear the items marked present.', 'fanxie-warden' ) );
 		} else {
-			WP_CLI::log( __( 'Nothing is currently locked or banned for this subject.', 'fanxie-wp-core' ) );
+			WP_CLI::log( __( 'Nothing is currently locked or banned for this subject.', 'fanxie-warden' ) );
 		}
 
 		WP_CLI::success(
 			sprintf(
 				/* translators: %s: the subject (IP address or username). */
-				__( 'Dry run complete for "%s".', 'fanxie-wp-core' ),
+				__( 'Dry run complete for "%s".', 'fanxie-warden' ),
 				$subject
 			)
 		);
@@ -237,8 +237,8 @@ final class LoginCommand {
 	 */
 	private function dry_run_line( string $label, bool $present ): string {
 		$status = $present
-			? __( 'present (would be cleared)', 'fanxie-wp-core' )
-			: __( 'none', 'fanxie-wp-core' );
+			? __( 'present (would be cleared)', 'fanxie-warden' )
+			: __( 'none', 'fanxie-warden' );
 
 		// The `label: status` join is presentational, not linguistic — no `__()`.
 		return $label . ': ' . $status;
@@ -248,15 +248,15 @@ final class LoginCommand {
 	 * Human-readable label for where the effective slug comes from.
 	 *
 	 * Mirrors the constant-wins heuristic of
-	 * {@see \FanxieLab\WPCore\Modules\LoginProtection\AjaxController} so the CLI
+	 * {@see \FanxieLab\Warden\Modules\LoginProtection\AjaxController} so the CLI
 	 * and the admin UI agree on the reported source.
 	 */
 	private function slug_source_label(): string {
-		if ( defined( 'FX_CORE_LOGIN_SLUG' ) && '' !== (string) constant( 'FX_CORE_LOGIN_SLUG' ) ) {
-			return __( 'FX_CORE_LOGIN_SLUG constant (wp-config.php)', 'fanxie-wp-core' );
+		if ( defined( 'FX_WARDEN_LOGIN_SLUG' ) && '' !== (string) constant( 'FX_WARDEN_LOGIN_SLUG' ) ) {
+			return __( 'FX_WARDEN_LOGIN_SLUG constant (wp-config.php)', 'fanxie-warden' );
 		}
 
-		return __( 'stored plugin settings', 'fanxie-wp-core' );
+		return __( 'stored plugin settings', 'fanxie-warden' );
 	}
 
 	/**

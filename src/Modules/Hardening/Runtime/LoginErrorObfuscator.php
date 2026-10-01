@@ -2,12 +2,12 @@
 /**
  * Replace informative WP login errors with a generic message.
  *
- * @package FanxieLab\WPCore\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Modules\Hardening\Runtime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -90,10 +90,10 @@ final class LoginErrorObfuscator {
 			return $message;
 		}
 
-		$generic = __( 'Invalid username or password.', 'fanxie-wp-core' );
+		$generic = __( 'Invalid username or password.', 'fanxie-warden' );
 
 		/**
-		 * Filter: fanxie_wp_core/hardening/login_error_message
+		 * Filter: fanxie_warden/hardening/login_error_message
 		 *
 		 * Customise the generic login error message surfaced in place of the
 		 * informative WordPress defaults.
@@ -103,7 +103,7 @@ final class LoginErrorObfuscator {
 		 * @param string             $generic Generic error message.
 		 * @param array<int, string> $codes   Underlying WP error codes.
 		 */
-		$filtered = apply_filters( 'fanxie_wp_core/hardening/login_error_message', $generic, $codes );
+		$filtered = apply_filters( 'fanxie_warden/hardening/login_error_message', $generic, $codes );
 
 		return is_string( $filtered ) && '' !== $filtered ? $filtered : $generic;
 	}

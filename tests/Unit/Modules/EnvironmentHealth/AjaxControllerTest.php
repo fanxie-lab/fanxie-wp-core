@@ -2,20 +2,20 @@
 /**
  * Unit tests for the Environment Health AJAX controller.
  *
- * @package FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth
+ * @package FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Tests\Unit\Modules\EnvironmentHealth;
+namespace FanxieLab\Warden\Tests\Unit\Modules\EnvironmentHealth;
 
-use FanxieLab\WPCore\Admin\AjaxRouter;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\AjaxController;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\EnvironmentHealth;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\HealthCheck;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\SslProbe;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\Runtime\WporgScanner;
-use FanxieLab\WPCore\Modules\EnvironmentHealth\StatusInspector;
+use FanxieLab\Warden\Admin\AjaxRouter;
+use FanxieLab\Warden\Modules\EnvironmentHealth\AjaxController;
+use FanxieLab\Warden\Modules\EnvironmentHealth\EnvironmentHealth;
+use FanxieLab\Warden\Modules\EnvironmentHealth\HealthCheck;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\SslProbe;
+use FanxieLab\Warden\Modules\EnvironmentHealth\Runtime\WporgScanner;
+use FanxieLab\Warden\Modules\EnvironmentHealth\StatusInspector;
 use WP_Error;
 
 /**

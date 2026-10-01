@@ -2,12 +2,12 @@
 /**
  * Content-Security-Policy value object.
  *
- * @package FanxieLab\WPCore\Modules\SecurityHeaders\Csp
+ * @package FanxieLab\Warden\Modules\SecurityHeaders\Csp
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\SecurityHeaders\Csp;
+namespace FanxieLab\Warden\Modules\SecurityHeaders\Csp;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * Holds the directive map, the active mode (`off` / `report-only` / `enforce`)
  * and an optional `report-uri`. `serialise()` formats the header value per
- * the CSP spec and applies the `fanxie_wp_core/security_headers/csp_directives`
+ * the CSP spec and applies the `fanxie_warden/security_headers/csp_directives`
  * filter so integrators can adjust directives at the last moment.
  *
  * `merge()` is dedup-aware and order-preserving — the original policy's value
@@ -99,12 +99,12 @@ final class CspPolicy {
 	/**
 	 * Serialise the policy to a CSP header value.
 	 *
-	 * Fires `fanxie_wp_core/security_headers/csp_directives` so integrators
+	 * Fires `fanxie_warden/security_headers/csp_directives` so integrators
 	 * can observe / mutate the directive map before serialisation.
 	 */
 	public function serialise(): string {
 		/**
-		 * Filter: fanxie_wp_core/security_headers/csp_directives
+		 * Filter: fanxie_warden/security_headers/csp_directives
 		 *
 		 * Last chance to mutate the CSP directive map before it is serialised
 		 * into a header value.
@@ -114,7 +114,7 @@ final class CspPolicy {
 		 * @param array<string, array<int, string>> $directives Directive → values map.
 		 * @param string                             $mode      Active CSP mode.
 		 */
-		$directives = apply_filters( 'fanxie_wp_core/security_headers/csp_directives', $this->directives, $this->mode );
+		$directives = apply_filters( 'fanxie_warden/security_headers/csp_directives', $this->directives, $this->mode );
 		if ( ! is_array( $directives ) ) {
 			$directives = $this->directives;
 		}

@@ -2,12 +2,12 @@
 /**
  * Strong-password policy: enforce complexity rules on new / changed passwords.
  *
- * @package FanxieLab\WPCore\Modules\LoginProtection\Runtime
+ * @package FanxieLab\Warden\Modules\LoginProtection\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\LoginProtection\Runtime;
+namespace FanxieLab\Warden\Modules\LoginProtection\Runtime;
 
 use WP_Error;
 
@@ -41,7 +41,7 @@ final class PasswordPolicy {
 	 *
 	 * @var string
 	 */
-	private const ERROR_CODE = 'fanxie_wp_core_weak_password';
+	private const ERROR_CODE = 'fanxie_warden_weak_password';
 
 	/**
 	 * Fallback config so a partial `passwords` sub-config still behaves sanely —
@@ -180,19 +180,19 @@ final class PasswordPolicy {
 
 		if ( strlen( $password ) < $min ) {
 			/* translators: %d: minimum length */
-			$errors[] = sprintf( __( 'Password must be at least %d characters.', 'fanxie-wp-core' ), $min );
+			$errors[] = sprintf( __( 'Password must be at least %d characters.', 'fanxie-warden' ), $min );
 		}
 
 		if ( ! empty( $this->config['require_mixed_case'] ) && ( ! preg_match( '/[a-z]/', $password ) || ! preg_match( '/[A-Z]/', $password ) ) ) {
-			$errors[] = __( 'Password must include both uppercase and lowercase letters.', 'fanxie-wp-core' );
+			$errors[] = __( 'Password must include both uppercase and lowercase letters.', 'fanxie-warden' );
 		}
 
 		if ( ! empty( $this->config['require_number'] ) && ! preg_match( '/\d/', $password ) ) {
-			$errors[] = __( 'Password must include at least one number.', 'fanxie-wp-core' );
+			$errors[] = __( 'Password must include at least one number.', 'fanxie-warden' );
 		}
 
 		if ( ! empty( $this->config['require_symbol'] ) && ! preg_match( '/[^A-Za-z0-9]/', $password ) ) {
-			$errors[] = __( 'Password must include at least one symbol.', 'fanxie-wp-core' );
+			$errors[] = __( 'Password must include at least one symbol.', 'fanxie-warden' );
 		}
 
 		return $errors;

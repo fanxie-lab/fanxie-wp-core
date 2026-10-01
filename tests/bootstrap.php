@@ -1,6 +1,6 @@
 <?php
 /**
- * PHPUnit bootstrap for Fanxie WP Core.
+ * PHPUnit bootstrap for Fanxie Warden.
  *
  * Dual-mode bootstrap — the file supports two different test runs:
  *
@@ -14,7 +14,7 @@
  *   2. INTEGRATION MODE (real WordPress, inside wp-env's tests container).
  *      - Triggered when `WP_TESTS_DIR` (or `$_SERVER['WP_PHPUNIT__DIR']`) points
  *        at the WP test library that ships with the wp-env image.
- *      - Loads the full WordPress test suite and mounts `fanxie-wp-core.php`
+ *      - Loads the full WordPress test suite and mounts `fanxie-warden.php`
  *        on `muplugins_loaded` so hooks are in place before the suite boots.
  *      - Test bases: `WP_UnitTestCase`.
  *
@@ -22,7 +22,7 @@
  * `tests-cli` runner with the plugin directory as its CWD and PHPUnit as
  * the entry point. See `package.json` `scripts.test:php`.
  *
- * @package FanxieLab\WPCore\Tests
+ * @package FanxieLab\Warden\Tests
  */
 
 declare( strict_types=1 );
@@ -31,7 +31,7 @@ declare( strict_types=1 );
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
 // Reuse the PHPStan constant stubs so we don't maintain two copies of the
-// `FANXIE_WP_CORE_*` defines. Both files are idempotent via `defined()` guards.
+// `FANXIE_WARDEN_*` defines. Both files are idempotent via `defined()` guards.
 require_once __DIR__ . '/phpstan-bootstrap.php';
 
 /**
@@ -60,7 +60,7 @@ if ( '' !== $fanxie_tests_dir && file_exists( $fanxie_tests_dir . '/includes/fun
 	tests_add_filter(
 		'muplugins_loaded',
 		static function (): void {
-			require dirname( __DIR__ ) . '/fanxie-wp-core.php';
+			require dirname( __DIR__ ) . '/fanxie-warden.php';
 		}
 	);
 

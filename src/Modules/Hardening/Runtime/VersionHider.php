@@ -2,12 +2,12 @@
 /**
  * Hide WordPress version fingerprints.
  *
- * @package FanxieLab\WPCore\Modules\Hardening\Runtime
+ * @package FanxieLab\Warden\Modules\Hardening\Runtime
  */
 
 declare( strict_types=1 );
 
-namespace FanxieLab\WPCore\Modules\Hardening\Runtime;
+namespace FanxieLab\Warden\Modules\Hardening\Runtime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -166,7 +166,7 @@ final class VersionHider {
 		nocache_headers();
 
 		if ( function_exists( 'wp_die' ) ) {
-			wp_die( esc_html__( 'Not Found', 'fanxie-wp-core' ), '', [ 'response' => 404 ] );
+			wp_die( esc_html__( 'Not Found', 'fanxie-warden' ), '', [ 'response' => 404 ] );
 		}
 	}
 
