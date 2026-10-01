@@ -152,16 +152,17 @@ checked against php.net and endoflife.date.
 ## Phase 3 — Data Hygiene & Audit Trail  *(PRD §8, §9)*
 
 ### 3.1 Database Maintenance (PRD §8)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] Revision limit filter + bulk revision purge (per-post, keeps N)
-- [ ] Expired transient purge + nuclear option
+- [x] Design spec approved — `docs/superpowers/specs/2026-10-01-database-maintenance-design.md`
+- [ ] Revision limit filter (default OFF, 20 pre-filled; `WP_POST_REVISIONS` wins) + bulk revision purge (per-post, keeps N)
+- [ ] Expired transient purge (UI + schedule) + delete-all option (CLI only)
 - [ ] Orphaned meta cleanup (post/user/term/comment)
 - [ ] Auto-draft purge (>N days)
 - [ ] Trashed post purge (>N days)
 - [ ] Spam comment purge (>N days)
-- [ ] Action Scheduler-driven schedule (daily/weekly toggle, off-peak window)
-- [ ] WP-CLI commands (PRD §8.5) with `--dry-run` on every destructive op
-- [ ] Vue tab: counts + sizes table, dry-run preview, "Purge Selected" with confirmation modal
-- [ ] Tests: each cleanup function, Action Scheduler registration, CLI commands
+- [ ] WP-Cron schedule (daily/weekly, site-timezone hour, per-task toggles, time-budgeted continuation)
+- [ ] WP-CLI `wp fx-warden db …` (PRD §8.5) with `--dry-run` on every destructive op
+- [ ] Vue module: Cleanup tab (counts + ≈sizes, preview, Purge Selected/All with confirmation, progress + cancel) and Settings tab
+- [ ] Tests: each cleanup task, runner, cron scheduling, AJAX, CLI commands
 
 ### 3.2 Activity Log (PRD §9)  *(→ wordpress-development-expert + frontend-expert)*
 - [ ] Custom table `{prefix}fx_warden_activity_log` via `dbDelta`
