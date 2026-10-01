@@ -17,10 +17,20 @@ use WP_UnitTestCase;
  */
 final class UploadsProtectorIntegrationTest extends WP_UnitTestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
 	private string $uploads_basedir = '';
 
 	public function set_up(): void {
 		parent::set_up();
+
+		$this->server_backup = $_SERVER;
 
 		$info                  = wp_upload_dir( null, false );
 		$this->uploads_basedir = (string) $info['basedir'];
@@ -41,7 +51,7 @@ final class UploadsProtectorIntegrationTest extends WP_UnitTestCase {
 				unlink( $path );
 			}
 		}
-		unset( $_SERVER['SERVER_SOFTWARE'] );
+		$_SERVER = $this->server_backup;
 		parent::tear_down();
 	}
 

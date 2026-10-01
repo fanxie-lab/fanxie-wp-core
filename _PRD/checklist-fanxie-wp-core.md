@@ -261,7 +261,7 @@ checked against php.net and endoflife.date.
   The release archive must package the plugin as `fanxie-warden/`.
 - [x] Verify the rename left no `fanxie-wp-core` / `fanxie_wp_core` / `WPCore` /
   `FANXIE_WP_CORE` / `fx-core` / `FX_CORE` / `fanxie_core` strings outside `_PRD/` and historical docs
-- [ ] Full Plugin Check **zero** errors/warnings on complete plugin
+- [ ] Full Plugin Check **zero** errors/warnings on complete plugin — **gate runs against the shippable package** (the built archive, extracted as `fanxie-warden/`), not the dev checkout. The `fanxie-wp-core` dev folder name is irrelevant to the gate (decided 2026-10-01). CI `plugin-check` job must be pointed at the package build before the warnings flag flips.
 - [ ] Build a distribution archive that excludes `tests/`, `.github/`, `node_modules/`,
   and dev configs — most Plugin Check findings against the dev checkout come from
   test fixtures that never ship (146 of 184 at the end of Phase 2)
@@ -279,7 +279,7 @@ checked against php.net and endoflife.date.
 
 ## Known issues
 
-- [ ] **Integration suite is order-fragile.** `LoginSlugGuardIntegrationTest`
+- [x] **Integration suite is order-fragile.** *(fixed 2026-10-01: four process-wide constants — `FX_WARDEN_LOGIN_SLUG`, `DOING_AJAX`, `WP_ADMIN`, `REST_REQUEST` — were defined by tests without isolation; now run in separate processes or replaced with filters, and a `$_SERVER['REQUEST_URI']` non-restore fixed. Suites pass in default, reverse and multiple random-seed orders.)* `LoginSlugGuardIntegrationTest`
   calls `define( 'FX_WARDEN_LOGIN_SLUG', … )`, which leaks process-wide. Combined
   with `executionOrder="depends,defects"` in `phpunit.xml.dist`, a stale
   `.phpunit.cache` from a previously failed run reorders that test ahead of

@@ -147,10 +147,20 @@ final class LoginSlugGuardIntegrationTest extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * The constant path needs a real `define()`, and a constant can never be
+	 * undefined again. Run in a child process so `FX_WARDEN_LOGIN_SLUG` cannot
+	 * leak into later tests (it would override every other test's slug).
+	 * `preserveGlobalState disabled` makes the child re-run the PHPUnit bootstrap,
+	 * which boots WordPress and the plugin from scratch.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
 	public function test_constant_overrides_stored_slug_end_to_end(): void {
-		if ( ! defined( 'FX_WARDEN_LOGIN_SLUG' ) ) {
-			define( 'FX_WARDEN_LOGIN_SLUG', 'constant-gate' );
-		}
+		$this->assertFalse( defined( 'FX_WARDEN_LOGIN_SLUG' ), 'Precondition: the child process starts without the override constant.' );
+		define( 'FX_WARDEN_LOGIN_SLUG', 'constant-gate' );
+
 		$guard = $this->active_guard( [ 'slug' => 'stored-login' ] );
 
 		$this->assertSame( 'constant-gate', $guard->effective_slug() );

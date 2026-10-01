@@ -125,17 +125,12 @@ final class PluginBootTest extends WP_UnitTestCase {
 	 * @return array<string, mixed> Decoded JSON response body.
 	 */
 	private function dispatch_ajax( string $action ): array {
-		if ( ! defined( 'DOING_AJAX' ) ) {
-			define( 'DOING_AJAX', true );
-		}
-
-		// Sink for `wp_die()` so the handler terminates cleanly mid-test.
-		add_filter(
-			'wp_die_ajax_handler',
-			static fn (): callable => static function (): void {
-				throw new WPAjaxDieContinueException( 'ajax-dispatched' );
-			}
-		);
+		// Deliberately *not* `define( 'DOING_AJAX', true )`: a constant cannot be
+		// unset, so it would put every later test in the run into an AJAX
+		// context (Login Protection's slug guard, for one, treats that as a
+		// carve-out). The filter gives the same signal for one dispatch only.
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'ajax_die_handler' ] );
 
 		ob_start();
 
@@ -143,11 +138,25 @@ final class PluginBootTest extends WP_UnitTestCase {
 			do_action( 'wp_ajax_' . $action );
 		} catch ( WPAjaxDieContinueException $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- expected termination.
 			// Expected — the handler called wp_die() to flush the JSON body.
+		} finally {
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'ajax_die_handler' ] );
+			remove_filter( 'wp_doing_ajax', '__return_true' );
 		}
 
 		$raw = (string) ob_get_clean();
 		$decoded = json_decode( $raw, true );
 
 		return is_array( $decoded ) ? $decoded : [];
+	}
+
+	/**
+	 * Sink for `wp_die()` so a dispatched handler terminates cleanly mid-test.
+	 *
+	 * @return callable
+	 */
+	public function ajax_die_handler(): callable {
+		return static function (): void {
+			throw new WPAjaxDieContinueException( 'ajax-dispatched' );
+		};
 	}
 }

@@ -27,6 +27,14 @@ use WP_Error;
 final class AjaxControllerTest extends TestCase {
 
 	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
+	/**
 	 * In-memory option storage used by the Brain Monkey stubs.
 	 *
 	 * @var array<string, mixed>
@@ -47,6 +55,8 @@ final class AjaxControllerTest extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
+
+		$this->server_backup = $_SERVER;
 		Monkey\setUp();
 
 		Functions\when( '__' )->returnArg( 1 );
@@ -144,7 +154,7 @@ final class AjaxControllerTest extends TestCase {
 			}
 			rmdir( $this->uploads_dir );
 		}
-		unset( $_SERVER['SERVER_SOFTWARE'] );
+		$_SERVER = $this->server_backup;
 		Monkey\tearDown();
 		parent::tearDown();
 	}

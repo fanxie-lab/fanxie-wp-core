@@ -191,4 +191,4 @@ fanxie-warden/
 - Edit existing files — do not create new docs unless explicitly asked.
 - Keep the checklist current; tick items as completion happens, not in batches.
 - When a decision diverges from the PRD, write it down in the relevant module's section in this file (not in code comments).
-- Before declaring a phase complete, run: `composer run check` (phpcs + phpstan + phpunit), `npm run check` (eslint + tsc + vitest), and Plugin Check. All green, or the phase isn't done.
+- Before declaring a phase complete, run: `npm run check` (phpcs + phpstan via `composer run check`, then prettier + eslint + vue-tsc + vitest), `composer test` (PHPUnit unit suite), `npm run test:php:integration` (integration suite in wp-env), and Plugin Check against the shippable package. All green, or the phase isn't done. All green, or the phase isn't done.

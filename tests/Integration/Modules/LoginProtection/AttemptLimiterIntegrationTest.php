@@ -23,6 +23,14 @@ use WP_Error;
  */
 final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
 	private LoginLogRepository $log;
 
 	private BanRepository $bans;
@@ -31,6 +39,8 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 		// The base case installs and truncates both custom tables before every
 		// test; here we only need local repository handles for the assertions.
 		parent::setUp();
+
+		$this->server_backup = $_SERVER;
 
 		// The module now wires itself at plugin boot (Task 10), so a live
 		// AttemptLimiter built from the shipped default config is already attached
@@ -49,7 +59,7 @@ final class AttemptLimiterIntegrationTest extends LoginProtectionTableTestCase {
 	}
 
 	protected function tearDown(): void {
-		unset( $_SERVER['REMOTE_ADDR'] );
+		$_SERVER = $this->server_backup;
 		parent::tearDown();
 	}
 

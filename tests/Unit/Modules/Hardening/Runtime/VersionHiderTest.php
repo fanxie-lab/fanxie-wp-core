@@ -20,8 +20,18 @@ use PHPUnit\Framework\TestCase;
  */
 final class VersionHiderTest extends TestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
 	protected function setUp(): void {
 		parent::setUp();
+
+		$this->server_backup = $_SERVER;
 		Monkey\setUp();
 		Functions\when( '__' )->returnArg( 1 );
 		Functions\when( 'esc_html__' )->returnArg( 1 );
@@ -46,6 +56,7 @@ final class VersionHiderTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
+		$_SERVER = $this->server_backup;
 		Monkey\tearDown();
 		parent::tearDown();
 	}
@@ -147,8 +158,6 @@ final class VersionHiderTest extends TestCase {
 			$this->fail( 'Expected wp_die' );
 		} catch ( \RuntimeException $e ) {
 			$this->assertSame( 'wp_die', $e->getMessage() );
-		} finally {
-			unset( $_SERVER['REQUEST_URI'] );
 		}
 	}
 }

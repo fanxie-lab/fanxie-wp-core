@@ -269,10 +269,17 @@ final class HeaderEmitterTest extends TestCase {
 		$this->assertArrayHasKey( 'X-Content-Type-Options', $sink );
 	}
 
+	/**
+	 * `REST_REQUEST` can only be signalled with a real constant, which can never
+	 * be undefined again. Run in a child process so it cannot leak into later
+	 * tests (it would suppress CSP in every later emitter test and turn every
+	 * request into a carve-out for Login Protection's slug guard).
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
 	public function test_csp_header_skipped_on_rest_request(): void {
-		if ( ! defined( 'REST_REQUEST' ) ) {
-			define( 'REST_REQUEST', true );
-		}
+		define( 'REST_REQUEST', true );
 
 		$config = [
 			'headers' => [

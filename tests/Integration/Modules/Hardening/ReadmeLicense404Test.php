@@ -19,8 +19,18 @@ use WP_UnitTestCase;
  */
 final class ReadmeLicense404Test extends WP_UnitTestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
 	public function set_up(): void {
 		parent::set_up();
+
+		$this->server_backup = $_SERVER;
 
 		$hider = new VersionHider(
 			[
@@ -34,6 +44,11 @@ final class ReadmeLicense404Test extends WP_UnitTestCase {
 			]
 		);
 		$hider->register_hooks();
+	}
+
+	public function tear_down(): void {
+		$_SERVER = $this->server_backup;
+		parent::tear_down();
 	}
 
 	public function test_readme_request_results_in_404_status(): void {
@@ -54,8 +69,6 @@ final class ReadmeLicense404Test extends WP_UnitTestCase {
 			$this->fail( 'Expected wp_die() to be called.' );
 		} catch ( \RuntimeException $e ) {
 			$this->assertStringContainsString( '404', $e->getMessage() );
-		} finally {
-			unset( $_SERVER['REQUEST_URI'] );
 		}
 	}
 
@@ -69,8 +82,6 @@ final class ReadmeLicense404Test extends WP_UnitTestCase {
 		// Should return without calling wp_die().
 		$hider->maybe_block_readme_license();
 		$this->addToAssertionCount( 1 );
-
-		unset( $_SERVER['REQUEST_URI'] );
 	}
 
 	public function test_strip_version_query_end_to_end(): void {

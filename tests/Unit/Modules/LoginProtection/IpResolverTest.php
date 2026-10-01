@@ -17,8 +17,21 @@ use PHPUnit\Framework\TestCase;
  */
 final class IpResolverTest extends TestCase {
 
+	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
+	protected function setUp(): void {
+		parent::setUp();
+		$this->server_backup = $_SERVER;
+	}
+
 	protected function tearDown(): void {
-		unset( $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_X_FORWARDED_FOR'] );
+		$_SERVER = $this->server_backup;
 		parent::tearDown();
 	}
 

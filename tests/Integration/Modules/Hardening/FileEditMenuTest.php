@@ -35,14 +35,11 @@ final class FileEditMenuTest extends WP_UnitTestCase {
 		$admin_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_id );
 
-		if ( ! defined( 'WP_ADMIN' ) ) {
-			define( 'WP_ADMIN', true );
-		}
-
-		// `wp_is_file_mod_allowed()` lives in `wp-admin/includes/file.php` — load it
-		// once so both tests can call it without pulling in the whole admin
-		// bootstrap stack.
-		require_once ABSPATH . 'wp-admin/includes/file.php';
+		// No `define( 'WP_ADMIN', true )` here: `wp_is_file_mod_allowed()` lives in
+		// `wp-includes/load.php` and is admin-agnostic, and a constant cannot be
+		// unset — once the current-screen globals are reset between tests,
+		// `is_admin()` would fall back to it and report `true` for every later
+		// test in the run.
 	}
 
 	public function test_runtime_enforce_blocks_editor_file_mod_contexts(): void {

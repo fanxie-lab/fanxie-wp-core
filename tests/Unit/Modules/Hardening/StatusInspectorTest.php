@@ -24,6 +24,14 @@ use PHPUnit\Framework\TestCase;
 final class StatusInspectorTest extends TestCase {
 
 	/**
+	 * `$_SERVER` as it was before the test, restored verbatim in tear-down so no
+	 * key the test set (or unset) leaks into later tests or WP's shutdown cron.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $server_backup = [];
+
+	/**
 	 * Transient store backing the Brain Monkey stubs.
 	 *
 	 * @var array<string, mixed>
@@ -42,6 +50,8 @@ final class StatusInspectorTest extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
+
+		$this->server_backup = $_SERVER;
 		Monkey\setUp();
 		Functions\when( '__' )->returnArg( 1 );
 		Functions\when( 'trailingslashit' )->alias( static fn ( $v ) => rtrim( (string) $v, '/' ) . '/' );
@@ -105,7 +115,7 @@ final class StatusInspectorTest extends TestCase {
 			}
 			rmdir( $this->uploads_dir );
 		}
-		unset( $_SERVER['SERVER_SOFTWARE'] );
+		$_SERVER = $this->server_backup;
 		Monkey\tearDown();
 		parent::tearDown();
 	}
