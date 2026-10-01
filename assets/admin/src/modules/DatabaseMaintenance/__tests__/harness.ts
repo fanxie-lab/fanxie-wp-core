@@ -1,3 +1,11 @@
+import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import { createMemoryHistory, createRouter, type Router } from 'vue-router';
+import { vi } from 'vitest';
+import DatabaseMaintenance from '../DatabaseMaintenance.vue';
+import CleanupView from '../views/CleanupView.vue';
+import SettingsView from '../views/SettingsView.vue';
+import { useDatabaseMaintenanceStore } from '../stores/databaseMaintenance';
 import type {
   ConfigResponse,
   DbSettings,
@@ -70,4 +78,67 @@ export function makeConfig(over: Partial<ConfigResponse> = {}): ConfigResponse {
     next_run: null,
     ...over,
   };
+}
+
+/**
+ * Build a fresh in-memory router with the same nested-route shape the real app
+ * uses. Memory history keeps tests deterministic and avoids window.location.
+ */
+export function makeTestRouter(): Router {
+  return createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      {
+        path: '/database-maintenance',
+        name: 'database-maintenance',
+        component: DatabaseMaintenance,
+        redirect: { name: 'database-maintenance.cleanup' },
+        children: [
+          {
+            path: 'cleanup',
+            name: 'database-maintenance.cleanup',
+            component: CleanupView,
+          },
+          {
+            path: 'settings',
+            name: 'database-maintenance.settings',
+            component: SettingsView,
+          },
+        ],
+      },
+      // Stand-in for navigating away to another module in the sidebar.
+      {
+        path: '/hardening',
+        name: 'hardening',
+        component: { template: '<div class="other-module" />' },
+      },
+    ],
+  });
+}
+
+export type StoreSeed = (
+  store: ReturnType<typeof useDatabaseMaintenanceStore>,
+) => void;
+
+/**
+ * Mount the real nested route tree at `path`, with `load()` stubbed so the
+ * seeded state is what renders.
+ */
+export async function mountAt(path: string, seed: StoreSeed = () => undefined) {
+  setActivePinia(createPinia());
+  const store = useDatabaseMaintenanceStore();
+  const loadSpy = vi.spyOn(store, 'load').mockResolvedValue();
+  seed(store);
+
+  const router = makeTestRouter();
+  await router.push(path);
+  await router.isReady();
+
+  const wrapper = mount(
+    { template: '<router-view />' },
+    { global: { plugins: [router] }, attachTo: document.body },
+  );
+  await flushPromises();
+
+  return { router, wrapper, store, loadSpy };
 }
