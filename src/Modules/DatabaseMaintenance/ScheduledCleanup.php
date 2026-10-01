@@ -86,6 +86,14 @@ final class ScheduledCleanup {
 
 		if ( false === $event || $event->schedule !== $s->schedule_frequency ) {
 			$this->reschedule( $s );
+			return;
+		}
+
+		// Fixed-interval re-queuing drifts an hour across DST; pull it back.
+		$local_hour = wp_date( 'G', $event->timestamp );
+
+		if ( false === $local_hour || (int) $local_hour !== $s->schedule_hour ) {
+			$this->reschedule( $s );
 		}
 	}
 
