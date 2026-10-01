@@ -29,6 +29,13 @@ final class DatabaseMaintenance extends ModuleBase {
 	public function __construct( private readonly AjaxRouter $ajax_router ) {}
 
 	/**
+	 * Lazily created cron scheduler.
+	 *
+	 * @var ScheduledCleanup|null
+	 */
+	private ?ScheduledCleanup $scheduler = null;
+
+	/**
 	 * Module slug.
 	 */
 	public function id(): string {
@@ -133,6 +140,9 @@ final class DatabaseMaintenance extends ModuleBase {
 		add_filter( 'wp_revisions_to_keep', [ $this, 'filter_revisions_to_keep' ], 10, 1 );
 
 		( new AjaxController( $this ) )->register( $this->ajax_router );
+
+		$this->scheduler()->register();
+		$this->scheduler()->ensure_scheduled( $this->settings() );
 	}
 
 	/**
@@ -150,18 +160,29 @@ final class DatabaseMaintenance extends ModuleBase {
 	}
 
 	/**
-	 * Next scheduled run as ISO 8601. Replaced in Task 9 to read the cron event.
-	 *
-	 * @phpstan-ignore return.unusedType (placeholder until Task 9)
+	 * Cron scheduler.
 	 */
-	public function next_run_iso(): ?string {
-		return null;
+	public function scheduler(): ScheduledCleanup {
+		if ( null === $this->scheduler ) {
+			$this->scheduler = new ScheduledCleanup( $this );
+		}
+
+		return $this->scheduler;
 	}
 
 	/**
-	 * Settings-saved hook. Replaced in Task 9 to reschedule cron.
+	 * Next scheduled run as ISO 8601, or null when unscheduled.
 	 */
-	public function on_settings_saved(): void {}
+	public function next_run_iso(): ?string {
+		return $this->scheduler()->next_run_iso();
+	}
+
+	/**
+	 * Settings-saved hook: re-sync the cron schedule.
+	 */
+	public function on_settings_saved(): void {
+		$this->scheduler()->reschedule( $this->settings() );
+	}
 
 	/**
 	 * Apply the revision cap unless wp-config already sets one.
