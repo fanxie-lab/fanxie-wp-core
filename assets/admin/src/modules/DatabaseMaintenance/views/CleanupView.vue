@@ -49,9 +49,18 @@ async function togglePreview(id: TaskId): Promise<void> {
   if (!store.previews[id]) await store.loadPreview(id);
 }
 
-function ask(ids: TaskId[], from: 'selected' | 'all'): void {
+async function ask(ids: TaskId[], from: 'selected' | 'all'): Promise<void> {
   askedFrom = from;
-  pendingIds.value = ids;
+  // Counts can be stale (settings saved, other admin activity); the dialog
+  // must never understate what will be deleted.
+  await store.refreshStatus();
+  const fresh = new Set(store.purgeableIds);
+  const remaining = ids.filter((id) => fresh.has(id));
+  if (remaining.length === 0) {
+    store.notify('info', 'Nothing left to clean.');
+    return;
+  }
+  pendingIds.value = remaining;
   confirmOpen.value = true;
 }
 

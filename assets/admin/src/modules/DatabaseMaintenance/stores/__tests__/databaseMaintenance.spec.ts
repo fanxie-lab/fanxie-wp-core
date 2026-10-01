@@ -79,4 +79,30 @@ describe('useDatabaseMaintenanceStore', () => {
     expect(store.isDirty).toBe(false);
     expect(store.toast?.variant).toBe('success');
   });
+
+  it('save() refreshes status so counts reflect the new limits', async () => {
+    const spy = vi
+      .spyOn(client, 'ajax')
+      .mockImplementation(
+        (action: string, payload?: Record<string, unknown>) => {
+          if (action.endsWith('save-config')) {
+            return Promise.resolve(
+              makeConfig({ settings: payload!.settings as never }),
+            );
+          }
+          return Promise.resolve(
+            action.endsWith('get-status') ? makeStatus() : makeConfig(),
+          );
+        },
+      );
+    const store = useDatabaseMaintenanceStore();
+    await store.load();
+    store.previews = { revisions: { id: 'revisions' } as never };
+    spy.mockClear();
+
+    await store.save();
+
+    expect(spy).toHaveBeenCalledWith('database-maintenance/get-status');
+    expect(store.previews).toEqual({});
+  });
 });

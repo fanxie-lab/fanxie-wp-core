@@ -146,6 +146,8 @@ export const useDatabaseMaintenanceStore = defineStore('databaseMaintenance', {
           },
         );
         this.applyConfig(cfg);
+        // Age limits and the keep-N value change what is purgeable.
+        await this.refreshStatus();
         this.notify('success', 'Settings saved.');
       } catch (err) {
         this.notify('error', message(err));

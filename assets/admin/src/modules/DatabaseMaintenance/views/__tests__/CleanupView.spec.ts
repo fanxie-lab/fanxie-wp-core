@@ -80,6 +80,7 @@ describe('CleanupView', () => {
   });
 
   it('purging asks for confirmation listing items, then runs steps and refreshes', async () => {
+    let statusCalls = 0;
     const spy = vi
       .spyOn(client, 'ajax')
       .mockImplementation((action: string) => {
@@ -93,13 +94,18 @@ describe('CleanupView', () => {
             busy: false,
           });
         }
-        return Promise.resolve(makeStatus({ 'spam-comments': 0 }));
+        statusCalls += 1;
+        // The first call is the pre-confirm refresh; later ones follow the purge.
+        return Promise.resolve(
+          makeStatus(statusCalls > 1 ? { 'spam-comments': 0 } : {}),
+        );
       });
     const { wrapper } = await mountCleanup();
     await wrapper
       .get('tr[data-task="spam-comments"] input[type="checkbox"]')
       .setValue(true);
     await wrapper.get('button[data-action="purge-selected"]').trigger('click');
+    await flushPromises();
 
     const dialog = document.body.querySelector('[role="alertdialog"]');
     expect(dialog?.textContent).toContain('Spam comments');
@@ -139,6 +145,7 @@ describe('CleanupView', () => {
     );
     const { wrapper } = await mountCleanup();
     await wrapper.get('button[data-action="purge-all"]').trigger('click');
+    await flushPromises();
     clickConfirm();
     await flushPromises();
 
@@ -157,6 +164,7 @@ describe('CleanupView', () => {
     });
     const { wrapper, store } = await mountCleanup();
     await wrapper.get('button[data-action="purge-all"]').trigger('click');
+    await flushPromises();
     clickConfirm();
     await flushPromises();
 
@@ -215,6 +223,7 @@ describe('CleanupView', () => {
       .get('tr[data-task="spam-comments"] input[type="checkbox"]')
       .setValue(true);
     await wrapper.get('button[data-action="purge-selected"]').trigger('click');
+    await flushPromises();
     clickConfirm();
     await flushPromises();
 
@@ -242,5 +251,37 @@ describe('CleanupView', () => {
   it('has a polite live region for progress announcements', async () => {
     const { wrapper } = await mountCleanup();
     expect(wrapper.find('[aria-live="polite"]').exists()).toBe(true);
+  });
+
+  it('refreshes counts before confirming so the dialog shows the fresh number', async () => {
+    vi.spyOn(client, 'ajax').mockImplementation((action: string) =>
+      Promise.resolve(makeStatus({ 'spam-comments': 999 })),
+    );
+    const { wrapper } = await mountCleanup();
+    await wrapper
+      .get('tr[data-task="spam-comments"] input[type="checkbox"]')
+      .setValue(true);
+    await wrapper.get('button[data-action="purge-selected"]').trigger('click');
+    await flushPromises();
+
+    const dialog = document.body.querySelector('[role="alertdialog"]');
+    expect(dialog?.textContent).toContain('999');
+    expect(dialog?.textContent).not.toContain('156');
+  });
+
+  it('skips the dialog when fresh counts show nothing left to clean', async () => {
+    vi.spyOn(client, 'ajax').mockImplementation(() =>
+      Promise.resolve(makeStatus({ 'spam-comments': 0 })),
+    );
+    const { wrapper, store } = await mountCleanup();
+    await wrapper
+      .get('tr[data-task="spam-comments"] input[type="checkbox"]')
+      .setValue(true);
+    await wrapper.get('button[data-action="purge-selected"]').trigger('click');
+    await flushPromises();
+
+    expect(document.body.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(store.toast?.message).toBe('Nothing left to clean.');
+    expect(store.toast?.variant).toBe('info');
   });
 });
