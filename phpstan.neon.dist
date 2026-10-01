@@ -23,6 +23,8 @@ parameters:
     # module's CLI command without pulling in a full wp-cli-stubs dependency.
     scanFiles:
         - tests/stubs/wp-cli.php
+        - tests/stubs/wp-cli-utils.php
+        - tests/stubs/wp-cli-progress-bar.php
 
     # Paths analysed. Composer bootstrap file + uninstall handler + everything
     # under `src/`. Tests are deliberately NOT in scope: unit tests depend on

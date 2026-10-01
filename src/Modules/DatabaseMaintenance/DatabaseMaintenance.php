@@ -143,6 +143,10 @@ final class DatabaseMaintenance extends ModuleBase {
 
 		$this->scheduler()->register();
 		$this->scheduler()->ensure_scheduled( $this->settings() );
+
+		if ( defined( 'WP_CLI' ) && constant( 'WP_CLI' ) ) {
+			\WP_CLI::add_command( 'fx-warden db', new Cli\DbCommand( $this->task_factory(), $this->runner() ) );
+		}
 	}
 
 	/**
