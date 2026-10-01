@@ -16,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class SpamCommentsTask implements CleanupTask {
 
+	use DeletesById;
+
 	/**
 	 * Constructor.
 	 *
@@ -95,7 +97,7 @@ final class SpamCommentsTask implements CleanupTask {
 			$out[] = [
 				'label'  => '' !== $comment->comment_author ? $comment->comment_author : __( 'Anonymous', 'fanxie-warden' ),
 				'detail' => wp_trim_words( wp_strip_all_tags( $comment->comment_content ), 12 ),
-				'date'   => (string) mysql2date( 'c', $comment->comment_date_gmt, false ),
+				'date'   => gmdate( 'c', (int) strtotime( $comment->comment_date_gmt . ' UTC' ) ),
 			];
 		}
 		return $out;
@@ -108,18 +110,6 @@ final class SpamCommentsTask implements CleanupTask {
 	 * @param list<int|string> $exclude IDs to skip.
 	 */
 	public function purge_batch( int $limit, array $exclude = [] ): BatchResult {
-		$ids     = $this->ids( $limit, $exclude );
-		$deleted = 0;
-		$failed  = [];
-
-		foreach ( $ids as $id ) {
-			if ( wp_delete_comment( $id, true ) ) {
-				++$deleted;
-			} else {
-				$failed[] = $id;
-			}
-		}
-
-		return new BatchResult( $deleted, $failed, count( $ids ) < $limit );
+		return $this->delete_ids( $this->ids( $limit, $exclude ), $limit, static fn ( int $id ) => wp_delete_comment( $id, true ) );
 	}
 }

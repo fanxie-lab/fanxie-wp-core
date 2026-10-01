@@ -16,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class RevisionsTask implements CleanupTask {
 
+	use DeletesById;
+
 	// MySQL needs a row count with OFFSET; this is the documented "all rows" idiom.
 	private const ALL_ROWS = '18446744073709551615';
 
@@ -170,18 +172,6 @@ final class RevisionsTask implements CleanupTask {
 			}
 		}
 
-		$deleted = 0;
-		$failed  = [];
-
-		foreach ( $targets as $id ) {
-			$result = wp_delete_post_revision( $id );
-			if ( $result instanceof \WP_Post ) {
-				++$deleted;
-			} else {
-				$failed[] = $id;
-			}
-		}
-
-		return new BatchResult( $deleted, $failed, count( $targets ) < $limit );
+		return $this->delete_ids( $targets, $limit, static fn ( int $id ): bool => wp_delete_post_revision( $id ) instanceof \WP_Post );
 	}
 }

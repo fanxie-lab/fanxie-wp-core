@@ -16,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class TrashedPostsTask implements CleanupTask {
 
+	use DeletesById;
+
 	/**
 	 * Constructor.
 	 *
@@ -104,13 +106,10 @@ final class TrashedPostsTask implements CleanupTask {
 	public function sample( int $n ): array {
 		return array_values(
 			array_map(
-				static function ( int $id ): array {
+				function ( int $id ): array {
 					$trashed = (int) get_post_meta( $id, '_wp_trash_meta_time', true );
 					return [
-						'label'  => '' !== get_the_title( $id )
-							? get_the_title( $id )
-							/* translators: %d: post ID */
-							: sprintf( __( 'Untitled #%d', 'fanxie-warden' ), $id ),
+						'label'  => $this->post_label( $id ),
 						'detail' => (string) get_post_type( $id ),
 						'date'   => $trashed > 0 ? gmdate( 'c', $trashed ) : (string) get_post_modified_time( 'c', true, $id ),
 					];
@@ -127,18 +126,6 @@ final class TrashedPostsTask implements CleanupTask {
 	 * @param list<int|string> $exclude IDs to skip.
 	 */
 	public function purge_batch( int $limit, array $exclude = [] ): BatchResult {
-		$ids     = $this->ids( $limit, $exclude );
-		$deleted = 0;
-		$failed  = [];
-
-		foreach ( $ids as $id ) {
-			if ( wp_delete_post( $id, true ) ) {
-				++$deleted;
-			} else {
-				$failed[] = $id;
-			}
-		}
-
-		return new BatchResult( $deleted, $failed, count( $ids ) < $limit );
+		return $this->delete_ids( $this->ids( $limit, $exclude ), $limit, static fn ( int $id ) => wp_delete_post( $id, true ) );
 	}
 }

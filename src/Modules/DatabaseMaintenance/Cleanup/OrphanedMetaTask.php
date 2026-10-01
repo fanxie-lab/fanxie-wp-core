@@ -18,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class OrphanedMetaTask implements CleanupTask {
 
+	use DeletesById;
+
 	/**
 	 * Supported meta types.
 	 *
@@ -163,17 +165,6 @@ final class OrphanedMetaTask implements CleanupTask {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- identifiers + placeholders only.
 		$mids = $wpdb->get_col( $wpdb->prepare( "SELECT m.{$s['mid']} " . $this->from_clause() . $not_in . ' LIMIT %d', array_merge( $args, [ $limit ] ) ) );
 
-		$deleted = 0;
-		$failed  = [];
-
-		foreach ( array_map( 'intval', (array) $mids ) as $mid ) {
-			if ( delete_metadata_by_mid( $this->type, $mid ) ) {
-				++$deleted;
-			} else {
-				$failed[] = $mid;
-			}
-		}
-
-		return new BatchResult( $deleted, $failed, count( (array) $mids ) < $limit );
+		return $this->delete_ids( array_values( array_map( 'intval', (array) $mids ) ), $limit, fn ( int $mid ) => delete_metadata_by_mid( $this->type, $mid ) );
 	}
 }

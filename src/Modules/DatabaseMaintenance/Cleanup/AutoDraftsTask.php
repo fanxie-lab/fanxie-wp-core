@@ -16,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class AutoDraftsTask implements CleanupTask {
 
+	use DeletesById;
+
 	/**
 	 * Constructor.
 	 *
@@ -93,11 +95,8 @@ final class AutoDraftsTask implements CleanupTask {
 	public function sample( int $n ): array {
 		return array_values(
 			array_map(
-				static fn ( int $id ): array => [
-					'label'  => '' !== get_the_title( $id )
-						? get_the_title( $id )
-						/* translators: %d: post ID */
-						: sprintf( __( 'Untitled #%d', 'fanxie-warden' ), $id ),
+				fn ( int $id ): array => [
+					'label'  => $this->post_label( $id ),
 					'detail' => (string) get_post_type( $id ),
 					'date'   => (string) get_post_time( 'c', false, $id ),
 				],
@@ -113,18 +112,6 @@ final class AutoDraftsTask implements CleanupTask {
 	 * @param list<int|string> $exclude IDs to skip.
 	 */
 	public function purge_batch( int $limit, array $exclude = [] ): BatchResult {
-		$ids     = $this->ids( $limit, $exclude );
-		$deleted = 0;
-		$failed  = [];
-
-		foreach ( $ids as $id ) {
-			if ( wp_delete_post( $id, true ) ) {
-				++$deleted;
-			} else {
-				$failed[] = $id;
-			}
-		}
-
-		return new BatchResult( $deleted, $failed, count( $ids ) < $limit );
+		return $this->delete_ids( $this->ids( $limit, $exclude ), $limit, static fn ( int $id ) => wp_delete_post( $id, true ) );
 	}
 }
