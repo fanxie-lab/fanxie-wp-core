@@ -152,16 +152,19 @@ checked against php.net and endoflife.date.
 ## Phase 3 — Data Hygiene & Audit Trail  *(PRD §8, §9)*
 
 ### 3.1 Database Maintenance (PRD §8)  *(→ wordpress-development-expert + frontend-expert)*
-- [ ] Revision limit filter + bulk revision purge (per-post, keeps N)
-- [ ] Expired transient purge + nuclear option
-- [ ] Orphaned meta cleanup (post/user/term/comment)
-- [ ] Auto-draft purge (>N days)
-- [ ] Trashed post purge (>N days)
-- [ ] Spam comment purge (>N days)
-- [ ] Action Scheduler-driven schedule (daily/weekly toggle, off-peak window)
-- [ ] WP-CLI commands (PRD §8.5) with `--dry-run` on every destructive op
-- [ ] Vue tab: counts + sizes table, dry-run preview, "Purge Selected" with confirmation modal
-- [ ] Tests: each cleanup function, Action Scheduler registration, CLI commands
+- [x] Design spec approved — `docs/superpowers/specs/2026-10-01-database-maintenance-design.md`
+- [x] Revision limit filter (default OFF, 20 pre-filled; `WP_POST_REVISIONS` wins) + bulk revision purge (per-post, keeps N)
+- [x] Expired transient purge (UI + schedule) + delete-all option (CLI only)
+- [x] Orphaned meta cleanup (post/user/term/comment)
+- [x] Auto-draft purge (>N days)
+- [x] Trashed post purge (>N days)
+- [x] Spam comment purge (>N days)
+- [x] WP-Cron schedule (daily/weekly, site-timezone hour, per-task toggles, time-budgeted continuation)
+- [x] WP-CLI `wp fx-warden db …` (PRD §8.5) with `--dry-run` on every destructive op
+- [x] Vue module: Cleanup tab (counts + ≈sizes, preview, Purge Selected/All with confirmation, progress + cancel) and Settings tab
+- [x] Tests: each cleanup task, runner, cron scheduling, AJAX, CLI commands
+- [x] Phase gate 2026-10-01: npm run check green (485 vitest); PHP unit 434 OK on 8.5 + 8.1; integration 189 OK in default + random orders; module line coverage 82.3%; Plugin Check on a package-shaped `fanxie-warden/` copy: 0 errors from module code (2 pre-existing `hidden_files` in assets/admin), 10 DirectDB warnings catalogued in docs/plugin-check-notes.md for Phase 7.
+- [ ] Follow-ups (backlog): abort purge confirm if the pre-confirm status refresh fails; CLI success line after all tasks skipped as busy; orphan-timeout sweep ignores the step time budget; get-status query cost on very large tables; per-task batch sizing once measured on a seeded large site.
 
 ### 3.2 Activity Log (PRD §9)  *(→ wordpress-development-expert + frontend-expert)*
 - [ ] Custom table `{prefix}fx_warden_activity_log` via `dbDelta`

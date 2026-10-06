@@ -35,10 +35,38 @@ if ( ! class_exists( 'WP_CLI', false ) ) {
 		public static array $messages = [];
 
 		/**
+		 * When false, confirm() aborts like the real CLI answering "n".
+		 *
+		 * @var bool
+		 */
+		public static bool $confirm_answer = true;
+
+		/**
 		 * Clear the recorded-message buffer. Call in each test's `setUp()`.
 		 */
 		public static function reset(): void {
-			self::$messages = [];
+			self::$messages       = [];
+			self::$confirm_answer = true;
+		}
+
+		/**
+		 * Record a confirmation prompt; skipped by `--yes`, aborts when declined.
+		 *
+		 * @param string               $question   Prompt text.
+		 * @param array<string, mixed> $assoc_args Command flags.
+		 * @throws \RuntimeException When the stubbed answer is "no".
+		 */
+		public static function confirm( string $question, array $assoc_args = [] ): void {
+			self::$messages[] = [
+				'level'   => 'confirm',
+				'message' => $question,
+			];
+			if ( ! empty( $assoc_args['yes'] ) ) {
+				return;
+			}
+			if ( ! self::$confirm_answer ) {
+				throw new \RuntimeException( 'confirm-declined' ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Test stub.
+			}
 		}
 
 		/**
@@ -133,3 +161,5 @@ if ( ! class_exists( 'WP_CLI', false ) ) {
 		}
 	}
 }
+
+require_once __DIR__ . '/wp-cli-utils.php';

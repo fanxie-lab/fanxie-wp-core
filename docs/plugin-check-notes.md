@@ -40,6 +40,17 @@ Authoritative rule reference: <https://github.com/WordPress/plugin-check>.
 - **Why tolerated now:** this is the foundation phase — modules land progressively.
 - **Resolved in:** Phases 1–6 (module rollout).
 
+### 6. `PluginCheck.Security.DirectDB.UnescapedDBParameter` in Database Maintenance (10 warnings)
+
+- **Finding:** Plugin Check flags 10 `$wpdb->get_col()` / `get_var()` / `get_results()` calls in `src/Modules/DatabaseMaintenance/Cleanup/` because the SQL passed to `prepare()` (or the query itself) is built by interpolation:
+  - `TrashedPostsTask.php` lines 75, 87, 97 (shared `$from` / `$not_in` fragments)
+  - `AutoDraftsTask.php` line 66 (`$not_in` placeholder list)
+  - `OrphanedMetaTask.php` lines 115, 124, 138, 166 (`from_clause()` and the meta/parent table identifiers from the fixed `specs()` map)
+  - `SpamCommentsTask.php` line 61 (`$not_in` placeholder list)
+  - `AllTransientsTask.php` line 61 (pre-built `$sql` with `%s` placeholders)
+- **Why tolerated now:** every interpolated piece is an identifier (core `$wpdb->*` table names, column names from a hard-coded map) or a string of `%d` / `%s` placeholders built from `count()` of the exclude list. No user input reaches the SQL text; all values go through `$wpdb->prepare()` arguments. The sniff cannot see through the helper methods, so it reports a possible unescaped parameter. The same patterns are already annotated for PHPCS (`WordPress.DB.PreparedSQL.*`).
+- **Resolved in:** Phase 7. Preferred fix is `%i` identifier placeholders (WordPress 6.2+ `prepare()`) for table and column names; where the fragment is a shared `FROM` / `NOT IN` clause, restructure so each query is a single literal string handed to `prepare()` (or build the placeholder list inline in the call). Line numbers drift; re-run Plugin Check to relocate them.
+
 ---
 
 ## Findings that must stay at zero from day one

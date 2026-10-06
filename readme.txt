@@ -22,7 +22,7 @@ Built for Fanxie Lab client deployments and released openly for the wider WordPr
 * Hardening — user enumeration protection, XML-RPC control, version hiding, uploads directory PHP execution lockdown, DISALLOW_FILE_EDIT surfacing, application-password toggle.
 * Login Protection — tiered lockouts, custom login slug, strong password enforcement, role-aware session timeout.
 * Environment Health — version checks, cron health, debug-mode scanner, inactive plugin/theme detection, abandoned plugin warnings.
-* Database Maintenance — revisions, transients, orphaned meta, auto-drafts, trash, and spam cleanup with Action Scheduler.
+* Database Maintenance — revisions, transients, orphaned meta, auto-drafts, trash, and spam cleanup with an optional WP-Cron schedule and a WP-CLI command.
 * Activity Log — auditable custom-table log of admin actions with CSV export and auto-pruning.
 * Asset Manager — script defer/async/delay engine, conditional unloading, image dimension injection, Heartbeat / emoji / embed controls.
 
@@ -57,6 +57,10 @@ No module is enabled out of the box. Each module ships with conservative default
 = Is my data deleted when I uninstall the plugin? =
 
 No, not by default. The plugin leaves all options and tables intact on uninstall unless you explicitly opt in via the admin setting or by defining `FX_WARDEN_DELETE_ALL_DATA` in `wp-config.php`. This protects you from accidentally wiping configuration when re-installing.
+
+= Why is the revision limit greyed out? =
+
+Your wp-config.php sets `WP_POST_REVISIONS`, which takes precedence. Remove it to manage the limit here.
 
 == Screenshots ==
 

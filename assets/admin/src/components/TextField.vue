@@ -38,6 +38,12 @@ interface Props {
   step?: number;
   /** Virtual-keyboard hint, e.g. 'numeric' for integer entry on mobile. */
   inputmode?: 'text' | 'numeric' | 'decimal' | 'tel' | 'email' | 'url';
+  /**
+   * Optional id(s) of an *external* element that also describes the input,
+   * merged after the internal help/error ids. A prop rather than a raw
+   * aria-describedby attribute, which would fall through to the wrapper <div>.
+   */
+  describedby?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -54,6 +60,7 @@ const props = withDefaults(defineProps<Props>(), {
   max: undefined,
   step: undefined,
   inputmode: undefined,
+  describedby: undefined,
 });
 
 const emit = defineEmits<{
@@ -71,6 +78,7 @@ const describedBy = computed(() => {
   const ids: string[] = [];
   if (props.help) ids.push(helpId.value);
   if (props.error) ids.push(errorId.value);
+  if (props.describedby) ids.push(props.describedby);
   return ids.length > 0 ? ids.join(' ') : undefined;
 });
 

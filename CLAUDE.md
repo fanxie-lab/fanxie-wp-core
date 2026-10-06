@@ -192,3 +192,14 @@ fanxie-warden/
 - Keep the checklist current; tick items as completion happens, not in batches.
 - When a decision diverges from the PRD, write it down in the relevant module's section in this file (not in code comments).
 - Before declaring a phase complete, run: `npm run check` (phpcs + phpstan via `composer run check`, then prettier + eslint + vue-tsc + vitest), `composer test` (PHPUnit unit suite), `npm run test:php:integration` (integration suite in wp-env), and Plugin Check against the shippable package. All green, or the phase isn't done. All green, or the phase isn't done.
+
+---
+
+## 8. Module decisions — PRD divergences
+
+### Database Maintenance (PRD §8) — decided 2026-10-01, spec `docs/superpowers/specs/2026-10-01-database-maintenance-design.md`
+
+- **WP-Cron, not Action Scheduler** (PRD §8.3, §9.3). Matches existing modules and avoids bundling a dependency; Action Scheduler was justified by Media Optimizer, now deferred. Also applies to Activity Log retention.
+- **Revision limit OFF by default, 20 pre-filled** (PRD: ON at 10). One `revisions_keep` value drives both the future-revision cap and the purge. `WP_POST_REVISIONS` in wp-config (any value other than core's default `true`) wins over the cap and locks only the cap toggle; "Revisions to keep" stays editable because it drives the purge. Autosaves are never counted or purged.
+- **"Delete all transients" is CLI-only** (`wp fx-warden db transients --all`); the admin UI and schedule only ever purge expired transients.
+- **Trash age uses `_wp_trash_meta_time`** (when trashed), not PRD's `post_modified`; deletions go through WP APIs in time-budgeted batches rather than the PRD's unbatched loops.

@@ -361,6 +361,55 @@ setting — which also discards every cached result.
 
 ---
 
+## Database Maintenance
+
+### `fanxie_warden_database_maintenance_run`
+
+- **Type:** Action (WP-Cron event — flat name, not slash-namespaced)
+- **Since:** 0.1.0-dev
+- **Fires:** Recurring (daily or weekly, per the module's schedule setting) at
+  the configured site-local hour. The handler runs the enabled cleanup tasks.
+- **Params:** none.
+
+### `fanxie_warden_database_maintenance_continue`
+
+- **Type:** Action (WP-Cron event — flat name, not slash-namespaced)
+- **Since:** 0.1.0-dev
+- **Fires:** Single event, scheduled 5 minutes after a run that ran out of
+  budget before finishing.
+- **Params:** `array $remaining` — list of the task ids still to be processed.
+
+### AJAX sub-actions
+
+All routed through the shared `fanxie_warden` admin-ajax action (nonce
+`fanxie_warden_admin` + capability `manage_fanxie_warden` enforced by
+`AjaxRouter`): `database-maintenance/get-status`, `preview`, `purge-step`,
+`get-config`, `save-config`.
+
+### Lock transients
+
+Each task takes a per-task lock transient, `fanxie_warden_db_lock_{task}`, so a
+manual purge, a scheduled run and a CLI run cannot overlap. Locks expire on
+their own and are swept on uninstall (when data removal is authorised).
+
+### WP-CLI
+
+```
+wp fx-warden db status
+wp fx-warden db clean --all
+wp fx-warden db revisions [--keep=<n>]
+wp fx-warden db transients [--all]
+wp fx-warden db orphans [--type=<type>]
+wp fx-warden db trash [--days=<n>]
+wp fx-warden db spam [--days=<n>]
+wp fx-warden db autodrafts [--days=<n>]
+```
+
+Every cleanup subcommand accepts `--dry-run` (report only) and `--yes` (skip
+the confirmation prompt).
+
+---
+
 ## wp-config override constants
 
 Site owners set these in `wp-config.php`. They all use the `FX_WARDEN_*` prefix;

@@ -116,6 +116,27 @@ const liveModuleRoutes: Record<string, RouteRecordRaw> = {
       },
     ],
   },
+  'database-maintenance': {
+    path: '/database-maintenance',
+    name: 'database-maintenance',
+    component: () =>
+      import('@/modules/DatabaseMaintenance/DatabaseMaintenance.vue'),
+    redirect: { name: 'database-maintenance.cleanup' },
+    children: [
+      {
+        path: 'cleanup',
+        name: 'database-maintenance.cleanup',
+        component: () =>
+          import('@/modules/DatabaseMaintenance/views/CleanupView.vue'),
+      },
+      {
+        path: 'settings',
+        name: 'database-maintenance.settings',
+        component: () =>
+          import('@/modules/DatabaseMaintenance/views/SettingsView.vue'),
+      },
+    ],
+  },
 };
 
 /** Build a placeholder route for a module id. */
