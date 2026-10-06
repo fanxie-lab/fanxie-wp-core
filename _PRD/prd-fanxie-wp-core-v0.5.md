@@ -22,7 +22,7 @@ A single WordPress plugin that consolidates the most impactful, automatable audi
 
 ### 1.3 Target Users
 
-- **Primary:** Fanxie Lab team deploying to client WordPress sites ([client], [client], etc.)
+- **Primary:** Fanxie Lab team deploying to client WordPress sites
 - **Secondary:** WordPress developers and agencies seeking an all-in-one hardening + optimization toolkit
 - **Tertiary:** WordPress.org community (public release planned)
 
